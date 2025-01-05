@@ -2,7 +2,6 @@ import { Controller, Post, Body } from '@nestjs/common'
 
 import { CreateClientProfileDto } from './dto/create-client-profile.dto'
 import { CreateProviderProfileDto } from './dto/create-provider-profile.dto'
-import { CreateDriverProfileDto } from './dto/create-driver-profile.dto'
 import { CreateAdminProfileDto } from './dto/create-admin-profile.dto'
 import { Authorization, CognitoUser } from '@nestjs-cognito/auth'
 import { CreateClientProfileService } from './create.client.profile.service'
@@ -47,18 +46,21 @@ export class CreateProfileController {
          providerProfileDto,
       )
    }
+
    @Post('driver')
    @Authorization({ allowedGroups: ['DriverGroup'] })
    async createDriverProfile(
       @CognitoUser('sub') driverProfileId,
       @CognitoUser('email') email,
       @Body()
-      createDriverProfileDto: CreateDriverProfileDto,
+      createClientProfileDto: CreateClientProfileDto,
    ) {
+      console.log('okok')
+
       return await this.createDriverProfileService.createDriverProfile(
          driverProfileId,
          email,
-         createDriverProfileDto,
+         createClientProfileDto,
       )
    }
    @Post('admin')

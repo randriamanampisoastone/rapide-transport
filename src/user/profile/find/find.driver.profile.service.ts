@@ -19,6 +19,7 @@ export class FindDriverProfileService {
          throw PostgresError(error)
       }
    }
+
    async findProfiles(page: number, pageSize: number) {
       try {
          const driverProfile = await this.prismaService.driverProfile.findMany({

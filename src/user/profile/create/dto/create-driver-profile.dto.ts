@@ -1,6 +1,5 @@
 import { GenderType } from '@prisma/client'
 import {
-   IsArray,
    IsDateString,
    IsEnum,
    IsNotEmpty,
@@ -30,11 +29,11 @@ export class CreateDriverProfileDto {
    @IsUrl({}, { message: 'Profile Photo must be a valid URL' })
    profilePhoto: string
 
-   @IsArray({ message: 'CIN Photos must be an array of URLs' })
-   @IsUrl({}, { each: true, message: 'Each CIN photo must be a valid URL' })
-   cinPhotos: string[]
+   // @IsArray({ message: 'CIN Photos must be an array of URLs' })
+   // @IsUrl({}, { each: true, message: 'Each CIN photo must be a valid URL' })
+   // cinPhotos: string[]
 
-   @IsArray({ message: 'Permis Photos must be an array of URLs' })
-   @IsUrl({}, { each: true, message: 'Each permis photo must be a valid URL' })
-   permisPhotos: string[]
+   // @IsArray({ message: 'Permis Photos must be an array of URLs' })
+   // @IsUrl({}, { each: true, message: 'Each permis photo must be a valid URL' })
+   // permisPhotos: string[]
 }

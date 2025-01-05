@@ -76,11 +76,11 @@ export class CreateRideService implements OnModuleInit {
       }
    }
 
-   async createRide(createRideDto: CreateRideDto) {
+   async createRide(createRideDto: CreateRideDto, clientId: string) {
+      console.log('createRideDto', createRideDto)
+
       try {
-         const itinerary = await this.redisService.get(
-            `itinerary:${createRideDto.clientId}`,
-         )
+         const itinerary = await this.redisService.get(`itinerary:${clientId}`)
 
          let price: number
          let rideData: RideData
@@ -97,7 +97,7 @@ export class CreateRideService implements OnModuleInit {
 
             rideData = {
                rideId: crypto.randomUUID(),
-               clientId: createRideDto.clientId,
+               clientId: clientId,
                vehicleType: createRideDto.vehicleType,
                price,
                distanceMeters: itineraryData.distanceMeters,
@@ -109,16 +109,17 @@ export class CreateRideService implements OnModuleInit {
          } else {
             const { vehicleType, ...createItineraryDto } = createRideDto
             const newItinerary =
-               await this.createItineraryService.createItinerary(
-                  createItineraryDto,
-               )
+               await this.createItineraryService.createItinerary({
+                  ...createItineraryDto,
+                  clientId,
+               })
 
             // Get price based on vehicle type
             price = this.getPrice(createRideDto.vehicleType, null, newItinerary)
 
             rideData = {
                rideId: crypto.randomUUID(),
-               clientId: createRideDto.clientId,
+               clientId: clientId,
                vehicleType: createRideDto.vehicleType,
                price,
                distanceMeters: newItinerary.distanceMeters,
@@ -135,6 +136,14 @@ export class CreateRideService implements OnModuleInit {
       } catch (error) {
          console.error('Error creating ride:', error)
          throw new InternalServerErrorException('Error creating ride')
+      }
+   }
+
+   async findRide(rideId: string) {
+      try {
+         return await this.rideModel.get({ rideId })
+      } catch (error) {
+         throw DynamoDBError(error)
       }
    }
 }

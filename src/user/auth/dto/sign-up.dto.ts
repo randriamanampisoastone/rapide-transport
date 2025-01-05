@@ -5,6 +5,7 @@ export enum UserRoleEnum {
    Client = 'ClientGroup',
    Admin = 'AdminGroup',
    Provider = 'ProviderGroup',
+   Driver = 'DriverGroup',
 }
 
 export class SignUpDto extends SignInDto {

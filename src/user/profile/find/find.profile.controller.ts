@@ -40,6 +40,22 @@ export class FindProfileController {
       }
    }
 
+   @Get('driver-find-client-by-id')
+   @Authorization({
+      allowedGroups: ['DriverGroup'],
+   })
+   async driverFindClient(@Query('clientId') clientId: string) {
+      return await this.findClientProfileService.findProfileById(clientId)
+   }
+
+   @Get('client-find-driver-by-id')
+   @Authorization({
+      allowedGroups: ['ClientGroup'],
+   })
+   async clientFindDriver(@Query('driverId') driverId: string) {
+      return await this.findDriverProfileService.findProfileById(driverId)
+   }
+
    @Get('by-id')
    @Authorization({
       allowedGroups: [

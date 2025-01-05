@@ -42,6 +42,8 @@ export class CreateItineraryService implements OnModuleInit {
    }
 
    async createItinerary(createItineraryDto: CreateItineraryDto) {
+      console.log('createItineraryDto', createItineraryDto)
+
       try {
          const route = await getRouteGoogleMap(
             createItineraryDto.pickUpLocation,
@@ -63,7 +65,13 @@ export class CreateItineraryService implements OnModuleInit {
             }),
             120,
          )
-         return { prices: prices, ...routeRest, duration: duration }
+         return {
+            prices: prices,
+            ...routeRest,
+            duration: duration,
+            pickUpLocation: createItineraryDto.pickUpLocation,
+            dropOffLocation: createItineraryDto.dropOffLocation,
+         }
       } catch (error) {
          throw error
       }

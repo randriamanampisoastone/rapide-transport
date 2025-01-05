@@ -20,7 +20,7 @@ export class GeolocationService {
    ) {
       const role = user['cognito:groups']?.[0]
       if (role === ClientRole.Client) {
-         server.to(ClientRole.Admin).emit('clientLocation', {
+         server.to(ClientRole.Client).emit('clientLocation', {
             userId: user.sub,
             userGroup: role,
             location: data,
@@ -43,6 +43,11 @@ export class GeolocationService {
             client.id,
          )
          server.to(ClientRole.Admin).emit('driverLocation', {
+            userId: user.sub,
+            userGroup: role,
+            location: data,
+         })
+         server.emit(client.data.user.sub, {
             userId: user.sub,
             userGroup: role,
             location: data,

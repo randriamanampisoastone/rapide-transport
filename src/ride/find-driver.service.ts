@@ -1,4 +1,4 @@
-import { DeleteMessageCommand, Message, SQSClient } from '@aws-sdk/client-sqs'
+import { Message } from '@aws-sdk/client-sqs'
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { SqsMessageHandler } from '@ssut/nestjs-sqs'
@@ -28,8 +28,6 @@ export class FindDriverService implements OnModuleInit {
 
    @SqsMessageHandler(RIDE_QUEUE_NAME, false)
    async handleFindDriver(message: Message) {
-      console.log('Received message from SQS !')
-
       try {
          if (!message.Body) {
             console.error('Message body is empty')
@@ -63,8 +61,13 @@ export class FindDriverService implements OnModuleInit {
             return
          }
 
-         this.notifyDrivers(nearbyDrivers, ride)
-         await this.deleteMessageFromQueue(message.ReceiptHandle)
+         this.notifyDrivers(nearbyDrivers, {
+            rideId: data.rideId,
+            ...ride,
+            receiptHandle: message.ReceiptHandle,
+         })
+
+         // await this.deleteMessageFromQueue(message.ReceiptHandle)
       } catch (error) {
          console.error(
             'Error handling SQS message:',
@@ -113,24 +116,12 @@ export class FindDriverService implements OnModuleInit {
       }
    }
 
-   private notifyDrivers(drivers: string[], ride: RideData): void {
+   private notifyDrivers(
+      drivers: string[],
+      ride: RideData & { rideId: string },
+   ): void {
       drivers.forEach((driver) => {
          this.gateway.sendNotificationToDriver(driver, ride)
       })
-   }
-   private async deleteMessageFromQueue(receiptHandle: string): Promise<void> {
-      try {
-         const sqsClient = new SQSClient({
-            region: this.configService.get<string>('AWS_REGION'),
-         })
-         const deleteCommand = new DeleteMessageCommand({
-            QueueUrl: this.configService.get<string>('RIDE_QUEUE_URL'),
-            ReceiptHandle: receiptHandle,
-         })
-         await sqsClient.send(deleteCommand)
-         console.log('Message deleted from SQS.')
-      } catch (error) {
-         console.error('Failed to delete message from SQS:', error.message)
-      }
    }
 }

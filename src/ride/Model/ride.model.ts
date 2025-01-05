@@ -144,6 +144,7 @@ export interface RideData {
    status?: RideStatus // Statut de la course
    createdAt?: string // Statut de la course
    updateAt?: string // Statut de la course
+   receiptHandle?: string
 }
 
 export interface RideDataKey {

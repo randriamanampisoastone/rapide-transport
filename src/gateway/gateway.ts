@@ -42,6 +42,7 @@ export class Gateway
    private assignUserToRoom(client: Socket, role: ClientRole) {
       if (Object.values(ClientRole).includes(role)) {
          client.join(role)
+         client.join(client.data.user.sub)
       } else {
          this.logger.warn(`Unknown role: ${role}`)
       }
@@ -79,7 +80,9 @@ export class Gateway
 
       const { role } = validation
       this.assignUserToRoom(client, role)
-      this.logger.log(`Client connected: ${client.id}, Role: ${role}`)
+      this.logger.log(
+         `Client connected: ${client.id}, Role: ${role}, User: ${client.data.user.sub}`,
+      )
    }
 
    handleDisconnect(client: Socket) {
@@ -102,6 +105,11 @@ export class Gateway
       )
    }
 
+   @SubscribeMessage('sendData')
+   handleData(@MessageBody() data: any) {
+      this.server.emit('data', data)
+   }
+
    @SubscribeMessage('updateDriverLocation')
    async handleUpdateDriverLocation(
       @MessageBody() data: UpdateLocationInterface,
@@ -109,6 +117,8 @@ export class Gateway
    ) {
       const validation = this.validateUserRole(client)
       if (!validation) return
+
+      console.log('Data : ', data)
 
       const { user } = validation
       await this.geolocationService.handleUpdateDriverLocation(
@@ -137,19 +147,7 @@ export class Gateway
    sendNotificationToDriver(driverId: string, payload: any) {
       this.server.to(driverId).emit('newRide', payload)
    }
-
-   // @SubscribeMessage('acceptRide')
-   // async handleAcceptRide(
-   //    @MessageBody() data: UpdateLocationInterface,
-   //    @ConnectedSocket() client: Socket,
-   // ) {
-   //    const validation = this.validateUserRole(client)
-   //    if (!validation) return
-
-   //    const { user } = validation
-   //    await this.geolocationService.handleUpdateDriverLocationDataBase(
-   //       data,
-   //       user,
-   //    )
-   // }
+   sendNotificationToClient(clientId: string, driverId: string) {
+      this.server.to(clientId).emit('acceptedRide', driverId)
+   }
 }

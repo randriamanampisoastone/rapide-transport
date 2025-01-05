@@ -22,10 +22,6 @@ export class CreateItineraryDto {
 }
 
 export class CreateRideDto {
-   @IsString()
-   @IsNotEmpty()
-   clientId: string
-
    @IsNotEmpty()
    pickUpLocation: Location
 

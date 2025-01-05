@@ -13,7 +13,6 @@ export class FindClientProfileService {
             await this.prismaService.clientProfile.findUnique({
                where: { clientProfileId: sub },
             })
-
          return clientProfile
       } catch (error) {
          throw PostgresError(error)
