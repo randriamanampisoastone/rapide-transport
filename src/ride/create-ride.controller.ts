@@ -13,9 +13,16 @@ export class CreateRideController {
       private readonly acceptRideService: AcceptRideService,
    ) {}
 
+   @Authorization({ allowedGroups: ['ClientGroup'] })
    @Post('create-itinerary')
-   createItinerary(@Body() createItineraryDto: CreateItineraryDto) {
-      return this.createItineraryService.createItinerary(createItineraryDto)
+   createItinerary(
+      @Body() createItineraryDto: CreateItineraryDto,
+      @CognitoUser('sub') clientId,
+   ) {
+      return this.createItineraryService.createItinerary(
+         createItineraryDto,
+         clientId,
+      )
    }
 
    @Authorization({ allowedGroups: ['ClientGroup'] })

@@ -58,9 +58,9 @@ export class Gateway
 
    afterInit(server: Server) {
       server.use(async (socket: Socket, next) => {
-         const token = socket.handshake.headers.authorization
+         const token = socket.handshake.auth.idToken
          if (!token) {
-            return next(new Error('Token is required for authentication.'))
+            return next(new Error('TokenNotFound'))
          }
 
          try {
@@ -69,7 +69,7 @@ export class Gateway
             next()
          } catch (error) {
             this.logger.error(`Authentication failed: ${error.message}`)
-            return next(new Error('Invalid or expired token.'))
+            return next(new Error('TokenNotInvalid'))
          }
       })
       this.logger.log('GeolocationGateway initialized')
@@ -89,22 +89,6 @@ export class Gateway
       this.logger.log('Client disconnected', client.id)
    }
 
-   @SubscribeMessage('updateClientLocation')
-   handleUpdateClientLocation(
-      @MessageBody() data: UpdateLocationInterface,
-      @ConnectedSocket() client: Socket,
-   ) {
-      const validation = this.validateUserRole(client)
-      if (!validation) return
-
-      const { user } = validation
-      this.geolocationService.handleUpdateClientLocation(
-         this.server,
-         data,
-         user,
-      )
-   }
-
    @SubscribeMessage('sendData')
    handleData(@MessageBody() data: any) {
       this.server.emit('data', data)
@@ -115,18 +99,25 @@ export class Gateway
       @MessageBody() data: UpdateLocationInterface,
       @ConnectedSocket() client: Socket,
    ) {
-      const validation = this.validateUserRole(client)
-      if (!validation) return
-
-      console.log('Data : ', data)
-
-      const { user } = validation
       await this.geolocationService.handleUpdateDriverLocation(
          this.server,
          data,
          client,
-         user,
       )
+   }
+
+   @SubscribeMessage('driverArrived')
+   async handleDriverArrived(@MessageBody() data: { clientId: string }) {
+      this.server.to(data.clientId).emit('driverArrived', {})
+   }
+   @SubscribeMessage('startRide')
+   async handleStartRide(@MessageBody() data: { clientId: string }) {
+      this.server.to(data.clientId).emit('startRide', {})
+   }
+
+   @SubscribeMessage('arrivedDestination')
+   async handleArrivedDestination(@MessageBody() data: { clientId: string }) {
+      this.server.to(data.clientId).emit('arrivedDestination', {})
    }
 
    @SubscribeMessage('updateDriverLocationDataBase')
@@ -144,10 +135,31 @@ export class Gateway
       )
    }
 
-   sendNotificationToDriver(driverId: string, payload: any) {
-      this.server.to(driverId).emit('newRide', payload)
+   @SubscribeMessage('updateClientLocation')
+   async handleUpdateClientLocation(
+      @MessageBody() data: UpdateLocationInterface,
+      @ConnectedSocket() client: Socket,
+   ) {
+      await this.geolocationService.handleUpdateClientLocation(
+         this.server,
+         data,
+         client,
+      )
    }
-   sendNotificationToClient(clientId: string, driverId: string) {
-      this.server.to(clientId).emit('acceptedRide', driverId)
+
+   sendNotificationToDriver(payload: any) {
+      this.server.emit('newRide', payload)
+   }
+   sendNotificationToClient(
+      clientId: string,
+      driverId: string,
+      estimatedDuration: number,
+      encodedPolyline: string,
+   ) {
+      this.server.to(clientId).emit('acceptedRide', {
+         driverId,
+         estimatedDuration,
+         encodedPolyline,
+      })
    }
 }

@@ -7,11 +7,14 @@ import {
 import { CreateRideDto } from './dto/create-ride.dto'
 import { RedisService } from 'src/redis/redis.service'
 import { CreateItineraryService } from './create-itinerary.service'
-import { RideData, RideDataKey, VehicleType } from './Model/ride.model'
 import { InjectModel, Model } from 'nestjs-dynamoose'
 import { DynamoDBError } from 'errors/dynamodb.error'
 import { SqsService } from '@ssut/nestjs-sqs'
 import { ConfigService } from '@nestjs/config'
+import { RideData, RideDataKey } from 'interfaces/ride'
+import { VehicleType } from 'enums/vehicle'
+import { ItineraryData } from 'interfaces/itinerary'
+import { EstimatedPrice } from 'interfaces/price'
 
 @Injectable()
 export class CreateRideService implements OnModuleInit {
@@ -28,12 +31,11 @@ export class CreateRideService implements OnModuleInit {
       this.RIDE_QUEUE_NAME = this.configService.get<string>('RIDE_QUEUE_NAME')
    }
 
-   // Helper function to get the price based on the vehicle type
    private getPrice(
       vehicleType: VehicleType,
-      itineraryData: any,
-      newItinerary: any,
-   ): number {
+      itineraryData: ItineraryData,
+      newItinerary: ItineraryData,
+   ): EstimatedPrice {
       switch (vehicleType) {
          case VehicleType.MOTO:
             return itineraryData
@@ -77,56 +79,56 @@ export class CreateRideService implements OnModuleInit {
    }
 
    async createRide(createRideDto: CreateRideDto, clientId: string) {
-      console.log('createRideDto', createRideDto)
-
       try {
          const itinerary = await this.redisService.get(`itinerary:${clientId}`)
 
-         let price: number
+         let estimatedPrice: EstimatedPrice
          let rideData: RideData
 
          if (itinerary) {
             const itineraryData = JSON.parse(itinerary)
 
-            // Get price based on vehicle type
-            price = this.getPrice(
+            estimatedPrice = this.getPrice(
                createRideDto.vehicleType,
                itineraryData,
                null,
+            )
+            rideData = {
+               rideId: crypto.randomUUID(),
+               clientId: clientId,
+               vehicleType: createRideDto.vehicleType,
+               estimatedPrice,
+               distanceMeters: itineraryData.distanceMeters,
+               encodedPolyline: itineraryData.encodedPolyline,
+               pickUpLocation: createRideDto.pickUpLocation,
+               dropOffLocation: createRideDto.dropOffLocation,
+               estimatedDuration: itineraryData.estimatedDuration,
+            }
+         } else {
+            const { vehicleType, ...createItineraryDto } = createRideDto
+            const newItinerary =
+               await this.createItineraryService.createItinerary(
+                  createItineraryDto,
+                  clientId,
+               )
+
+            // Get price based on vehicle type
+            estimatedPrice = this.getPrice(
+               createRideDto.vehicleType,
+               null,
+               newItinerary,
             )
 
             rideData = {
                rideId: crypto.randomUUID(),
                clientId: clientId,
                vehicleType: createRideDto.vehicleType,
-               price,
-               distanceMeters: itineraryData.distanceMeters,
-               encodedPolylines: itineraryData.polyline.encodedPolyline,
-               pickUpLocation: createRideDto.pickUpLocation,
-               dropOffLocation: createRideDto.dropOffLocation,
-               estimatedDuration: itineraryData.duration,
-            }
-         } else {
-            const { vehicleType, ...createItineraryDto } = createRideDto
-            const newItinerary =
-               await this.createItineraryService.createItinerary({
-                  ...createItineraryDto,
-                  clientId,
-               })
-
-            // Get price based on vehicle type
-            price = this.getPrice(createRideDto.vehicleType, null, newItinerary)
-
-            rideData = {
-               rideId: crypto.randomUUID(),
-               clientId: clientId,
-               vehicleType: createRideDto.vehicleType,
-               price,
+               estimatedPrice,
                distanceMeters: newItinerary.distanceMeters,
-               encodedPolylines: newItinerary.polyline.encodedPolyline,
+               encodedPolyline: newItinerary.encodedPolyline,
                pickUpLocation: createRideDto.pickUpLocation,
                dropOffLocation: createRideDto.dropOffLocation,
-               estimatedDuration: newItinerary.duration,
+               estimatedDuration: newItinerary.estimatedDuration,
             }
          }
 

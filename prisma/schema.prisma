@@ -116,7 +116,7 @@ model DriverProfile {
   driverFeedbackCount   Int            @default(0)
 
   phoneNumber          PhoneNumber?    @relation("DriverPhoneNumber")
-  vehicle              Vehicle[]       @relation("DriverVehicles")
+  vehicle              Vehicle?       @relation("DriverVehicles")
   feedbacks            FeedBack[]      @relation("DriverProfileFeedbacks")
 
   accountBalance       AccountBalance? @relation("DriverAccountBalance")
@@ -146,11 +146,17 @@ enum VehicleRole {
   DELIVERY
 }
 
+enum VehicleType {
+  MOTO
+  LITE_CAR
+  PREMIUM_CAR
+}
+
 model Vehicle {
   vehicleId                    String         @id @default(uuid())
 
+  vehicleType                  VehicleType
   vehicleModel                 String
-  vehicleType                  String
   vehicleMarque                String
   vehiclePlace                 Int
   vehicleRegistrationNumber    String?        @unique
@@ -602,7 +608,7 @@ enum BalanceStatus {
 model AccountBalance {
   accountBalanceId     String             @id @default(uuid())
   balance              Float              @default(0)       
-  balanceStatus        BalanceStatus      @default(PENDING)
+  balanceStatus        BalanceStatus      @default(ACTIVE)
 
   clientProfileId      String?            @unique
   clientProfile        ClientProfile?     @relation("ClientAccountBalance",fields: [clientProfileId], references: [clientProfileId])

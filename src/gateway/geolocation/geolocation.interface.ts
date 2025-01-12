@@ -1,3 +1,5 @@
+import { LatLng } from 'interfaces/itinerary'
+
 export enum ClientRole {
    Client = 'ClientGroup',
    Driver = 'DriverGroup',
@@ -7,6 +9,9 @@ export enum ClientRole {
 }
 
 export interface UpdateLocationInterface {
-   longitude: number
-   latitude: number
+   latLng: LatLng
+   clientId?: string
+   driverId?: string
+   vehicleType?: string
+   isAvailable: boolean
 }

@@ -71,6 +71,8 @@ export class FindProfileController {
       @Query('id') id: string,
       @Query('role') role: string,
    ) {
+      
+
       const group = groups[0]
 
       switch (group) {

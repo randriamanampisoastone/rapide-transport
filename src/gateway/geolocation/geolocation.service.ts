@@ -16,43 +16,45 @@ export class GeolocationService {
    async handleUpdateClientLocation(
       server: Server,
       data: UpdateLocationInterface,
-      user: any,
+      client: Socket,
    ) {
-      const role = user['cognito:groups']?.[0]
-      if (role === ClientRole.Client) {
-         server.to(ClientRole.Client).emit('clientLocation', {
-            userId: user.sub,
-            userGroup: role,
-            location: data,
-         })
-      }
+      server.to(data.driverId).emit('clientLocation', {
+         latitude: data.latLng.latitude,
+         longitude: data.latLng.longitude,
+         vehicleType: data.vehicleType,
+      })
+      server.to(ClientRole.Admin).emit('driverLocation', {
+         driverId: client.data.user.sub,
+         userGroup: 'ClientGroup',
+         latLng: data.latLng,
+      })
    }
 
    async handleUpdateDriverLocation(
       server: Server,
       data: UpdateLocationInterface,
       client: Socket,
-      user: any,
    ) {
-      const role = user['cognito:groups']?.[0]
-      if (role === ClientRole.Driver) {
-         await this.redisService.addGeoLocation(
-            role,
-            data.longitude,
-            data.latitude,
-            client.id,
-         )
-         server.to(ClientRole.Admin).emit('driverLocation', {
-            userId: user.sub,
-            userGroup: role,
-            location: data,
-         })
-         server.emit(client.data.user.sub, {
-            userId: user.sub,
-            userGroup: role,
-            location: data,
+      if (data.isAvailable) {
+         // await this.redisService.addGeoLocation(
+         //    'DriverGroup',
+         //    data.latLng.longitude,
+         //    data.latLng.latitude,
+         //    client.data.user.sub,
+         // )
+      } else {
+         server.to(data.clientId).emit('driverLocation', {
+            latitude: data.latLng.latitude,
+            longitude: data.latLng.longitude,
+            vehicleType: data.vehicleType,
          })
       }
+
+      server.to(ClientRole.Admin).emit('driverLocation', {
+         driverId: client.data.user.sub,
+         userGroup: 'DriverGroup',
+         latLng: data.latLng,
+      })
    }
 
    async handleUpdateDriverLocationDataBase(
@@ -64,7 +66,7 @@ export class GeolocationService {
          await this.geolocationModel.create({
             userId: user.sub,
             userGroup: role,
-            location: data,
+            location: data.latLng,
          })
       }
    }

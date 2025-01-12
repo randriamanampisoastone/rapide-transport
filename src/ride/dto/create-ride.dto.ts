@@ -1,5 +1,5 @@
-import { IsLatitude, IsLongitude, IsNotEmpty, IsString } from 'class-validator'
-import { VehicleType } from '../Model/ride.model'
+import { IsLatitude, IsLongitude, IsNotEmpty } from 'class-validator'
+import { VehicleType } from 'enums/vehicle'
 
 export class Location {
    @IsLatitude()
@@ -10,10 +10,6 @@ export class Location {
 }
 
 export class CreateItineraryDto {
-   @IsString()
-   @IsNotEmpty()
-   clientId: string
-
    @IsNotEmpty()
    pickUpLocation: Location
 

@@ -1,70 +1,80 @@
-import { Injectable } from '@nestjs/common'
-import { RideData, RideDataKey, RideStatus } from './Model/ride.model'
+import { Injectable, OnModuleInit } from '@nestjs/common'
 import { InjectModel, Model } from 'nestjs-dynamoose'
-import { DeleteMessageCommand, SQSClient } from '@aws-sdk/client-sqs'
 import { ConfigService } from '@nestjs/config'
 import { Gateway } from 'src/gateway/gateway'
+import { RideData, RideDataKey, RideStatus } from 'interfaces/ride'
+import { getRouteGoogleMap } from 'api/route.googlemap'
+import { LatLng } from 'interfaces/itinerary'
 
 export interface AcceptDriverDto {
    driverId: string
    rideId: string
-   receiptHandle: string
-   clientId: string
+   latLng: LatLng
 }
 
 @Injectable()
-export class AcceptRideService {
+export class AcceptRideService implements OnModuleInit {
+   private API_KEY = ''
    constructor(
       @InjectModel('Ride')
       private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly configService: ConfigService,
       private readonly gateway: Gateway,
    ) {}
+   onModuleInit() {
+      this.API_KEY = this.configService.get<string>('GOOGLE_MAP_API_KEY')
 
-   async acceptDriver(acceptDriverDto: AcceptDriverDto): Promise<void> {
-      // Récupération des données de la course
+      if (!this.API_KEY) {
+         throw new Error('Google Maps API Key is missing!')
+      }
+   }
+   async acceptDriver(acceptDriverDto: AcceptDriverDto) {
       const resultRide = await this.rideModel.get({
          rideId: acceptDriverDto.rideId,
       })
 
-      // Vérification si la course existe et si son statut est "PENDING"
       if (!resultRide) {
          throw new Error('Ride not found')
       }
-      if (resultRide.status === RideStatus.PENDING) {
-         // Mise à jour du statut de la course et attribution du conducteur
+      if (resultRide.status === RideStatus.FINDING_DRIVER) {
          await this.rideModel.update(
             {
                rideId: acceptDriverDto.rideId,
             },
             {
                driverId: acceptDriverDto.driverId,
-               status: RideStatus.DRIVER_ACCEPTED, // Statut mis à jour
+               status: RideStatus.DRIVER_ACCEPTED,
             },
          )
-         this.deleteMessageFromQueue(acceptDriverDto.receiptHandle)
-         this.gateway.sendNotificationToClient(
-            acceptDriverDto.clientId,
-            acceptDriverDto.driverId,
+
+         const routeDriverToClient = await getRouteGoogleMap(
+            acceptDriverDto.latLng,
+            resultRide.pickUpLocation,
+            this.API_KEY,
          )
+         this.gateway.sendNotificationToClient(
+            resultRide.clientId,
+            acceptDriverDto.driverId,
+            this.parseDuration(routeDriverToClient.duration),
+            routeDriverToClient.polyline.encodedPolyline,
+         )
+
+         return {
+            encodedPolyline: routeDriverToClient.polyline.encodedPolyline,
+            distanceMeters: routeDriverToClient.distanceMeters,
+            estimatedDuration: this.parseDuration(routeDriverToClient.duration),
+         }
       } else {
-         throw new Error('Ride is not in PENDING status')
+         throw new Error('Ride is not in FINDING_DRIVER status')
       }
    }
-
-   private async deleteMessageFromQueue(receiptHandle: string): Promise<void> {
-      try {
-         const sqsClient = new SQSClient({
-            region: this.configService.get<string>('AWS_REGION'),
-         })
-         const deleteCommand = new DeleteMessageCommand({
-            QueueUrl: this.configService.get<string>('RIDE_QUEUE_URL'),
-            ReceiptHandle: receiptHandle,
-         })
-         await sqsClient.send(deleteCommand)
-         console.log('Message deleted from SQS.')
-      } catch (error) {
-         console.error('Failed to delete message from SQS:', error.message)
+   private parseDuration(durationStr: string): number {
+      if (typeof durationStr === 'string' && /^[0-9]+s$/.test(durationStr)) {
+         return parseInt(durationStr.slice(0, -1), 10)
+      } else {
+         throw new Error(
+            "Invalid duration format. Expected a string ending with 's'.",
+         )
       }
    }
 }
