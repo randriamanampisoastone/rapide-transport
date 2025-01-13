@@ -30,24 +30,24 @@ export class CreateItineraryService implements OnModuleInit {
 
       const pricingRules = {
          moto: {
-            baseFare: 1000, // Tarif de base
-            perKmRate: 3000, // Tarif par kilomètre
-            perMinuteRate: 500, // Tarif par minute
-            minFare: 5000, // Tarif minimum
+            baseFare: 1800, // Tarif de base
+            perKmRate: 1350, // Tarif par kilomètre
+            perMinuteRate: 540, // Tarif par minute
+            minFare: 4000, // Tarif minimum
             peakHourRate: 1.05, // Augmentation de 5% pendant les heures de pointe
          },
          liteCar: {
-            baseFare: 1500,
-            perKmRate: 3500,
-            perMinuteRate: 700,
+            baseFare: 2500,
+            perKmRate: 2300,
+            perMinuteRate: 920,
             minFare: 6000,
             peakHourRate: 1.08, // Augmentation de 8% pendant les heures de pointe
          },
          premiumCar: {
-            baseFare: 2000,
-            perKmRate: 4500,
+            baseFare: 3000,
+            perKmRate: 2500,
             perMinuteRate: 1000,
-            minFare: 10000,
+            minFare: 7000,
             peakHourRate: 1.1, // Augmentation de 10% pendant les heures de pointe
          },
       }
