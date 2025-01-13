@@ -72,6 +72,7 @@ const RideSchema = new Schema(
          type: Number,
          required: false,
          validate: (value: number) => value >= 0, // Durée réelle positive ou nulle
+         default: 0,
       },
       driverId: {
          type: String,
@@ -90,6 +91,7 @@ const RideSchema = new Schema(
          type: Number,
          required: false, // Champ facultatif
          validate: (value: number) => value >= 0, // Prix réel positif ou nul
+         default: 0,
       },
       estimatedPrice: {
          type: Object,

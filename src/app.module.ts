@@ -8,7 +8,7 @@ import { RedisModule } from './redis/redis.module'
 import { PrismaModule } from './prisma/prisma.module'
 import { UserModule } from './user/user.module'
 import { CognitoModule } from '@nestjs-cognito/core'
-import { CreateRideModule } from './ride/create-ride.module'
+import { RideModule } from './ride/ride.module'
 import { GatewayModule } from './gateway/gatway.module'
 
 @Module({
@@ -82,7 +82,7 @@ import { GatewayModule } from './gateway/gatway.module'
       RedisModule,
       PrismaModule,
       UserModule,
-      CreateRideModule,
+      RideModule,
       GatewayModule,
    ],
    controllers: [AppController],
