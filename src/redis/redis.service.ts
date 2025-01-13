@@ -71,4 +71,8 @@ export class RedisService implements OnModuleInit {
          ttlSeconds ?? this.REDIS_TTL_SECONDS,
       )
    }
+
+   async keys(pattern: string) {
+      return await this.client.keys(pattern)
+   }
 }
