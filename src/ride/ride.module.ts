@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { CreateRideController } from './create-ride.controller'
+import { RideController } from './ride.controller'
 import { CreateItineraryService } from './create-itinerary.service'
 import { RedisService } from 'src/redis/redis.service'
 import { DynamooseModule } from 'nestjs-dynamoose'
@@ -10,10 +10,11 @@ import { FindDriverService } from './find-driver.service'
 import { GatewayModule } from 'src/gateway/gatway.module'
 import { AcceptRideService } from './accept-driver.service'
 import { StartRideService } from './start-ride.service'
+import { LocationService } from 'src/location/location.service'
 
 @Module({
    imports: [DynamooseModule.forFeature([RideModel]), GatewayModule],
-   controllers: [CreateRideController],
+   controllers: [RideController],
    providers: [
       CreateItineraryService,
       CreateRideService,
@@ -21,6 +22,7 @@ import { StartRideService } from './start-ride.service'
       FindDriverService,
       RedisService,
       StartRideService,
+      LocationService
    ],
 })
 export class RideModule {}

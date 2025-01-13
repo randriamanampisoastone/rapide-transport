@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import { InjectModel, Model } from 'nestjs-dynamoose'
 import { Gateway } from 'src/gateway/gateway'
 import { RideData, RideDataKey, RideStatus } from 'interfaces/ride'
+import { LocationService } from 'src/location/location.service'
 
 @Injectable()
 export class FindDriverService implements OnModuleInit, OnModuleDestroy {
@@ -13,6 +14,7 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
       private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly configService: ConfigService,
       private readonly gateway: Gateway,
+      private readonly locationService: LocationService
    ) {}
 
    onModuleInit() {
@@ -46,7 +48,10 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
       }
    }
 
-   private notifyDrivers(ride: RideData & { rideId: string }): void {
-      this.gateway.sendNotificationToDriver(ride)
+   private async notifyDrivers(ride: RideData & { rideId: string }): Promise<void> {
+      const drivers = await this.locationService.getDriversNearby(ride.pickUpLocation)
+      drivers.forEach((driver) => {
+         this.gateway.sendNotificationToDriver(ride, driver.driverId)
+      })
    }
 }

@@ -4,6 +4,7 @@ import { ClientRole, UpdateLocationInterface } from './geolocation.interface'
 import { RedisService } from 'src/redis/redis.service'
 import { InjectModel, Model } from 'nestjs-dynamoose'
 import { GeolocationData } from './Model/geolocation.model'
+import { LocationService } from 'src/location/location.service'
 
 @Injectable()
 export class GeolocationService {
@@ -11,6 +12,7 @@ export class GeolocationService {
       private readonly redisService: RedisService,
       @InjectModel('Geolocation')
       private geolocationModel: Model<GeolocationData, string>,
+      private readonly locationService: LocationService,
    ) {}
 
    async handleUpdateClientLocation(
@@ -36,12 +38,7 @@ export class GeolocationService {
       client: Socket,
    ) {
       if (data.isAvailable) {
-         // await this.redisService.addGeoLocation(
-         //    'DriverGroup',
-         //    data.latLng.longitude,
-         //    data.latLng.latitude,
-         //    client.data.user.sub,
-         // )
+         await this.locationService.addDriverLocation(data.latLng, data.driverId, 10)
       } else {
          server.to(data.clientId).emit('driverLocation', {
             latitude: data.latLng.latitude,

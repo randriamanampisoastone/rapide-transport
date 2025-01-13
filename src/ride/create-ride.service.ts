@@ -132,6 +132,12 @@ export class CreateRideService implements OnModuleInit {
             }
          }
 
+         // inject into redis
+         this.redisService.set(
+            rideData.rideId,
+            JSON.stringify({ startTime: Date.now(), ...rideData }),
+            rideData.estimatedDuration + 3600 * 2,
+         )
          const result = await this.sendRideDataBase(rideData)
          await this.sendMessageToQueue(result.rideId, result.createdAt)
          return result
