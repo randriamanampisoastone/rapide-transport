@@ -9,6 +9,7 @@ import { FindDriverService } from './find-driver.service'
 
 import { GatewayModule } from 'src/gateway/gatway.module'
 import { AcceptRideService } from './accept-driver.service'
+import { StartRideService } from './start-ride.service'
 
 @Module({
    imports: [DynamooseModule.forFeature([RideModel]), GatewayModule],
@@ -19,6 +20,7 @@ import { AcceptRideService } from './accept-driver.service'
       AcceptRideService,
       FindDriverService,
       RedisService,
+      StartRideService,
    ],
 })
-export class CreateRideModule {}
+export class RideModule {}
