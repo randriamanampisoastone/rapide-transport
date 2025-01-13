@@ -6,7 +6,7 @@ import { Authorization, CognitoUser } from '@nestjs-cognito/auth'
 import { AcceptDriverDto, AcceptRideService } from './accept-driver.service'
 
 @Controller('ride')
-export class CreateRideController {
+export class RideController {
    constructor(
       private readonly createItineraryService: CreateItineraryService,
       private readonly createRideService: CreateRideService,

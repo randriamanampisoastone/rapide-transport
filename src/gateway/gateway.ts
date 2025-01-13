@@ -16,6 +16,10 @@ import {
    UpdateLocationInterface,
 } from './geolocation/geolocation.interface'
 import { GeolocationService } from './geolocation/geolocation.service'
+import { CancelRideService } from 'src/ride/cancel-ride.service'
+import { ComplitRideService } from 'src/ride/complit-ride.service'
+import { ClientRideStatusService } from 'src/ride/client-ride-status.service'
+import { CalculatePriceService } from 'src/ride/calculate-price.service'
 
 @Injectable()
 @WebSocketGateway({ cors: true })
@@ -54,6 +58,10 @@ export class Gateway
    constructor(
       private readonly cognitoWebSocketService: CognitoWebSocketService,
       private readonly geolocationService: GeolocationService,
+      private readonly cancelRideService: CancelRideService,
+      private readonly complitRideService: ComplitRideService,
+      private readonly clientRideStatusService: ClientRideStatusService,
+      private readonly calculePriceService: CalculatePriceService,
    ) {}
 
    afterInit(server: Server) {
@@ -147,8 +155,8 @@ export class Gateway
       )
    }
 
-   sendNotificationToDriver(payload: any) {
-      this.server.emit('newRide', payload)
+   sendNotificationToDriver(payload: any, driverId: string) {
+      this.server.to(driverId).emit('newRide', payload)
    }
    sendNotificationToClient(
       clientId: string,
@@ -161,5 +169,36 @@ export class Gateway
          estimatedDuration,
          encodedPolyline,
       })
+   }
+
+   @SubscribeMessage('cancelRide')
+   async handleCancelRide(@MessageBody() data: { rideId: string }) {
+      await this.cancelRideService.cancelRide(data.rideId)
+   }
+
+   @SubscribeMessage('compliteRide')
+   async handleComplitRide(@MessageBody() data: { rideId: string }) {
+      await this.complitRideService.complitRide(data.rideId)
+   }
+
+   @SubscribeMessage('clientGiveUpRide')
+   async handleClientGiveUpRide(@MessageBody() data: { rideId: string }) {
+      await this.clientRideStatusService.clientGiveUpRide(data.rideId)
+   }
+
+   @SubscribeMessage('clientNotFoundRide')
+   async handleClientNotFoundRide(@MessageBody() data: { rideId: string }) {
+      await this.clientRideStatusService.clientNotFoundRide(data.rideId)
+   }
+
+   @SubscribeMessage('calculePrice')
+   async calculePrice(@MessageBody() data: { rideId: string, clientId?: string, driverId?: string }) {
+      await this.calculePriceService.calculateRealTimePrice(data.rideId)
+      if (data.clientId) {
+         this.server.to(data.clientId).emit('calculePrice', {})
+      }
+      else {
+         this.server.to(data.driverId).emit('calculePrice', {})
+      }
    }
 }
