@@ -1,9 +1,5 @@
-import { VehiclePrices } from './price'
-
-export interface LatLng {
-   latitude: number
-   longitude: number
-}
+import { LatLng } from './location.interface'
+import { VehiclePrices } from './price.interface'
 
 export interface ItineraryData {
    prices: VehiclePrices

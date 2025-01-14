@@ -2,8 +2,8 @@ import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectModel, Model } from 'nestjs-dynamoose'
 import { Gateway } from 'src/gateway/gateway'
-import { RideData, RideDataKey, RideStatus } from 'interfaces/ride'
-import { LocationService } from 'src/location/location.service'
+import { RideData, RideDataKey, RideStatus } from 'interfaces/ride.interface'
+import { RedisService } from 'src/redis/redis.service'
 
 @Injectable()
 export class FindDriverService implements OnModuleInit, OnModuleDestroy {
@@ -14,16 +14,19 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
       private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly configService: ConfigService,
       private readonly gateway: Gateway,
-      private readonly locationService: LocationService
+      private readonly redisService: RedisService,
    ) {}
 
    onModuleInit() {
-      const intervalInSeconds =
-         this.configService.get<number>('SCAN_INTERVAL') || 5
+      const intervalInSeconds = this.configService.get<number>('SCAN_INTERVAL')
+      if (!intervalInSeconds || intervalInSeconds <= 0) {
+         throw new Error('Invalid SCAN_INTERVAL configuration')
+      }
 
-      this.intervalId = setInterval(async () => {
-         await this.scanAndNotifyDrivers()
-      }, intervalInSeconds * 1000)
+      this.intervalId = setInterval(
+         () => this.scanAndNotifyDrivers(),
+         intervalInSeconds * 1000,
+      )
    }
 
    onModuleDestroy() {
@@ -32,26 +35,58 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
       }
    }
 
-   private async scanAndNotifyDrivers() {
+   private async scanAndNotifyDrivers(): Promise<void> {
       try {
-         console.log('Scanning for available rides...')
          const rides = await this.rideModel
             .scan('status')
             .eq(RideStatus.FINDING_DRIVER)
             .exec()
 
-         rides.forEach((ride) => {
-            this.notifyDrivers(ride)
-         })
+         if (rides.length === 0) {
+            console.log('No rides found requiring drivers.')
+            return
+         }
+         console.log(`Found ${rides.length} rides requiring drivers.`)
+
+         await Promise.all(rides.map((ride) => this.notifyDrivers(ride)))
       } catch (error) {
-         console.error('Error scanning and notifying drivers:', error.message)
+         console.error(
+            'Error during scanAndNotifyDrivers:',
+            error.message,
+            error.stack,
+         )
       }
    }
 
-   private async notifyDrivers(ride: RideData & { rideId: string }): Promise<void> {
-      const drivers = await this.locationService.getDriversNearby(ride.pickUpLocation)
-      drivers.forEach((driver) => {
-         this.gateway.sendNotificationToDriver(ride, driver.driverId)
-      })
+   private async notifyDrivers(
+      ride: RideData & { rideId: string },
+   ): Promise<void> {
+      try {
+         const drivers = await this.redisService.getDriversNearby(
+            ride.pickUpLocation,
+         )
+         console.log(`Drivers  ${drivers.length} found`)
+
+         if (!drivers || drivers.length === 0) {
+            console.log(`No drivers available for ride ID: ${ride.rideId}`)
+            return
+         }
+
+         await Promise.all(
+            drivers.map((driver) =>
+               this.gateway.sendNotificationToDriver(
+                  ride,
+                  driver.driverProfileId,
+               ),
+            ),
+         )
+
+         // console.log(`Notifications sent for ride ID: ${ride.rideId}`)
+      } catch (error) {
+         console.error(
+            `Error notifying drivers for ride ID ${ride.rideId}:`,
+            error.message,
+         )
+      }
    }
 }

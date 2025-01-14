@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { RideData, RideDataKey } from 'interfaces/ride'
+import { RideData, RideDataKey } from 'interfaces/ride.interface'
 import { InjectModel, Model } from 'nestjs-dynamoose'
 
 @Injectable()

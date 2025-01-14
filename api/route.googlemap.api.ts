@@ -1,34 +1,25 @@
 import axios from 'axios'
+import { GOOGLE_DIRECTION_COMPUTE_ROUTE } from 'constants/api.constant'
+import { LatLng } from 'interfaces/location.interface'
 
-interface LatLng {
-   latitude: number
-   longitude: number
-}
-
-export const getRouteGoogleMap = async (
-   origin: LatLng,
-   destination: LatLng,
-   API_KEY: string,
-) => {
-   const url = 'https://routes.googleapis.com/directions/v2:computeRoutes'
-
+export const getRouteGoogleMap = async (pickUp: LatLng, dropOff: LatLng) => {
    try {
       const response = await axios.post(
-         url,
+         GOOGLE_DIRECTION_COMPUTE_ROUTE,
          {
             origin: {
                location: {
                   latLng: {
-                     latitude: origin.latitude,
-                     longitude: origin.longitude,
+                     latitude: pickUp.latitude,
+                     longitude: pickUp.longitude,
                   },
                },
             },
             destination: {
                location: {
                   latLng: {
-                     latitude: destination.latitude,
-                     longitude: destination.longitude,
+                     latitude: dropOff.latitude,
+                     longitude: dropOff.longitude,
                   },
                },
             },
@@ -43,7 +34,7 @@ export const getRouteGoogleMap = async (
          {
             headers: {
                'Content-Type': 'application/json',
-               'X-Goog-Api-Key': API_KEY,
+               'X-Goog-Api-Key': process.env.GOOGLE_MAP_API_KEY,
                'X-Goog-FieldMask':
                   'routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline',
             },

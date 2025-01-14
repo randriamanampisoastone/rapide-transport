@@ -2,19 +2,19 @@ import { Injectable, OnModuleInit } from '@nestjs/common'
 import { InjectModel, Model } from 'nestjs-dynamoose'
 import { ConfigService } from '@nestjs/config'
 import { Gateway } from 'src/gateway/gateway'
-import { RideData, RideDataKey, RideStatus } from 'interfaces/ride'
-import { getRouteGoogleMap } from 'api/route.googlemap'
-import { LatLng } from 'interfaces/itinerary'
+import { RideData, RideDataKey, RideStatus } from 'interfaces/ride.interface'
+import { getRouteGoogleMap } from 'api/route.googlemap.api'
+import { LatLng } from 'interfaces/location.interface'
 
 export interface AcceptDriverDto {
-   driverId: string
+   driverProfileId: string
    rideId: string
    latLng: LatLng
 }
 
 @Injectable()
 export class AcceptRideService implements OnModuleInit {
-   private API_KEY = ''
+   private GOOGLE_MAP_API_KEY = ''
    constructor(
       @InjectModel('Ride')
       private readonly rideModel: Model<RideData, RideDataKey>,
@@ -22,9 +22,10 @@ export class AcceptRideService implements OnModuleInit {
       private readonly gateway: Gateway,
    ) {}
    onModuleInit() {
-      this.API_KEY = this.configService.get<string>('GOOGLE_MAP_API_KEY')
+      this.GOOGLE_MAP_API_KEY =
+         this.configService.get<string>('GOOGLE_MAP_API_KEY')
 
-      if (!this.API_KEY) {
+      if (!this.GOOGLE_MAP_API_KEY) {
          throw new Error('Google Maps API Key is missing!')
       }
    }
@@ -42,7 +43,7 @@ export class AcceptRideService implements OnModuleInit {
                rideId: acceptDriverDto.rideId,
             },
             {
-               driverId: acceptDriverDto.driverId,
+               driverProfileId: acceptDriverDto.driverProfileId,
                status: RideStatus.DRIVER_ACCEPTED,
             },
          )
@@ -50,11 +51,10 @@ export class AcceptRideService implements OnModuleInit {
          const routeDriverToClient = await getRouteGoogleMap(
             acceptDriverDto.latLng,
             resultRide.pickUpLocation,
-            this.API_KEY,
          )
          this.gateway.sendNotificationToClient(
-            resultRide.clientId,
-            acceptDriverDto.driverId,
+            resultRide.clientProfileId,
+            acceptDriverDto.driverProfileId,
             this.parseDuration(routeDriverToClient.duration),
             routeDriverToClient.polyline.encodedPolyline,
          )

@@ -1,34 +1,25 @@
-import { Injectable, OnModuleInit } from '@nestjs/common'
-import { getRouteGoogleMap } from 'api/route.googlemap'
-import { ConfigService } from '@nestjs/config'
+import { Injectable } from '@nestjs/common'
+import { getRouteGoogleMap } from 'api/route.googlemap.api'
+
 import { CreateItineraryDto } from './dto/create-ride.dto'
 import { RedisService } from 'src/redis/redis.service'
-import { ItineraryData } from 'interfaces/itinerary'
+import { ItineraryData } from 'interfaces/itinerary.interface'
 import { calculateEstimatedPrices } from 'utils/price.util'
 import { parseDuration } from 'utils/time.util'
+import { ITINERARY_PREFIX } from 'constants/redis.constant'
 
 @Injectable()
-export class CreateItineraryService implements OnModuleInit {
-   private API_KEY = ''
-
-   constructor(
-      private readonly configService: ConfigService,
-      private readonly redisService: RedisService,
-   ) {}
-
-   onModuleInit() {
-      this.API_KEY = this.configService.get<string>('GOOGLE_MAP_API_KEY')
-   }
+export class CreateItineraryService {
+   constructor(private readonly redisService: RedisService) {}
 
    async createItinerary(
       createItineraryDto: CreateItineraryDto,
-      clientId: string,
+      clientProfileId: string,
    ): Promise<ItineraryData> {
       try {
          const route = await getRouteGoogleMap(
             createItineraryDto.pickUpLocation,
             createItineraryDto.dropOffLocation,
-            this.API_KEY,
          )
          const prices = calculateEstimatedPrices(
             route.distanceMeters,
@@ -38,7 +29,7 @@ export class CreateItineraryService implements OnModuleInit {
          const { duration, polyline, ...routeRest } = route
 
          this.redisService.set(
-            `itinerary:${clientId}`,
+            `${ITINERARY_PREFIX + clientProfileId}`,
             JSON.stringify({
                ...routeRest,
                encodedPolyline: polyline.encodedPolyline,

@@ -11,6 +11,9 @@ CREATE TYPE "ProfileStatus" AS ENUM ('ACTIVE', 'PENDING', 'INACTIVE', 'SUSPENDED
 CREATE TYPE "VehicleRole" AS ENUM ('RIDE', 'RENT', 'EXPRESS', 'DELIVERY');
 
 -- CreateEnum
+CREATE TYPE "VehicleType" AS ENUM ('MOTO', 'LITE_CAR', 'PREMIUM_CAR');
+
+-- CreateEnum
 CREATE TYPE "PhoneNumberStatus" AS ENUM ('VERIFIED', 'UNVERIFIED');
 
 -- CreateEnum
@@ -98,8 +101,8 @@ CREATE TABLE "AdminProfile" (
 -- CreateTable
 CREATE TABLE "Vehicle" (
     "vehicleId" TEXT NOT NULL,
+    "vehicleType" "VehicleType" NOT NULL,
     "vehicleModel" TEXT NOT NULL,
-    "vehicleType" TEXT NOT NULL,
     "vehicleMarque" TEXT NOT NULL,
     "vehiclePlace" INTEGER NOT NULL,
     "vehicleRegistrationNumber" TEXT,
@@ -426,7 +429,7 @@ CREATE TABLE "MobilePaymentAccount" (
 CREATE TABLE "AccountBalance" (
     "accountBalanceId" TEXT NOT NULL,
     "balance" DOUBLE PRECISION NOT NULL DEFAULT 0,
-    "balanceStatus" "BalanceStatus" NOT NULL DEFAULT 'PENDING',
+    "balanceStatus" "BalanceStatus" NOT NULL DEFAULT 'ACTIVE',
     "clientProfileId" TEXT,
     "driverProfileId" TEXT,
     "providerProfileId" TEXT,

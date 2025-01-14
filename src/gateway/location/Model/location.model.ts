@@ -1,7 +1,7 @@
 import { Schema } from 'dynamoose'
 import { ModelDefinition } from 'nestjs-dynamoose'
 
-const GeolocationSchema = new Schema(
+const LocationSchema = new Schema(
    {
       geolocationId: {
          type: String,
@@ -37,20 +37,11 @@ const GeolocationSchema = new Schema(
    },
 )
 
-export const GeolocationModel: ModelDefinition = {
-   name: 'Geolocation',
-   schema: GeolocationSchema,
+export const LocationModel: ModelDefinition = {
+   name: 'Location',
+   schema: LocationSchema,
    options: {
-      tableName: 'Geolocation',
+      tableName: 'Location',
       create: true,
    },
-}
-
-export interface GeolocationData {
-   userId: string
-   userGroup: string
-   location: {
-      longitude: number
-      latitude: number
-   }
 }

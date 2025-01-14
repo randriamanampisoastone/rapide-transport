@@ -17,11 +17,13 @@ export class RideController {
    @Post('create-itinerary')
    createItinerary(
       @Body() createItineraryDto: CreateItineraryDto,
-      @CognitoUser('sub') clientId,
+      @CognitoUser('sub') clientProfileId,
    ) {
+      console.log('ICIII')
+
       return this.createItineraryService.createItinerary(
          createItineraryDto,
-         clientId,
+         clientProfileId,
       )
    }
 
@@ -29,9 +31,9 @@ export class RideController {
    @Post('create-ride')
    createRide(
       @Body() createRideDto: CreateRideDto,
-      @CognitoUser('sub') clientId,
+      @CognitoUser('sub') clientProfileId,
    ) {
-      return this.createRideService.createRide(createRideDto, clientId)
+      return this.createRideService.createRide(createRideDto, clientProfileId)
    }
 
    @Get('find-ride-by-id')

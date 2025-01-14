@@ -1,4 +1,4 @@
-import { VehiclePrices } from 'interfaces/price'
+import { VehiclePrices } from 'interfaces/price.interface'
 
 export const calculateEstimatedPrices = (
    distance: number,

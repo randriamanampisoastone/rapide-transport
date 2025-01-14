@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common'
-import { RideData, RideDataKey, RideStatus } from 'interfaces/ride'
+import { RideData, RideDataKey, RideStatus } from 'interfaces/ride.interface'
 import { InjectModel, Model } from 'nestjs-dynamoose'
 import { RedisService } from 'src/redis/redis.service'
 
 interface StartRideDto {
-   driverId: string
+   driverProfileId: string
    rideId: string
 }
 
@@ -13,13 +13,13 @@ export class StartRideService {
    constructor(
       @InjectModel('Ride')
       private readonly rideModel: Model<RideData, RideDataKey>,
-      private redisService: RedisService
+      private redisService: RedisService,
    ) {}
    startRide(startRideDto: StartRideDto) {
       return this.rideModel.update(
          { rideId: startRideDto.rideId },
          {
-            driverId: startRideDto.driverId,
+            driverProfileId: startRideDto.driverProfileId,
             status: RideStatus.ON_RIDE,
          },
       )

@@ -14,7 +14,7 @@ import { CognitoError } from 'errors/cognito.error'
 
 @Injectable()
 export class ConfirmSignUpService implements OnModuleInit {
-   private clientId: string = ''
+   private clientProfileId: string = ''
 
    constructor(
       @InjectCognitoIdentityProvider()
@@ -23,12 +23,12 @@ export class ConfirmSignUpService implements OnModuleInit {
    ) {}
 
    onModuleInit() {
-      this.clientId = this.configService.get<string>('COGNITO_CLIENT_ID')
+      this.clientProfileId = this.configService.get<string>('COGNITO_CLIENT_ID')
    }
 
    async confirmSignUp(confirmSignUpDto: ConfirmSignUpDto): Promise<void> {
       const params: ConfirmSignUpCommandInput = {
-         ClientId: this.clientId,
+         ClientId: this.clientProfileId,
          Username: confirmSignUpDto.email,
          ConfirmationCode: confirmSignUpDto.confirmationCode,
       }
@@ -43,7 +43,7 @@ export class ConfirmSignUpService implements OnModuleInit {
       resendEmailConfirmationCodeDto: ResendEmailConfirmationCodeDto,
    ): Promise<void> {
       const params: ResendConfirmationCodeCommandInput = {
-         ClientId: this.clientId,
+         ClientId: this.clientProfileId,
          Username: resendEmailConfirmationCodeDto.email,
       }
 

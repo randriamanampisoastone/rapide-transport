@@ -44,16 +44,22 @@ export class FindProfileController {
    @Authorization({
       allowedGroups: ['DriverGroup'],
    })
-   async driverFindClient(@Query('clientId') clientId: string) {
-      return await this.findClientProfileService.findProfileById(clientId)
+   async driverFindClient(@Query('clientProfileId') clientProfileId: string) {
+      return await this.findClientProfileService.findProfileById(
+         clientProfileId,
+      )
    }
 
    @Get('client-find-driver-by-id')
    @Authorization({
       allowedGroups: ['ClientGroup'],
    })
-   async clientFindDriver(@Query('driverId') driverId: string) {
-      return await this.findDriverProfileService.findProfileById(driverId)
+   async clientFindDriver(@Query('driverProfileId') driverProfileId: string) {
+      console.log('ICIIII', driverProfileId)
+
+      return await this.findDriverProfileService.findProfileById(
+         driverProfileId,
+      )
    }
 
    @Get('by-id')
@@ -71,8 +77,6 @@ export class FindProfileController {
       @Query('id') id: string,
       @Query('role') role: string,
    ) {
-      
-
       const group = groups[0]
 
       switch (group) {

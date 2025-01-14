@@ -11,15 +11,14 @@ import {
 } from '@nestjs/websockets'
 import { CognitoWebSocketService } from 'src/cognito/cognito.websocket.service'
 import { Socket, Server } from 'socket.io'
-import {
-   ClientRole,
-   UpdateLocationInterface,
-} from './geolocation/geolocation.interface'
-import { GeolocationService } from './geolocation/geolocation.service'
+
 import { CancelRideService } from 'src/ride/cancel-ride.service'
 import { ComplitRideService } from 'src/ride/complit-ride.service'
 import { ClientRideStatusService } from 'src/ride/client-ride-status.service'
 import { CalculatePriceService } from 'src/ride/calculate-price.service'
+import { ClientRole } from 'interfaces/user.inteface'
+import { LocationService } from './location/location.service'
+import { UpdateLocationInterface } from 'interfaces/location.interface'
 
 @Injectable()
 @WebSocketGateway({ cors: true })
@@ -57,7 +56,7 @@ export class Gateway
 
    constructor(
       private readonly cognitoWebSocketService: CognitoWebSocketService,
-      private readonly geolocationService: GeolocationService,
+      private readonly locationService: LocationService,
       private readonly cancelRideService: CancelRideService,
       private readonly complitRideService: ComplitRideService,
       private readonly clientRideStatusService: ClientRideStatusService,
@@ -107,7 +106,7 @@ export class Gateway
       @MessageBody() data: UpdateLocationInterface,
       @ConnectedSocket() client: Socket,
    ) {
-      await this.geolocationService.handleUpdateDriverLocation(
+      await this.locationService.handleUpdateDriverLocation(
          this.server,
          data,
          client,
@@ -115,17 +114,19 @@ export class Gateway
    }
 
    @SubscribeMessage('driverArrived')
-   async handleDriverArrived(@MessageBody() data: { clientId: string }) {
-      this.server.to(data.clientId).emit('driverArrived', {})
+   async handleDriverArrived(@MessageBody() data: { clientProfileId: string }) {
+      this.server.to(data.clientProfileId).emit('driverArrived', {})
    }
    @SubscribeMessage('startRide')
-   async handleStartRide(@MessageBody() data: { clientId: string }) {
-      this.server.to(data.clientId).emit('startRide', {})
+   async handleStartRide(@MessageBody() data: { clientProfileId: string }) {
+      this.server.to(data.clientProfileId).emit('startRide', {})
    }
 
    @SubscribeMessage('arrivedDestination')
-   async handleArrivedDestination(@MessageBody() data: { clientId: string }) {
-      this.server.to(data.clientId).emit('arrivedDestination', {})
+   async handleArrivedDestination(
+      @MessageBody() data: { clientProfileId: string },
+   ) {
+      this.server.to(data.clientProfileId).emit('arrivedDestination', {})
    }
 
    @SubscribeMessage('updateDriverLocationDataBase')
@@ -137,10 +138,7 @@ export class Gateway
       if (!validation) return
 
       const { user } = validation
-      await this.geolocationService.handleUpdateDriverLocationDataBase(
-         data,
-         user,
-      )
+      await this.locationService.handleUpdateDriverLocationDataBase(data, user)
    }
 
    @SubscribeMessage('updateClientLocation')
@@ -148,24 +146,25 @@ export class Gateway
       @MessageBody() data: UpdateLocationInterface,
       @ConnectedSocket() client: Socket,
    ) {
-      await this.geolocationService.handleUpdateClientLocation(
+      await this.locationService.handleUpdateClientLocation(
          this.server,
          data,
          client,
       )
    }
 
-   sendNotificationToDriver(payload: any, driverId: string) {
-      this.server.to(driverId).emit('newRide', payload)
+   sendNotificationToDriver(payload: any, driverProfileId: string) {
+      this.server.to(driverProfileId).emit('newRide', payload)
    }
+
    sendNotificationToClient(
-      clientId: string,
-      driverId: string,
+      clientProfileId: string,
+      driverProfileId: string,
       estimatedDuration: number,
       encodedPolyline: string,
    ) {
-      this.server.to(clientId).emit('acceptedRide', {
-         driverId,
+      this.server.to(clientProfileId).emit('acceptedRide', {
+         driverProfileId,
          estimatedDuration,
          encodedPolyline,
       })
@@ -191,14 +190,20 @@ export class Gateway
       await this.clientRideStatusService.clientNotFoundRide(data.rideId)
    }
 
-   @SubscribeMessage('calculePrice')
-   async calculePrice(@MessageBody() data: { rideId: string, clientId?: string, driverId?: string }) {
-      await this.calculePriceService.calculateRealTimePrice(data.rideId)
-      if (data.clientId) {
-         this.server.to(data.clientId).emit('calculePrice', {})
-      }
-      else {
-         this.server.to(data.driverId).emit('calculePrice', {})
-      }
+   @SubscribeMessage('calculatePrice')
+   async calculePrice(
+      @MessageBody()
+      data: {
+         rideId: string
+         clientProfileId: string
+         driverProfileId: string
+      },
+   ) {
+      await this.calculePriceService.calculateRealTimePrice(
+         data.rideId,
+         data.clientProfileId,
+         data.driverProfileId,
+         this.server,
+      )
    }
 }

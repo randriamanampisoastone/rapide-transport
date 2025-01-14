@@ -6,14 +6,21 @@ import { DynamooseModule } from 'nestjs-dynamoose'
 import { RideModel } from './Model/ride.model'
 import { CreateRideService } from './create-ride.service'
 import { FindDriverService } from './find-driver.service'
-
 import { GatewayModule } from 'src/gateway/gatway.module'
 import { AcceptRideService } from './accept-driver.service'
 import { StartRideService } from './start-ride.service'
-import { LocationService } from 'src/location/location.service'
+import { CalculatePriceService } from './calculate-price.service'
+import { CancelRideService } from './cancel-ride.service'
+import { ComplitRideService } from './complit-ride.service'
+import { ClientRideStatusService } from './client-ride-status.service'
+import { LocationService } from 'src/gateway/location/location.service'
+import { LocationModel } from 'src/gateway/location/Model/location.model'
 
 @Module({
-   imports: [DynamooseModule.forFeature([RideModel]), GatewayModule],
+   imports: [
+      DynamooseModule.forFeature([LocationModel, RideModel]),
+      GatewayModule,
+   ],
    controllers: [RideController],
    providers: [
       CreateItineraryService,
@@ -22,7 +29,12 @@ import { LocationService } from 'src/location/location.service'
       FindDriverService,
       RedisService,
       StartRideService,
-      LocationService
+      LocationService,
+      CalculatePriceService,
+      CancelRideService,
+      ComplitRideService,
+      ClientRideStatusService,
+      CalculatePriceService,
    ],
 })
 export class RideModule {}

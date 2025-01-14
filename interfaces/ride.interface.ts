@@ -1,6 +1,6 @@
-import { VehicleType } from 'enums/vehicle'
-import { EstimatedPrice } from './price'
-import { LatLng } from './itinerary'
+import { VehicleType } from 'enums/vehicle.enum'
+import { EstimatedPrice } from './price.interface'
+import { LatLng } from './location.interface'
 
 export enum RideStatus {
    FINDING_DRIVER = 'FINDING_DRIVER',
@@ -20,7 +20,7 @@ export interface RideDataKey {
 
 export interface RideData {
    rideId: string
-   clientId: string
+   clientProfileId: string
    vehicleType: VehicleType
    distanceMeters: number
    encodedPolyline: string
@@ -28,11 +28,13 @@ export interface RideData {
    dropOffLocation: LatLng
    estimatedDuration: number
    realDuration?: number
-   driverId?: string
+   driverProfileId?: string
    vehicleId?: string
    realPrice?: number
    estimatedPrice: EstimatedPrice
    status?: RideStatus
+   startTimes?: number
+   endTimes?: number
    createdAt?: string
    updateAt?: string
 }

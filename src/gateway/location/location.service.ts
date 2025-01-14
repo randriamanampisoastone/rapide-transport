@@ -1,18 +1,20 @@
 import { Injectable } from '@nestjs/common'
 import { Server, Socket } from 'socket.io'
-import { ClientRole, UpdateLocationInterface } from './geolocation.interface'
-import { RedisService } from 'src/redis/redis.service'
 import { InjectModel, Model } from 'nestjs-dynamoose'
-import { GeolocationData } from './Model/geolocation.model'
-import { LocationService } from 'src/location/location.service'
+import {
+   LocationData,
+   UpdateLocationInterface,
+} from 'interfaces/location.interface'
+
+import { ClientRole } from 'interfaces/user.inteface'
+import { RedisService } from 'src/redis/redis.service'
 
 @Injectable()
-export class GeolocationService {
+export class LocationService {
    constructor(
+      @InjectModel('Location')
+      private locationModel: Model<LocationData, string>,
       private readonly redisService: RedisService,
-      @InjectModel('Geolocation')
-      private geolocationModel: Model<GeolocationData, string>,
-      private readonly locationService: LocationService,
    ) {}
 
    async handleUpdateClientLocation(
@@ -20,13 +22,13 @@ export class GeolocationService {
       data: UpdateLocationInterface,
       client: Socket,
    ) {
-      server.to(data.driverId).emit('clientLocation', {
+      server.to(data.driverProfileId).emit('clientLocation', {
          latitude: data.latLng.latitude,
          longitude: data.latLng.longitude,
          vehicleType: data.vehicleType,
       })
-      server.to(ClientRole.Admin).emit('driverLocation', {
-         driverId: client.data.user.sub,
+      server.to(ClientRole.Admin).emit('clientLocation', {
+         driverProfileId: client.data.user.sub,
          userGroup: 'ClientGroup',
          latLng: data.latLng,
       })
@@ -38,9 +40,12 @@ export class GeolocationService {
       client: Socket,
    ) {
       if (data.isAvailable) {
-         await this.locationService.addDriverLocation(data.latLng, data.driverId, 10)
+         await this.redisService.addDriverLocationToRedis(
+            data.latLng,
+            data.driverProfileId,
+         )
       } else {
-         server.to(data.clientId).emit('driverLocation', {
+         server.to(data.clientProfileId).emit('driverLocation', {
             latitude: data.latLng.latitude,
             longitude: data.latLng.longitude,
             vehicleType: data.vehicleType,
@@ -48,7 +53,7 @@ export class GeolocationService {
       }
 
       server.to(ClientRole.Admin).emit('driverLocation', {
-         driverId: client.data.user.sub,
+         driverProfileId: client.data.user.sub,
          userGroup: 'DriverGroup',
          latLng: data.latLng,
       })
@@ -60,7 +65,7 @@ export class GeolocationService {
    ) {
       const role = user['cognito:groups']?.[0]
       if (role === ClientRole.Driver) {
-         await this.geolocationModel.create({
+         await this.locationModel.create({
             userId: user.sub,
             userGroup: role,
             location: data.latLng,

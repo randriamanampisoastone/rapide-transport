@@ -18,7 +18,7 @@ import { CognitoError } from 'errors/cognito.error'
 
 @Injectable()
 export class SignInService implements OnModuleInit {
-   private clientId: string = ''
+   private clientProfileId: string = ''
 
    constructor(
       @InjectCognitoIdentityProvider()
@@ -27,13 +27,13 @@ export class SignInService implements OnModuleInit {
    ) {}
 
    onModuleInit() {
-      this.clientId = this.configService.get<string>('COGNITO_CLIENT_ID')
+      this.clientProfileId = this.configService.get<string>('COGNITO_CLIENT_ID')
    }
 
    async signIn(signInDto: SignInDto): Promise<SignInResponse> {
       const params: InitiateAuthCommandInput = {
          AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
-         ClientId: this.clientId,
+         ClientId: this.clientProfileId,
          AuthParameters: {
             USERNAME: signInDto.email,
             PASSWORD: signInDto.password,
@@ -58,7 +58,7 @@ export class SignInService implements OnModuleInit {
    ): Promise<RefreshTokenResponse> {
       const params: InitiateAuthCommandInput = {
          AuthFlow: AuthFlowType.REFRESH_TOKEN_AUTH,
-         ClientId: this.clientId,
+         ClientId: this.clientProfileId,
          AuthParameters: {
             REFRESH_TOKEN: refreshTokenDto.refreshToken,
          },

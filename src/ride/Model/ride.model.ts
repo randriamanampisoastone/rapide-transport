@@ -1,6 +1,6 @@
 import { Schema } from 'dynamoose'
-import { VehicleType } from 'enums/vehicle'
-import { RideStatus } from 'interfaces/ride'
+import { VehicleType } from 'enums/vehicle.enum'
+import { RideStatus } from 'interfaces/ride.interface'
 import { ModelDefinition } from 'nestjs-dynamoose'
 
 // Définition des différents statuts possibles pour une course
@@ -13,7 +13,7 @@ const RideSchema = new Schema(
          hashKey: true,
          required: true,
       },
-      clientId: {
+      clientProfileId: {
          type: String,
          required: true,
       },
@@ -74,7 +74,7 @@ const RideSchema = new Schema(
          validate: (value: number) => value >= 0, // Durée réelle positive ou nulle
          default: 0,
       },
-      driverId: {
+      driverProfileId: {
          type: String,
          required: false,
       },
@@ -108,6 +108,14 @@ const RideSchema = new Schema(
             },
          },
          required: true, // Champ estimé obligatoire
+      },
+      startTime: {
+         type: Number,
+         required: false,
+      },
+      endTime: {
+         type: Number,
+         required: false,
       },
    },
    {

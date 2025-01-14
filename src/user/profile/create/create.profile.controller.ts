@@ -18,8 +18,8 @@ export class CreateProfileController {
       private readonly createAdminProfileService: CreateAdminProfileService,
    ) {}
 
-   @Post('client')
    @Authorization({ allowedGroups: ['ClientGroup'] })
+   @Post('client')
    async createClientProfile(
       @CognitoUser('sub') clientProfileId,
       @CognitoUser('email') email,
@@ -32,8 +32,8 @@ export class CreateProfileController {
          clientProfileDto,
       )
    }
-   @Post('provider')
    @Authorization({ allowedGroups: ['ProviderGroup'] })
+   @Post('provider')
    async createProviderProfile(
       @CognitoUser('sub') providerProfileId,
       @CognitoUser('email') email,
@@ -47,8 +47,8 @@ export class CreateProfileController {
       )
    }
 
-   @Post('driver')
    @Authorization({ allowedGroups: ['DriverGroup'] })
+   @Post('driver')
    async createDriverProfile(
       @CognitoUser('sub') driverProfileId,
       @CognitoUser('email') email,
@@ -63,8 +63,8 @@ export class CreateProfileController {
          createClientProfileDto,
       )
    }
-   @Post('admin')
    @Authorization({ allowedGroups: ['AdminGroup'] })
+   @Post('admin')
    async createAdminProfile(
       @CognitoUser('sub') adminProfileId,
       @CognitoUser('email') email,

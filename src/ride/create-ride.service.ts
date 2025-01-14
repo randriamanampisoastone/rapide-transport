@@ -11,10 +11,11 @@ import { InjectModel, Model } from 'nestjs-dynamoose'
 import { DynamoDBError } from 'errors/dynamodb.error'
 import { SqsService } from '@ssut/nestjs-sqs'
 import { ConfigService } from '@nestjs/config'
-import { RideData, RideDataKey } from 'interfaces/ride'
-import { VehicleType } from 'enums/vehicle'
-import { ItineraryData } from 'interfaces/itinerary'
-import { EstimatedPrice } from 'interfaces/price'
+import { RideData, RideDataKey } from 'interfaces/ride.interface'
+import { VehicleType } from 'enums/vehicle.enum'
+import { ItineraryData } from 'interfaces/itinerary.interface'
+import { EstimatedPrice } from 'interfaces/price.interface'
+import { ITINERARY_PREFIX, RIDE_PREFIX } from 'constants/redis.constant'
 
 @Injectable()
 export class CreateRideService implements OnModuleInit {
@@ -54,22 +55,6 @@ export class CreateRideService implements OnModuleInit {
       }
    }
 
-   async sendMessageToQueue(rideId: string, timestamp: string) {
-      const messageBody = {
-         rideId,
-         timestamp,
-      }
-
-      try {
-         await this.sqsService.send(this.RIDE_QUEUE_NAME, {
-            id: rideId,
-            body: messageBody,
-         })
-      } catch (error) {
-         console.error('Error sending message to SQS:', error)
-      }
-   }
-
    async sendRideDataBase(data: RideData) {
       try {
          return await this.rideModel.create(data)
@@ -78,9 +63,11 @@ export class CreateRideService implements OnModuleInit {
       }
    }
 
-   async createRide(createRideDto: CreateRideDto, clientId: string) {
+   async createRide(createRideDto: CreateRideDto, clientProfileId: string) {
       try {
-         const itinerary = await this.redisService.get(`itinerary:${clientId}`)
+         const itinerary = await this.redisService.get(
+            `${ITINERARY_PREFIX + clientProfileId}`,
+         )
 
          let estimatedPrice: EstimatedPrice
          let rideData: RideData
@@ -95,7 +82,7 @@ export class CreateRideService implements OnModuleInit {
             )
             rideData = {
                rideId: crypto.randomUUID(),
-               clientId: clientId,
+               clientProfileId: clientProfileId,
                vehicleType: createRideDto.vehicleType,
                estimatedPrice,
                distanceMeters: itineraryData.distanceMeters,
@@ -109,7 +96,7 @@ export class CreateRideService implements OnModuleInit {
             const newItinerary =
                await this.createItineraryService.createItinerary(
                   createItineraryDto,
-                  clientId,
+                  clientProfileId,
                )
 
             // Get price based on vehicle type
@@ -121,7 +108,7 @@ export class CreateRideService implements OnModuleInit {
 
             rideData = {
                rideId: crypto.randomUUID(),
-               clientId: clientId,
+               clientProfileId: clientProfileId,
                vehicleType: createRideDto.vehicleType,
                estimatedPrice,
                distanceMeters: newItinerary.distanceMeters,
@@ -132,14 +119,13 @@ export class CreateRideService implements OnModuleInit {
             }
          }
 
-         // inject into redis
          this.redisService.set(
-            rideData.rideId,
+            ` ${RIDE_PREFIX + rideData.rideId}`,
             JSON.stringify({ startTime: Date.now(), ...rideData }),
             rideData.estimatedDuration + 3600 * 2,
          )
          const result = await this.sendRideDataBase(rideData)
-         await this.sendMessageToQueue(result.rideId, result.createdAt)
+
          return result
       } catch (error) {
          console.error('Error creating ride:', error)

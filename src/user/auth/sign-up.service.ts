@@ -13,7 +13,7 @@ import { CognitoError } from 'errors/cognito.error'
 
 @Injectable()
 export class SignUpService implements OnModuleInit {
-   private clientId: string = ''
+   private clientProfileId: string = ''
    private userPoolId: string = ''
 
    constructor(
@@ -23,13 +23,13 @@ export class SignUpService implements OnModuleInit {
    ) {}
 
    onModuleInit() {
-      this.clientId = this.configService.get<string>('COGNITO_CLIENT_ID')
+      this.clientProfileId = this.configService.get<string>('COGNITO_CLIENT_ID')
       this.userPoolId = this.configService.get<string>('COGNITO_USER_POOL_ID')
    }
 
    async signUpUser(email: string, password: string): Promise<string> {
       const params: SignUpCommandInput = {
-         ClientId: this.clientId,
+         ClientId: this.clientProfileId,
          Username: email,
          Password: password,
       }
