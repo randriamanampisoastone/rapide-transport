@@ -10,6 +10,7 @@ import { UserModule } from './user/user.module'
 import { CognitoModule } from '@nestjs-cognito/core'
 import { RideModule } from './ride/ride.module'
 import { GatewayModule } from './gateway/gatway.module'
+import { VehicleModule } from './vehicle/vehicle.module';
 
 @Module({
    imports: [
@@ -84,6 +85,7 @@ import { GatewayModule } from './gateway/gatway.module'
       UserModule,
       RideModule,
       GatewayModule,
+      VehicleModule,
    ],
    controllers: [AppController],
    providers: [],

@@ -4,6 +4,7 @@ import {
    CLIENT_LOCATION_PREFIX,
    DRIVER_LOCATION_PREFIX,
 } from 'constants/redis.constant'
+import { VehicleType } from 'enums/vehicle.enum'
 import { getDistance } from 'geolib'
 import { DriverLocationRedis } from 'interfaces/driver.interface'
 import { LatLng } from 'interfaces/location.interface'
@@ -54,12 +55,13 @@ export class RedisService implements OnModuleInit {
    async addDriverLocationToRedis(
       latLng: LatLng,
       driverProfileId: string,
+      vehicleType: VehicleType,
       ttl: number = this.REDIS_GEO_TTL_SECONDS,
    ) {
       try {
          await this.set(
             `${DRIVER_LOCATION_PREFIX + driverProfileId}`,
-            JSON.stringify(latLng),
+            JSON.stringify({ vehicleType, ...latLng }),
             ttl,
          )
       } catch (error) {
@@ -95,12 +97,16 @@ export class RedisService implements OnModuleInit {
                const driverLocation = driverLocations[index]
 
                if (driverLocation) {
+                  const data = JSON.parse(driverLocation)
                   const distance = getDistance(
                      {
                         latitude: latLng.latitude,
                         longitude: latLng.longitude,
                      },
-                     JSON.parse(driverLocation),
+                     {
+                        latitude: data.latitude,
+                        longitude: data.longitude,
+                     },
                   )
 
                   if (distance < radius) {
@@ -110,7 +116,11 @@ export class RedisService implements OnModuleInit {
                            '',
                         ),
                         distance,
-                        latLng: JSON.parse(driverLocation),
+                        latLng: {
+                           latitude: data.latitude,
+                           longitude: data.longitude,
+                        },
+                        vehicleType: data.vehicleType,
                      })
                   }
                }
@@ -142,12 +152,13 @@ export class RedisService implements OnModuleInit {
             const clientLocation = clientLocations[index]
 
             if (clientLocation) {
+               const data = JSON.parse(clientLocation)
                const distance = getDistance(
                   {
                      latitude: latLng.latitude,
                      longitude: latLng.longitude,
                   },
-                  JSON.parse(clientLocation),
+                  data,
                )
 
                if (distance < radius) {
@@ -157,7 +168,7 @@ export class RedisService implements OnModuleInit {
                         '',
                      ),
                      distance,
-                     latLng: JSON.parse(clientLocation),
+                     latLng: data,
                   })
                }
             }

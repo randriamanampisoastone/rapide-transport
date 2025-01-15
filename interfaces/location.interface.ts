@@ -1,3 +1,5 @@
+import { VehicleType } from 'enums/vehicle.enum'
+
 export interface LatLng {
    latitude: number
    longitude: number
@@ -12,6 +14,6 @@ export interface UpdateLocationInterface {
    latLng: LatLng
    clientProfileId?: string
    driverProfileId?: string
-   vehicleType?: string
+   vehicleType?: VehicleType
    isAvailable: boolean
 }

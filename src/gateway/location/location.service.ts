@@ -43,6 +43,7 @@ export class LocationService {
          await this.redisService.addDriverLocationToRedis(
             data.latLng,
             data.driverProfileId,
+            data.vehicleType,
          )
       } else {
          server.to(data.clientProfileId).emit('driverLocation', {
