@@ -56,7 +56,7 @@ export const calculateEstimatedPrices = (
             perMinuteRate * estimatedTimeInMinutes,
          minFare,
       )
-      let upperEstimate = lowerEstimate * 1
+      let upperEstimate = lowerEstimate * 1.06
 
       if (isPeakHour()) {
          lowerEstimate *= peakRate
@@ -104,9 +104,9 @@ export const calculateRealTimeCostByTime = (
    const currentTime = Date.now()
    const timeElapsed = currentTime - startTime
 
-   const perMinuteRate = (pricing.upper - pricing.lower) / estimatedDuration
+   const perSecondRate = (pricing.upper - pricing.lower) / estimatedDuration
 
-   let cost = pricing.lower + perMinuteRate * timeElapsed
+   let cost = pricing.lower + perSecondRate * (timeElapsed / 1000)
 
    cost = Math.max(pricing.lower, Math.min(pricing.upper, cost))
 

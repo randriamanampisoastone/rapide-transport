@@ -38,6 +38,15 @@ export class CreateItineraryService {
             }),
             120,
          )
+         console.log('route', {
+            prices: prices,
+            ...routeRest,
+            encodedPolyline: polyline.encodedPolyline,
+            estimatedDuration: parseDuration(duration),
+            pickUpLocation: createItineraryDto.pickUpLocation,
+            dropOffLocation: createItineraryDto.dropOffLocation,
+         })
+
          return {
             prices: prices,
             ...routeRest,

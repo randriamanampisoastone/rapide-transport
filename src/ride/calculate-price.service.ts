@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { RIDE_PREFIX } from 'constants/redis.constant'
 import { Server } from 'socket.io'
 import { RedisService } from 'src/redis/redis.service'
 import { calculateRealTimeCostByTime } from 'utils/price.util'
@@ -12,15 +13,20 @@ export class CalculatePriceService {
       driverProfileId: string,
       server: Server,
    ) {
-      const ride = await this.redisService.get(rideId)
+      const ride = await this.redisService.get(RIDE_PREFIX + rideId)
       const rideData = JSON.parse(ride)
+      console.log('Riiideee : ', rideData.estimatedPrice)
       rideData.realPrice = calculateRealTimeCostByTime(
-         rideData.startTimes,
+         rideData.startTime,
          rideData.estimatedPrice,
          rideData.estimatedDuration,
       )
-      await this.redisService.set(rideId, JSON.stringify(rideData))
+      console.log('Real price : ', rideData.realPrice)
 
+      // await this.redisService.set(
+      //    RIDE_PREFIX + rideId,
+      //    JSON.stringify(rideData),
+      // )
       server.to(clientProfileId).emit('calculatePrice', rideData.realPrice)
       server.to(driverProfileId).emit('calculatePrice', rideData.realPrice)
    }

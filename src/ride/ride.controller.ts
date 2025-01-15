@@ -19,8 +19,6 @@ export class RideController {
       @Body() createItineraryDto: CreateItineraryDto,
       @CognitoUser('sub') clientProfileId,
    ) {
-      console.log('ICIII')
-
       return this.createItineraryService.createItinerary(
          createItineraryDto,
          clientProfileId,

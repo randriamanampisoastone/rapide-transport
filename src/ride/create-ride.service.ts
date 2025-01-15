@@ -120,7 +120,7 @@ export class CreateRideService implements OnModuleInit {
          }
 
          this.redisService.set(
-            ` ${RIDE_PREFIX + rideData.rideId}`,
+            `${RIDE_PREFIX + rideData.rideId}`,
             JSON.stringify({ startTime: Date.now(), ...rideData }),
             rideData.estimatedDuration + 3600 * 2,
          )

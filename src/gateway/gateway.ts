@@ -199,6 +199,7 @@ export class Gateway
          driverProfileId: string
       },
    ) {
+
       await this.calculePriceService.calculateRealTimePrice(
          data.rideId,
          data.clientProfileId,
