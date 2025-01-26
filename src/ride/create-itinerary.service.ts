@@ -1,12 +1,17 @@
 import { Injectable } from '@nestjs/common'
 import { getRouteGoogleMap } from 'api/route.googlemap.api'
-
-import { CreateItineraryDto } from './dto/create-ride.dto'
 import { RedisService } from 'src/redis/redis.service'
 import { ItineraryData } from 'interfaces/itinerary.interface'
 import { calculateEstimatedPrices } from 'utils/price.util'
 import { parseDuration } from 'utils/time.util'
 import { ITINERARY_PREFIX } from 'constants/redis.constant'
+import { LatLng } from 'interfaces/location.interface'
+
+export interface CreateItineraryDto {
+   clientProfileId: string
+   pickUpLocation: LatLng
+   dropOffLocation: LatLng
+}
 
 @Injectable()
 export class CreateItineraryService {
@@ -14,47 +19,39 @@ export class CreateItineraryService {
 
    async createItinerary(
       createItineraryDto: CreateItineraryDto,
-      clientProfileId: string,
    ): Promise<ItineraryData> {
       try {
-         const route = await getRouteGoogleMap(
-            createItineraryDto.pickUpLocation,
-            createItineraryDto.dropOffLocation,
-         )
+         const clientProfileId = createItineraryDto.clientProfileId
+         const pickUpLocation = createItineraryDto.pickUpLocation
+         const dropOffLocation = createItineraryDto.dropOffLocation
+
+         const route = await getRouteGoogleMap(pickUpLocation, dropOffLocation)
+
+         const { duration, polyline, distanceMeters } = route
+         const estimatedDuration = parseDuration(duration)
+         const encodedPolyline = polyline.encodedPolyline
+
          const prices = calculateEstimatedPrices(
-            route.distanceMeters,
-            parseDuration(route.duration) / 60,
+            distanceMeters,
+            estimatedDuration,
          )
 
-         const { duration, polyline, ...routeRest } = route
-
-         this.redisService.set(
-            `${ITINERARY_PREFIX + clientProfileId}`,
-            JSON.stringify({
-               ...routeRest,
-               encodedPolyline: polyline.encodedPolyline,
-               prices: prices,
-               estimatedDuration: parseDuration(duration),
-            }),
-            120,
-         )
-         console.log('route', {
-            prices: prices,
-            ...routeRest,
-            encodedPolyline: polyline.encodedPolyline,
-            estimatedDuration: parseDuration(duration),
-            pickUpLocation: createItineraryDto.pickUpLocation,
-            dropOffLocation: createItineraryDto.dropOffLocation,
-         })
-
-         return {
-            prices: prices,
-            ...routeRest,
-            encodedPolyline: polyline.encodedPolyline,
-            estimatedDuration: parseDuration(duration),
-            pickUpLocation: createItineraryDto.pickUpLocation,
-            dropOffLocation: createItineraryDto.dropOffLocation,
+         const itineraryData: ItineraryData = {
+            pickUpLocation,
+            dropOffLocation,
+            encodedPolyline,
+            distanceMeters,
+            estimatedDuration,
+            prices,
          }
+
+         await this.redisService.set(
+            `${ITINERARY_PREFIX + clientProfileId}`,
+            JSON.stringify(itineraryData),
+            900, // 15 minutes
+         )
+
+         return itineraryData
       } catch (error) {
          throw error
       }

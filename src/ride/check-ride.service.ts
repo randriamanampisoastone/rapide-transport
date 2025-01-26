@@ -1,25 +1,35 @@
 import { Injectable } from '@nestjs/common'
 import { RIDE_PREFIX } from 'constants/redis.constant'
+import { RideStatus } from 'enums/ride.enum'
+import { RideData } from 'interfaces/ride.interface'
 import { RedisService } from 'src/redis/redis.service'
 
 @Injectable()
 export class CheckRideService {
    constructor(private readonly redisService: RedisService) {}
 
-   async checkClientRide(clientProfileId: string) {
+   async checkClientRide(clientProfileId: string): Promise<RideData> {
       try {
-         const rideKeys = await this.redisService.keys(`${RIDE_PREFIX}*`)
+         const ridesKey = await this.redisService.keys(`${RIDE_PREFIX}*`)
 
-         if (!rideKeys.length) {
+         if (!ridesKey.length) {
             return null
          }
 
-         const rideDataList = await this.redisService.mget(rideKeys)
+         const rideDataList = await this.redisService.mget(ridesKey)
 
          for (const rideData of rideDataList) {
             if (rideData) {
                const data = JSON.parse(rideData)
-               if (data.clientProfileId === clientProfileId) {
+               if (
+                  data.clientProfileId === clientProfileId &&
+                  data.status !==
+                     (RideStatus.STOPPED ||
+                        RideStatus.CLIENT_GIVE_UP ||
+                        RideStatus.COMPLETED ||
+                        RideStatus.CANCELLED ||
+                        RideStatus.ADMIN_CHECK)
+               ) {
                   return data
                }
             }
@@ -35,18 +45,22 @@ export class CheckRideService {
 
    async checkDriverRide(driverProfileId: string) {
       try {
-         const rideKeys = await this.redisService.keys(`${RIDE_PREFIX}*`)
+         const ridesKey = await this.redisService.keys(`${RIDE_PREFIX}*`)
 
-         if (!rideKeys.length) {
+         if (!ridesKey.length) {
             return null
          }
 
-         const rideDataList = await this.redisService.mget(rideKeys)
+         const rideDataList = await this.redisService.mget(ridesKey)
 
          for (const rideData of rideDataList) {
             if (rideData) {
                const data = JSON.parse(rideData)
-               if (data.driverProfileId === driverProfileId) {
+               if (
+                  data.driverProfileId === driverProfileId &&
+                  data.status !==
+                     (RideStatus.COMPLETED || RideStatus.ADMIN_CHECK)
+               ) {
                   return data
                }
             }

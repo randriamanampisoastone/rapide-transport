@@ -1,18 +1,8 @@
 import { VehicleType } from 'enums/vehicle.enum'
 import { EstimatedPrice } from './price.interface'
 import { LatLng } from './location.interface'
-
-export enum RideStatus {
-   FINDING_DRIVER = 'FINDING_DRIVER',
-   DRIVER_ACCEPTED = 'DRIVER_ACCEPTED',
-   DRIVER_ON_THE_WAY = 'DRIVER_ON_THE_WAY',
-   DRIVER_ARRIVED = 'DRIVER_ARRIVED',
-   CLIENT_NOT_FOUND = 'CLIENT_NOT_FOUND',
-   ON_RIDE = 'ON_RIDE',
-   CLIENT_GIVE_UP = 'CLIENT_GIVE_UP',
-   COMPLETED = 'COMPLETED',
-   CANCELLED = 'CANCELLED',
-}
+import { PaymentMethodType } from 'enums/payment.enum'
+import { RideStatus } from 'enums/ride.enum'
 
 export interface RideDataKey {
    rideId: string
@@ -21,20 +11,23 @@ export interface RideDataKey {
 export interface RideData {
    rideId: string
    clientProfileId: string
+   driverProfileId?: string
    vehicleType: VehicleType
-   distanceMeters: number
-   encodedPolyline: string
+   vehicleId?: string
+   paymentMethodType: PaymentMethodType
    pickUpLocation: LatLng
    dropOffLocation: LatLng
+   encodedPolyline: string
+   distanceMeters: number
    estimatedDuration: number
-   realDuration?: number
-   driverProfileId?: string
-   vehicleId?: string
-   realPrice?: number
    estimatedPrice: EstimatedPrice
+   realDuration?: number
+   realPrice?: number
    status?: RideStatus
-   startTimes?: number
-   endTimes?: number
+   note?: number
+   review?: string
+   startTime?: number
+   endTime?: number
    createdAt?: string
    updateAt?: string
 }

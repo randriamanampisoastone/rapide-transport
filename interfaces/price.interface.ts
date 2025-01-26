@@ -3,7 +3,7 @@ export interface EstimatedPrice {
    upper: number
 }
 
-export interface VehiclePrices {
+export interface RidePrices {
    moto: EstimatedPrice
    liteCar: EstimatedPrice
    premiumCar: EstimatedPrice

@@ -1,7 +1,9 @@
+import { VehicleType } from 'enums/vehicle.enum'
 import { LatLng } from './location.interface'
 
 export interface DriverLocationRedis {
    driverProfileId: string
-   latLng: LatLng
+   driverLocation: LatLng
    distance: number
+   vehicleType: VehicleType
 }

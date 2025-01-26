@@ -1,36 +1,39 @@
 import {
    Injectable,
-   OnModuleInit,
    InternalServerErrorException,
    HttpException,
 } from '@nestjs/common'
-import { CreateRideDto } from './dto/create-ride.dto'
 import { RedisService } from 'src/redis/redis.service'
 import { CreateItineraryService } from './create-itinerary.service'
 import { InjectModel, Model } from 'nestjs-dynamoose'
 import { DynamoDBError } from 'errors/dynamodb.error'
-import { SqsService } from '@ssut/nestjs-sqs'
-import { ConfigService } from '@nestjs/config'
 import { RideData, RideDataKey } from 'interfaces/ride.interface'
 import { VehicleType } from 'enums/vehicle.enum'
 import { ItineraryData } from 'interfaces/itinerary.interface'
 import { EstimatedPrice } from 'interfaces/price.interface'
 import { ITINERARY_PREFIX, RIDE_PREFIX } from 'constants/redis.constant'
+import { RideStatus } from 'enums/ride.enum'
+import { PaymentMethodType } from 'enums/payment.enum'
+import { LatLng } from 'interfaces/location.interface'
+import { FindDriverService } from './find-driver.service'
+
+export interface CreateRideDto {
+   clientProfileId: string
+   pickUpLocation: LatLng
+   dropOffLocation: LatLng
+   vehicleType: VehicleType
+   paymentMethodType: PaymentMethodType
+}
 
 @Injectable()
-export class CreateRideService implements OnModuleInit {
+export class CreateRideService {
    constructor(
       @InjectModel('Ride')
       private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly createItineraryService: CreateItineraryService,
       private readonly redisService: RedisService,
-      private readonly sqsService: SqsService,
-      private readonly configService: ConfigService,
+      private readonly FindDriverService: FindDriverService,
    ) {}
-   private RIDE_QUEUE_NAME = ''
-   onModuleInit() {
-      this.RIDE_QUEUE_NAME = this.configService.get<string>('RIDE_QUEUE_NAME')
-   }
 
    private getPrice(
       vehicleType: VehicleType,
@@ -63,8 +66,14 @@ export class CreateRideService implements OnModuleInit {
       }
    }
 
-   async createRide(createRideDto: CreateRideDto, clientProfileId: string) {
+   async createRide(createRideDto: CreateRideDto) {
       try {
+         const clientProfileId = createRideDto.clientProfileId
+         const pickUpLocation = createRideDto.pickUpLocation
+         const dropOffLocation = createRideDto.dropOffLocation
+         const vehicleType = createRideDto.vehicleType
+         const paymentMethodType = createRideDto.paymentMethodType
+
          const itinerary = await this.redisService.get(
             `${ITINERARY_PREFIX + clientProfileId}`,
          )
@@ -74,70 +83,72 @@ export class CreateRideService implements OnModuleInit {
 
          if (itinerary) {
             const itineraryData = JSON.parse(itinerary)
+            const { encodedPolyline, distanceMeters, estimatedDuration } =
+               itineraryData
 
-            estimatedPrice = this.getPrice(
-               createRideDto.vehicleType,
-               itineraryData,
-               null,
-            )
+            estimatedPrice = this.getPrice(vehicleType, itineraryData, null)
+
             rideData = {
                rideId: crypto.randomUUID(),
-               clientProfileId: clientProfileId,
-               vehicleType: createRideDto.vehicleType,
+               clientProfileId,
+               vehicleType,
+               paymentMethodType,
+               pickUpLocation,
+               dropOffLocation,
+               encodedPolyline,
+               distanceMeters,
+               estimatedDuration,
                estimatedPrice,
-               distanceMeters: itineraryData.distanceMeters,
-               encodedPolyline: itineraryData.encodedPolyline,
-               pickUpLocation: createRideDto.pickUpLocation,
-               dropOffLocation: createRideDto.dropOffLocation,
-               estimatedDuration: itineraryData.estimatedDuration,
+               status: RideStatus.FINDING_DRIVER,
             }
          } else {
-            const { vehicleType, ...createItineraryDto } = createRideDto
-            const newItinerary =
-               await this.createItineraryService.createItinerary(
-                  createItineraryDto,
-                  clientProfileId,
-               )
+            const {
+               pickUpLocation,
+               dropOffLocation,
+               vehicleType,
+               paymentMethodType,
+            } = createRideDto
 
-            // Get price based on vehicle type
-            estimatedPrice = this.getPrice(
-               createRideDto.vehicleType,
-               null,
-               newItinerary,
-            )
+            const newItinerary =
+               await this.createItineraryService.createItinerary({
+                  clientProfileId,
+                  pickUpLocation,
+                  dropOffLocation,
+               })
+
+            const { encodedPolyline, distanceMeters, estimatedDuration } =
+               newItinerary
+
+            estimatedPrice = this.getPrice(vehicleType, null, newItinerary)
 
             rideData = {
                rideId: crypto.randomUUID(),
-               clientProfileId: clientProfileId,
-               vehicleType: createRideDto.vehicleType,
+               clientProfileId,
+               vehicleType,
+               paymentMethodType,
+               pickUpLocation,
+               dropOffLocation,
+               encodedPolyline,
+               distanceMeters,
+               estimatedDuration,
                estimatedPrice,
-               distanceMeters: newItinerary.distanceMeters,
-               encodedPolyline: newItinerary.encodedPolyline,
-               pickUpLocation: createRideDto.pickUpLocation,
-               dropOffLocation: createRideDto.dropOffLocation,
-               estimatedDuration: newItinerary.estimatedDuration,
+               status: RideStatus.FINDING_DRIVER,
             }
          }
 
-         this.redisService.set(
-            `${RIDE_PREFIX + rideData.rideId}`,
-            JSON.stringify({ startTime: Date.now(), ...rideData }),
-            rideData.estimatedDuration + 3600 * 2,
-         )
-         const result = await this.sendRideDataBase(rideData)
+         await this.FindDriverService.notifyDrivers(rideData)
 
+         await this.redisService.set(
+            `${RIDE_PREFIX + rideData.rideId}`,
+            JSON.stringify(rideData),
+            1800, // 30 minutes
+         )
+
+         const result = await this.sendRideDataBase(rideData)
          return result
       } catch (error) {
          console.error('Error creating ride:', error)
          throw new InternalServerErrorException('Error creating ride')
-      }
-   }
-
-   async findRide(rideId: string) {
-      try {
-         return await this.rideModel.get({ rideId })
-      } catch (error) {
-         throw DynamoDBError(error)
       }
    }
 }

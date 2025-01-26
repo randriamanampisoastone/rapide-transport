@@ -1,13 +1,12 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import {
-   CLIENT_LOCATION_PREFIX,
-   DRIVER_LOCATION_PREFIX,
-} from 'constants/redis.constant'
+import { DRIVER_LOCATION_PREFIX, RIDE_PREFIX } from 'constants/redis.constant'
+import { RideStatus } from 'enums/ride.enum'
 import { VehicleType } from 'enums/vehicle.enum'
 import { getDistance } from 'geolib'
 import { DriverLocationRedis } from 'interfaces/driver.interface'
 import { LatLng } from 'interfaces/location.interface'
+import { RideData } from 'interfaces/ride.interface'
 import Redis from 'ioredis'
 
 @Injectable()
@@ -15,7 +14,6 @@ export class RedisService implements OnModuleInit {
    private client: Redis
    private REDIS_GEO_TTL_SECONDS: number
    private REDIS_TTL_SECONDS: number
-   private RADIUS_FINDING_DRIVER: number
 
    constructor(private readonly configService: ConfigService) {}
 
@@ -26,10 +24,6 @@ export class RedisService implements OnModuleInit {
       })
       this.REDIS_GEO_TTL_SECONDS = this.configService.get<number>(
          'REDIS_GEO_TTL_SECONDS',
-      )
-
-      this.RADIUS_FINDING_DRIVER = this.configService.get(
-         'RADIUS_FINDING_DRIVER',
       )
    }
 
@@ -44,6 +38,9 @@ export class RedisService implements OnModuleInit {
          ttlSeconds ?? this.REDIS_TTL_SECONDS,
       )
    }
+   async remove(key: string): Promise<void> {
+      await this.client.del(key)
+   }
 
    async keys(pattern: string) {
       return await this.client.keys(pattern)
@@ -53,15 +50,15 @@ export class RedisService implements OnModuleInit {
    }
 
    async addDriverLocationToRedis(
-      latLng: LatLng,
       driverProfileId: string,
+      driverLocation: LatLng,
       vehicleType: VehicleType,
       ttl: number = this.REDIS_GEO_TTL_SECONDS,
    ) {
       try {
          await this.set(
             `${DRIVER_LOCATION_PREFIX + driverProfileId}`,
-            JSON.stringify({ vehicleType, ...latLng }),
+            JSON.stringify({ driverProfileId, driverLocation, vehicleType }),
             ttl,
          )
       } catch (error) {
@@ -69,114 +66,92 @@ export class RedisService implements OnModuleInit {
       }
    }
 
-   async addClientLocationToRedis(
-      latLng: LatLng,
-      clientProfileId: string,
-      ttl: number = this.REDIS_GEO_TTL_SECONDS,
-   ) {
-      await this.set(
-         `${CLIENT_LOCATION_PREFIX + clientProfileId}`,
-         JSON.stringify(latLng),
-         ttl,
-      )
-   }
-
    async getDriversNearby(
       latLng: LatLng,
-      radius: number = this.RADIUS_FINDING_DRIVER,
-   ) {
+      vehicleType: VehicleType,
+      radiusSteps: number[] = [500, 1000, 2000, 3000, 5000],
+   ): Promise<DriverLocationRedis[]> {
       try {
          const drivers = await this.keys(`${DRIVER_LOCATION_PREFIX}*`)
 
-         const driverLocations = await Promise.all(
-            drivers.map((driver) => this.get(driver)),
-         )
+         if (drivers.length > 0) {
+            const driversData = await this.mget(drivers)
 
-         const nearbyDrivers: DriverLocationRedis[] = drivers.reduce(
-            (result, driver, index) => {
-               const driverLocation = driverLocations[index]
+            let lastFoundDrivers: DriverLocationRedis[] = []
 
-               if (driverLocation) {
-                  const data = JSON.parse(driverLocation)
-                  const distance = getDistance(
-                     {
-                        latitude: latLng.latitude,
-                        longitude: latLng.longitude,
-                     },
-                     {
-                        latitude: data.latitude,
-                        longitude: data.longitude,
-                     },
-                  )
+            for (const radius of radiusSteps) {
+               const nearbyDrivers: DriverLocationRedis[] = driversData.reduce(
+                  (result: DriverLocationRedis[], driverData) => {
+                     if (driverData) {
+                        const data: DriverLocationRedis = JSON.parse(driverData)
 
-                  if (distance < radius) {
-                     result.push({
-                        driverProfileId: driver.replace(
-                           DRIVER_LOCATION_PREFIX,
-                           '',
-                        ),
-                        distance,
-                        latLng: {
-                           latitude: data.latitude,
-                           longitude: data.longitude,
-                        },
-                        vehicleType: data.vehicleType,
-                     })
-                  }
+                        const distance = getDistance(
+                           {
+                              latitude: latLng.latitude,
+                              longitude: latLng.longitude,
+                           },
+                           {
+                              latitude: data.driverLocation.latitude,
+                              longitude: data.driverLocation.longitude,
+                           },
+                        )
+
+                        if (
+                           distance <= radius &&
+                           data.vehicleType === vehicleType
+                        ) {
+                           result.push({
+                              driverProfileId: data.driverProfileId,
+                              distance,
+                              driverLocation: data.driverLocation,
+                              vehicleType: data.vehicleType,
+                           })
+                        }
+                     }
+
+                     return result
+                  },
+                  [],
+               )
+
+               if (nearbyDrivers.length > 0) {
+                  lastFoundDrivers = nearbyDrivers
                }
+               if (nearbyDrivers.length >= 2) {
+                  return nearbyDrivers
+               }
+            }
 
-               return result
-            },
-            [],
-         )
-
-         return nearbyDrivers
+            return lastFoundDrivers
+         } else {
+            return []
+         }
       } catch (error) {
          console.error('Error finding nearby drivers:', error)
          return []
       }
    }
 
-   async getClientsNearby(
-      latLng: LatLng,
-      radius: number = this.RADIUS_FINDING_DRIVER,
-   ) {
+   async getRideAvailable() {
       try {
-         const clients = await this.keys(`${CLIENT_LOCATION_PREFIX}*`)
+         const rides = await this.keys(`${RIDE_PREFIX}*`)
 
-         const clientLocations = await Promise.all(
-            clients.map((client) => this.get(client)),
-         )
+         if (!rides.length) {
+            return []
+         }
+         const allRides = await this.mget(rides)
 
-         const nearbyClients = clients.reduce((result, client, index) => {
-            const clientLocation = clientLocations[index]
-
-            if (clientLocation) {
-               const data = JSON.parse(clientLocation)
-               const distance = getDistance(
-                  {
-                     latitude: latLng.latitude,
-                     longitude: latLng.longitude,
-                  },
-                  data,
-               )
-
-               if (distance < radius) {
-                  result.push({
-                     driverProfileId: client.replace(
-                        CLIENT_LOCATION_PREFIX,
-                        '',
-                     ),
-                     distance,
-                     latLng: data,
-                  })
+         const ridesAvailable: RideData[] = allRides.reduce(
+            (result: RideData[], ride: string) => {
+               const rideData: RideData = JSON.parse(ride)
+               if (rideData.status === RideStatus.FINDING_DRIVER) {
+                  result.push(rideData)
                }
-            }
-
-            return result
-         }, [])
-
-         return nearbyClients
+               return result
+            },
+            [],
+         )
+         return ridesAvailable
       } catch (error) {
          console.error('Error finding nearby drivers:', error)
          return []

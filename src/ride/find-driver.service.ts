@@ -1,8 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { InjectModel, Model } from 'nestjs-dynamoose'
 import { Gateway } from 'src/gateway/gateway'
-import { RideData, RideDataKey, RideStatus } from 'interfaces/ride.interface'
+import { RideData } from 'interfaces/ride.interface'
 import { RedisService } from 'src/redis/redis.service'
 
 @Injectable()
@@ -10,8 +9,6 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
    private intervalId: NodeJS.Timeout
 
    constructor(
-      @InjectModel('Ride')
-      private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly configService: ConfigService,
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
@@ -37,18 +34,17 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
 
    private async scanAndNotifyDrivers(): Promise<void> {
       try {
-         const rides = await this.rideModel
-            .scan('status')
-            .eq(RideStatus.FINDING_DRIVER)
-            .exec()
+         const ridesAvailable = await this.redisService.getRideAvailable()
 
-         if (rides.length === 0) {
+         if (ridesAvailable.length === 0) {
             console.log('No rides found requiring drivers.')
             return
          }
-         console.log(`Found ${rides.length} rides requiring drivers.`)
+         console.log(`Found ${ridesAvailable.length} rides requiring drivers.`)
 
-         await Promise.all(rides.map((ride) => this.notifyDrivers(ride)))
+         await Promise.all(
+            ridesAvailable.map((ride) => this.notifyDrivers(ride)),
+         )
       } catch (error) {
          console.error(
             'Error during scanAndNotifyDrivers:',
@@ -58,30 +54,34 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
       }
    }
 
-   private async notifyDrivers(
-      ride: RideData & { rideId: string },
-   ): Promise<void> {
+   async notifyDrivers(ride: RideData): Promise<void> {
       try {
+         const pickUpLocation = ride.pickUpLocation
+         const vehicleType = ride.vehicleType
+
          const drivers = await this.redisService.getDriversNearby(
-            ride.pickUpLocation,
+            pickUpLocation,
+            vehicleType,
          )
+
          console.log(`Drivers  ${drivers.length} found`)
 
+         const rideId = ride.rideId
+
          if (!drivers || drivers.length === 0) {
-            console.log(`No drivers available for ride ID: ${ride.rideId}`)
+            console.log(`No drivers available for ride ID: ${rideId}`)
             return
          }
 
          await Promise.all(
             drivers.map((driver) =>
                this.gateway.sendNotificationToDriver(
-                  ride,
                   driver.driverProfileId,
+                  'rideAvailable',
+                  ride,
                ),
             ),
          )
-
-         // console.log(`Notifications sent for ride ID: ${ride.rideId}`)
       } catch (error) {
          console.error(
             `Error notifying drivers for ride ID ${ride.rideId}:`,
