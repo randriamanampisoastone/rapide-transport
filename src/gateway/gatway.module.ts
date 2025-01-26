@@ -3,17 +3,18 @@ import { Gateway } from './gateway'
 import { RedisService } from 'src/redis/redis.service'
 import { DynamooseModule } from 'nestjs-dynamoose'
 import { CognitoWebSocketService } from 'src/cognito/cognito.websocket.service'
-import { CancelRideService } from 'src/ride/cancel-ride.service'
-import { ComplitRideService } from 'src/ride/complit-ride.service'
-import { ClientRideStatusService } from 'src/ride/client-ride-status.service'
+
 import { RideModel } from 'src/ride/Model/ride.model'
-import { CalculatePriceService } from 'src/ride/calculate-price.service'
+
 import { LocationModel } from './location/Model/location.model'
 import { LocationService } from './location/location.service'
+import { InfoOnRideService } from 'src/ride/info-on-ride.service'
+import { CognitoWebSocketModule } from 'src/cognito/cognito.websocket.module'
+import { CheckRideService } from 'src/ride/check-ride.service'
 
 @Module({
    imports: [
-      //   CognitoWebSocketModule,
+      CognitoWebSocketModule,
       DynamooseModule.forFeature([LocationModel, RideModel]),
    ],
    providers: [
@@ -22,10 +23,8 @@ import { LocationService } from './location/location.service'
       LocationService,
       RedisService,
       LocationService,
-      CancelRideService,
-      ComplitRideService,
-      ClientRideStatusService,
-      CalculatePriceService,
+      InfoOnRideService,
+      CheckRideService,
    ],
    exports: [Gateway],
 })

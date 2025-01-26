@@ -10,10 +10,18 @@ export interface LocationData {
    userGroup: string
    location: LatLng
 }
-export interface UpdateLocationInterface {
-   latLng: LatLng
-   clientProfileId?: string
+
+export interface UpdateClientLocationInterface {
+   clientProfileId: string
+   clientLocation: LatLng
+   isOnRide: boolean
    driverProfileId?: string
-   vehicleType?: VehicleType
-   isAvailable: boolean
+}
+
+export interface UpdateDriverLocationInterface {
+   driverProfileId: string
+   driverLocation: LatLng
+   vehicleType: VehicleType
+   isOnRide: boolean
+   clientProfileId?: string
 }

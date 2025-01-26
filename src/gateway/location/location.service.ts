@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common'
-import { Server, Socket } from 'socket.io'
+import { Server } from 'socket.io'
 import { InjectModel, Model } from 'nestjs-dynamoose'
 import {
    LocationData,
-   UpdateLocationInterface,
+   UpdateDriverLocationInterface,
+   UpdateClientLocationInterface,
 } from 'interfaces/location.interface'
 
 import { ClientRole } from 'interfaces/user.inteface'
@@ -19,58 +20,58 @@ export class LocationService {
 
    async handleUpdateClientLocation(
       server: Server,
-      data: UpdateLocationInterface,
-      client: Socket,
+      data: UpdateClientLocationInterface,
    ) {
-      server.to(data.driverProfileId).emit('clientLocation', {
-         latitude: data.latLng.latitude,
-         longitude: data.latLng.longitude,
-         vehicleType: data.vehicleType,
-      })
+      const clientProfileId = data.clientProfileId
+      const clientLocation = data.clientLocation
+      const isOnRide = data.isOnRide
+
+      if (isOnRide) {
+         const driverProfileId = data.driverProfileId
+
+         server.to(driverProfileId).emit('clientLocation', {
+            clientProfileId,
+            clientLocation,
+         })
+      }
+
       server.to(ClientRole.Admin).emit('clientLocation', {
-         driverProfileId: client.data.user.sub,
-         userGroup: 'ClientGroup',
-         latLng: data.latLng,
+         clientProfileId,
+         clientLocation,
+         isOnRide,
       })
    }
 
    async handleUpdateDriverLocation(
       server: Server,
-      data: UpdateLocationInterface,
-      client: Socket,
+      data: UpdateDriverLocationInterface,
    ) {
-      if (data.isAvailable) {
+      const driverProfileId = data.driverProfileId
+      const driverLocation = data.driverLocation
+      const vehicleType = data.vehicleType
+      const isOnRide = data.isOnRide
+
+      if (!isOnRide) {
          await this.redisService.addDriverLocationToRedis(
-            data.latLng,
-            data.driverProfileId,
-            data.vehicleType,
+            driverProfileId,
+            driverLocation,
+            vehicleType,
          )
       } else {
-         server.to(data.clientProfileId).emit('driverLocation', {
-            latitude: data.latLng.latitude,
-            longitude: data.latLng.longitude,
-            vehicleType: data.vehicleType,
+         const clientProfileId = data.clientProfileId
+
+         server.to(clientProfileId).emit('driverLocation', {
+            driverProfileId,
+            driverLocation,
+            vehicleType,
          })
       }
 
       server.to(ClientRole.Admin).emit('driverLocation', {
-         driverProfileId: client.data.user.sub,
-         userGroup: 'DriverGroup',
-         latLng: data.latLng,
+         driverProfileId,
+         driverLocation,
+         vehicleType,
+         isOnRide,
       })
-   }
-
-   async handleUpdateDriverLocationDataBase(
-      data: UpdateLocationInterface,
-      user: any,
-   ) {
-      const role = user['cognito:groups']?.[0]
-      if (role === ClientRole.Driver) {
-         await this.locationModel.create({
-            userId: user.sub,
-            userGroup: role,
-            location: data.latLng,
-         })
-      }
    }
 }

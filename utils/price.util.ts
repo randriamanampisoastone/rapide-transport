@@ -1,10 +1,11 @@
-import { VehiclePrices } from 'interfaces/price.interface'
+import { RidePrices } from 'interfaces/price.interface'
 
 export const calculateEstimatedPrices = (
    distance: number,
-   estimatedTimeInMinutes: number,
-): VehiclePrices => {
+   estimatedTime: number,
+): RidePrices => {
    const distanceInKm = distance / 1000
+   const estimatedTimeInMinutes = estimatedTime / 60
 
    const pricingRules = {
       moto: {

@@ -1,11 +1,9 @@
 import { Schema } from 'dynamoose'
+import { PaymentMethodType } from 'enums/payment.enum'
+import { RideStatus } from 'enums/ride.enum'
 import { VehicleType } from 'enums/vehicle.enum'
-import { RideStatus } from 'interfaces/ride.interface'
 import { ModelDefinition } from 'nestjs-dynamoose'
 
-// Définition des différents statuts possibles pour une course
-
-// Schéma DynamoDB pour le modèle "Ride"
 const RideSchema = new Schema(
    {
       rideId: {
@@ -17,18 +15,22 @@ const RideSchema = new Schema(
          type: String,
          required: true,
       },
+      driverProfileId: {
+         type: String,
+         required: false,
+      },
       vehicleType: {
          type: String,
          enum: Object.values(VehicleType),
          required: true,
       },
-      distanceMeters: {
-         type: Number,
-         required: true,
-         validate: (value: number) => value > 0, // Distance doit être positive
-      },
-      encodedPolyline: {
+      vehicleId: {
          type: String,
+         required: false,
+      },
+      paymentMethodType: {
+         type: String,
+         enum: Object.values(PaymentMethodType),
          required: true,
       },
       pickUpLocation: {
@@ -63,35 +65,19 @@ const RideSchema = new Schema(
          },
          required: true,
       },
+      encodedPolyline: {
+         type: String,
+         required: true,
+      },
+      distanceMeters: {
+         type: Number,
+         required: true,
+         validate: (value: number) => value > 0, // Distance doit être positive
+      },
       estimatedDuration: {
          type: Number,
          required: true,
          validate: (value: number) => value >= 0, // Durée estimée positive ou nulle
-      },
-      realDuration: {
-         type: Number,
-         required: false,
-         validate: (value: number) => value >= 0, // Durée réelle positive ou nulle
-         default: 0,
-      },
-      driverProfileId: {
-         type: String,
-         required: false,
-      },
-      vehicleId: {
-         type: String,
-         required: false,
-      },
-      status: {
-         type: String,
-         enum: Object.values(RideStatus),
-         default: RideStatus.FINDING_DRIVER,
-      },
-      realPrice: {
-         type: Number,
-         required: false, // Champ facultatif
-         validate: (value: number) => value >= 0, // Prix réel positif ou nul
-         default: 0,
       },
       estimatedPrice: {
          type: Object,
@@ -108,6 +94,31 @@ const RideSchema = new Schema(
             },
          },
          required: true, // Champ estimé obligatoire
+      },
+      realDuration: {
+         type: Number,
+         required: false,
+         validate: (value: number) => value >= 0, // Durée réelle positive ou nulle
+         default: 0,
+      },
+      realPrice: {
+         type: Number,
+         required: false, // Champ facultatif
+         validate: (value: number) => value >= 0, // Prix réel positif ou nul
+         default: 0,
+      },
+      status: {
+         type: String,
+         required: true,
+         enum: Object.values(RideStatus),
+      },
+      note: {
+         type: Number,
+         required: false,
+      },
+      review: {
+         type: String,
+         required: false,
       },
       startTime: {
          type: Number,

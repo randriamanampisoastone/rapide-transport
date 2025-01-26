@@ -6,19 +6,15 @@ import { Authorization } from '@nestjs-cognito/auth'
 export class VehicleController {
    constructor(private readonly vehicleService: VehicleService) {}
 
-   @Authorization({ allowedGroups: ['ClientGroup'] })
+   @Authorization({ allowedGroups: ['ClientGroup', 'DriverGroup'] })
    @Get('finding-drivers-near-by')
    findingDriversNearBy(
       @Query('latitude') latitude: string,
       @Query('longitude') longitude: string,
-      @Query('radius') radius: string,
    ) {
-      return this.vehicleService.findingDriversNearBy(
-         {
-            latitude: Number(latitude),
-            longitude: Number(longitude),
-         },
-         Number(radius) || 5000,
-      )
+      return this.vehicleService.findingDriversNearBy({
+         latitude: Number(latitude),
+         longitude: Number(longitude),
+      })
    }
 }

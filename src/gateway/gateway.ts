@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
 import {
-   ConnectedSocket,
    MessageBody,
    OnGatewayConnection,
    OnGatewayDisconnect,
@@ -12,13 +11,15 @@ import {
 import { CognitoWebSocketService } from 'src/cognito/cognito.websocket.service'
 import { Socket, Server } from 'socket.io'
 
-import { CancelRideService } from 'src/ride/cancel-ride.service'
-import { ComplitRideService } from 'src/ride/complit-ride.service'
-import { ClientRideStatusService } from 'src/ride/client-ride-status.service'
-import { CalculatePriceService } from 'src/ride/calculate-price.service'
 import { ClientRole } from 'interfaces/user.inteface'
 import { LocationService } from './location/location.service'
-import { UpdateLocationInterface } from 'interfaces/location.interface'
+import {
+   UpdateClientLocationInterface,
+   UpdateDriverLocationInterface,
+} from 'interfaces/location.interface'
+import { InfoOnRideService } from 'src/ride/info-on-ride.service'
+import { CheckRideService } from 'src/ride/check-ride.service'
+import { RideData } from 'interfaces/ride.interface'
 
 @Injectable()
 @WebSocketGateway({ cors: true })
@@ -57,10 +58,8 @@ export class Gateway
    constructor(
       private readonly cognitoWebSocketService: CognitoWebSocketService,
       private readonly locationService: LocationService,
-      private readonly cancelRideService: CancelRideService,
-      private readonly complitRideService: ComplitRideService,
-      private readonly clientRideStatusService: ClientRideStatusService,
-      private readonly calculePriceService: CalculatePriceService,
+      private readonly infoOnRideService: InfoOnRideService,
+      private readonly checkRideService: CheckRideService,
    ) {}
 
    afterInit(server: Server) {
@@ -81,116 +80,86 @@ export class Gateway
       })
       this.logger.log('GeolocationGateway initialized')
    }
-   handleConnection(client: Socket) {
+   async handleConnection(client: Socket) {
       const validation = this.validateUserRole(client)
       if (!validation) return
 
       const { role } = validation
       this.assignUserToRoom(client, role)
       this.logger.log(
-         `Client connected: ${client.id}, Role: ${role}, User: ${client.data.user.sub}`,
+         `Connected: ${client.id}, Role: ${role}, User: ${client.data.user.sub}`,
       )
+      try {
+         let ride: RideData
+         if (role === 'ClientGroup') {
+            ride = await this.checkRideService.checkClientRide(
+               client.data.user.sub,
+            )
+         } else if (role === 'DriverGroup') {
+            ride = await this.checkRideService.checkDriverRide(
+               client.data.user.sub,
+            )
+         }
+
+         if (ride) {
+            client.emit('rideChecked', { success: true, ride })
+         } else {
+            client.emit('rideChecked', {
+               success: false,
+               message: 'No ride found',
+            })
+         }
+      } catch (error) {
+         console.log(error)
+         client.emit('rideChecked', {
+            success: false,
+            message: 'Error checking ride',
+         })
+      }
    }
 
    handleDisconnect(client: Socket) {
-      this.logger.log('Client disconnected', client.id)
-   }
-
-   @SubscribeMessage('sendData')
-   handleData(@MessageBody() data: any) {
-      this.server.emit('data', data)
+      this.logger.log(`'Disconnected : ${client.id}`)
    }
 
    @SubscribeMessage('updateDriverLocation')
    async handleUpdateDriverLocation(
-      @MessageBody() data: UpdateLocationInterface,
-      @ConnectedSocket() client: Socket,
+      @MessageBody() data: UpdateDriverLocationInterface,
    ) {
-      await this.locationService.handleUpdateDriverLocation(
-         this.server,
-         data,
-         client,
-      )
-   }
-
-   @SubscribeMessage('driverArrived')
-   async handleDriverArrived(@MessageBody() data: { clientProfileId: string }) {
-      this.server.to(data.clientProfileId).emit('driverArrived', {})
-   }
-   @SubscribeMessage('startRide')
-   async handleStartRide(@MessageBody() data: { clientProfileId: string }) {
-      this.server.to(data.clientProfileId).emit('startRide', {})
-   }
-
-   @SubscribeMessage('arrivedDestination')
-   async handleArrivedDestination(
-      @MessageBody() data: { clientProfileId: string },
-   ) {
-      this.server.to(data.clientProfileId).emit('arrivedDestination', {})
-   }
-
-   @SubscribeMessage('updateDriverLocationDataBase')
-   async handleUpdateDriverLocationDataBase(
-      @MessageBody() data: UpdateLocationInterface,
-      @ConnectedSocket() client: Socket,
-   ) {
-      const validation = this.validateUserRole(client)
-      if (!validation) return
-
-      const { user } = validation
-      await this.locationService.handleUpdateDriverLocationDataBase(data, user)
+      await this.locationService.handleUpdateDriverLocation(this.server, data)
    }
 
    @SubscribeMessage('updateClientLocation')
    async handleUpdateClientLocation(
-      @MessageBody() data: UpdateLocationInterface,
-      @ConnectedSocket() client: Socket,
+      @MessageBody() data: UpdateClientLocationInterface,
    ) {
-      await this.locationService.handleUpdateClientLocation(
-         this.server,
-         data,
-         client,
-      )
+      await this.locationService.handleUpdateClientLocation(this.server, data)
    }
 
-   sendNotificationToDriver(payload: any, driverProfileId: string) {
-      this.server.to(driverProfileId).emit('newRide', payload)
+   @SubscribeMessage('notifyClient')
+   async notifyClient(@MessageBody() data: { clientProfileId: string }) {
+      console.log('notifyClient', data)
+
+      this.server.to(data.clientProfileId).emit('notifyClient', {})
+   }
+
+   sendNotificationToDriver(
+      driverProfileId: string,
+      topic: string,
+      payload: any,
+   ) {
+      this.server.to(driverProfileId).emit(topic, payload)
    }
 
    sendNotificationToClient(
       clientProfileId: string,
-      driverProfileId: string,
-      estimatedDuration: number,
-      encodedPolyline: string,
+      topic: string,
+      payload: any,
    ) {
-      this.server.to(clientProfileId).emit('acceptedRide', {
-         driverProfileId,
-         estimatedDuration,
-         encodedPolyline,
-      })
+      this.server.to(clientProfileId).emit(topic, payload)
    }
 
-   @SubscribeMessage('cancelRide')
-   async handleCancelRide(@MessageBody() data: { rideId: string }) {
-      await this.cancelRideService.cancelRide(data.rideId)
-   }
-
-   @SubscribeMessage('compliteRide')
-   async handleComplitRide(@MessageBody() data: { rideId: string }) {
-      await this.complitRideService.complitRide(data.rideId)
-   }
-
-   @SubscribeMessage('clientGiveUpRide')
-   async handleClientGiveUpRide(@MessageBody() data: { rideId: string }) {
-      await this.clientRideStatusService.clientGiveUpRide(data.rideId)
-   }
-
-   @SubscribeMessage('clientNotFoundRide')
-   async handleClientNotFoundRide(@MessageBody() data: { rideId: string }) {
-      await this.clientRideStatusService.clientNotFoundRide(data.rideId)
-   }
-
-   @SubscribeMessage('calculatePrice')
+   @SubscribeMessage('infoOnRidePush')
    async calculePrice(
       @MessageBody()
       data: {
@@ -199,8 +168,7 @@ export class Gateway
          driverProfileId: string
       },
    ) {
-
-      await this.calculePriceService.calculateRealTimePrice(
+      await this.infoOnRideService.infoOnRide(
          data.rideId,
          data.clientProfileId,
          data.driverProfileId,

@@ -1,11 +1,11 @@
 import { LatLng } from './location.interface'
-import { VehiclePrices } from './price.interface'
+import { RidePrices } from './price.interface'
 
 export interface ItineraryData {
-   prices: VehiclePrices
-   distanceMeters: number
-   encodedPolyline: string
-   estimatedDuration: number
    pickUpLocation: LatLng
    dropOffLocation: LatLng
+   encodedPolyline: string
+   distanceMeters: number
+   estimatedDuration: number
+   prices: RidePrices
 }
