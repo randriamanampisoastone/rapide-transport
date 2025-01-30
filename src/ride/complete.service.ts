@@ -32,9 +32,9 @@ export class CompleteService {
 
          const rideData: RideData = JSON.parse(ride)
 
-         if (rideData.status !== RideStatus.ARRIVED_DESTINATION) {
-            throw new Error('Ride is not in ARRIVED_DESTINATION status')
-         }
+         // if (rideData.status !== RideStatus.ARRIVED_DESTINATION) {
+         //    throw new Error('Ride is not in ARRIVED_DESTINATION status')
+         // }
          if (rideData.driverProfileId !== driverProfileId) {
             throw new Error('Driver is not the driver of the ride')
          }
