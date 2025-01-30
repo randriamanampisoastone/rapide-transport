@@ -8,10 +8,9 @@ import {
    WebSocketGateway,
    WebSocketServer,
 } from '@nestjs/websockets'
-import { CognitoWebSocketService } from 'src/cognito/cognito.websocket.service'
+
 import { Socket, Server } from 'socket.io'
 
-import { ClientRole } from 'interfaces/user.inteface'
 import { LocationService } from './location/location.service'
 import {
    UpdateClientLocationInterface,
@@ -20,6 +19,8 @@ import {
 import { InfoOnRideService } from 'src/ride/info-on-ride.service'
 import { CheckRideService } from 'src/ride/check-ride.service'
 import { RideData } from 'interfaces/ride.interface'
+import { JwtService } from '@nestjs/jwt'
+import { UserRole } from 'enums/profile.enum'
 
 @Injectable()
 @WebSocketGateway({ cors: true })
@@ -34,7 +35,7 @@ export class Gateway
          return null
       }
 
-      const role = user['cognito:groups']?.[0]
+      const role = user.role
       if (!role) {
          this.logger.warn(`User ${user.sub} has no role assigned`)
          client.disconnect(true)
@@ -43,10 +44,15 @@ export class Gateway
 
       return { user, role }
    }
-   private assignUserToRoom(client: Socket, role: ClientRole) {
-      if (Object.values(ClientRole).includes(role)) {
+   private assignUserToRoom(client: Socket, role: UserRole) {
+      if (Object.values(UserRole).includes(role)) {
          client.join(role)
-         client.join(client.data.user.sub)
+         if (client.data.user.clientProfileId) {
+            console.log('llllllleeeeoooo')
+
+            client.join(client.data.user.clientProfileId)
+         } else if (client.data.user.driverProfileId)
+            client.join(client.data.user.driverProfileId)
       } else {
          this.logger.warn(`Unknown role: ${role}`)
       }
@@ -56,28 +62,29 @@ export class Gateway
    private logger: Logger = new Logger('GeolocationGateway')
 
    constructor(
-      private readonly cognitoWebSocketService: CognitoWebSocketService,
       private readonly locationService: LocationService,
       private readonly infoOnRideService: InfoOnRideService,
       private readonly checkRideService: CheckRideService,
+      private readonly jwtService: JwtService,
    ) {}
 
    afterInit(server: Server) {
       server.use(async (socket: Socket, next) => {
-         const token = socket.handshake.auth.idToken
+         const token = socket.handshake.auth.token
          if (!token) {
             return next(new Error('TokenNotFound'))
          }
-
          try {
-            const user = await this.cognitoWebSocketService.validateToken(token)
+            const user = await this.jwtService.verify(token)
             socket.data.user = user
+
             next()
          } catch (error) {
             this.logger.error(`Authentication failed: ${error.message}`)
             return next(new Error('TokenNotInvalid'))
          }
       })
+
       this.logger.log('GeolocationGateway initialized')
    }
    async handleConnection(client: Socket) {
@@ -85,19 +92,21 @@ export class Gateway
       if (!validation) return
 
       const { role } = validation
+      console.log('role:', role)
+
       this.assignUserToRoom(client, role)
       this.logger.log(
-         `Connected: ${client.id}, Role: ${role}, User: ${client.data.user.sub}`,
+         `Connected: ${client.id}, Role: ${role}, User: ${client.data.user}`,
       )
       try {
          let ride: RideData
-         if (role === 'ClientGroup') {
+         if (role === UserRole.CLIENT) {
             ride = await this.checkRideService.checkClientRide(
-               client.data.user.sub,
+               client.data.user.clientProfileId,
             )
-         } else if (role === 'DriverGroup') {
+         } else if (role === UserRole.DRIVER) {
             ride = await this.checkRideService.checkDriverRide(
-               client.data.user.sub,
+               client.data.user.driverProfileId,
             )
          }
 

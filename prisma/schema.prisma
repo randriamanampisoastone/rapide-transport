@@ -7,29 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// PROFILE
 enum GenderType {
   MALE
   FEMALE
   OTHER
 }
-enum EnterpriseType {
-  RETAIL               // Vente au détail
-  WHOLESALE            // Vente en gros
-  MARKETPLACE          // Marketplace
-  DIGITAL_PRODUCTS     // Produits numériques
-  ARTISANAL            // Produits faits main ou artisanaux
-  DROPSHIPPING         // Dropshipping
-  ECO_FRIENDLY         // Produits écologiques et durables
-  LUXURY               // Produits de luxe
-  RESTAURANT           // Restaurant
-  FAST_FOOD            // Fast-food
-  CAFE                 // Café ou salon de thé
-  FOOD_TRUCK           // Camion de nourriture
-  BAKERY               // Boulangerie
-  PASTRY_SHOP          // Pâtisserie
-  ICE_CREAM            // Glacier
-  OTHER
+enum VehicleType {
+  MOTO
+  LITE_CAR
+  PREMIUM_CAR
+}
+enum TransactionType {
+  DEPOSIT
+  TRANSFERT
+  RETRAIT
 }
 enum ProfileStatus {
   ACTIVE           // Compte actif et opérationnel
@@ -44,141 +35,85 @@ enum ProfileStatus {
   UNVERIFIED       // Compte non vérifié (e-mail ou téléphone non confirmé)
   BANNED           // Compte interdit d'accès définitivement
 }
+enum InvoiceStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+enum BalanceStatus {
+  ACTIVE          // Le solde est utilisable.
+  PENDING         // Le solde est en attente d'une confirmation.
+  FROZEN          // Le solde est gelé pour une raison donnée.
+  INSUFFICIENT    // Le solde est insuffisant pour effectuer des transactions.
+  CLOSED          // Le compte ou le solde est clôturé.
+}
+enum UserRole {
+  CLIENT
+  DRIVER
+  ADMIN
+}
 
-model ClientProfile {
-  clientProfileId      String          @id
+model Profile {
+  sub                  String          @id @default(uuid())
 
-  email                String          @unique
+  phoneNumber          String          @unique
   firstName            String
   lastName             String
   gender               GenderType
   birthday             DateTime
+  role                 UserRole        @default(CLIENT) 
   profilePhoto         String?
 
-  phoneNumber          PhoneNumber?    @relation("ClientPhoneNumber")
-  feedbacks            FeedBack[]      @relation("ClientFeedbacks")
+  clientProfile        ClientProfile?  @relation("AuthClientProfile")
+  driverProfile        DriverProfile?  @relation("AuthDriverProfile")
+  adminProfile         AdminProfile?   @relation("AuthAdminProfile")
 
-  clientAddress        Address[]       @relation("ClientAddress")
-  foodInvoice          FoodInvoice[]   @relation("ClientProfileFoodInvoices")
-  foodCart             FoodCart?       @relation("ClientFoodCart")
-  martInvoice          MartInvoice[]   @relation("ClientProfileMartInvoices")
-  martCart             MartCart?       @relation("ClientMartCart")
-  favorites            Favorite?       @relation("ClientFavorites")
-  mobilePaymentAccount        MobilePaymentAccount[] @relation("MobilePaymentAccountClient")
-
-  accountBalance       AccountBalance? @relation("ClientAccountBalance")
-
-  status               ProfileStatus   @default(ACTIVE)  
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
 }
 
-model ProviderProfile {
-  providerProfileId        String             @id
+model ClientProfile {
+  clientProfileId      String          @id
+  profile              Profile         @relation("AuthClientProfile", fields: [clientProfileId], references: [sub])
 
-  email                    String             @unique
-  enterpriseName           String
-  enterpriseType           EnterpriseType
+  clientAddress        Address[]       @relation("ClientAddress")
+  rideInvoice          RideInvoice[]   @relation("ClientRideInvoice")
+  accountBalance       AccountBalance? @relation("ClientAccountBalance")
 
-  enterpriseDescription    String[]
-  enterpriseLogo           String?
-  enterpriseProfilePhoto   String
-  enterprisePhotos         String[]
+  status               ProfileStatus   @default(ACTIVE)
 
-  phoneNumbers             PhoneNumber[]     @relation("ProviderPhoneNumber")
-  enterpriseAddress        Address[]
-  schedule                 Schedule?          @relation("ProviderProfileSchedule")
-  food                     Food[]             @relation("ProviderProfileFood")
-  foodCategory             String[] 
-  mart                     Mart[]             @relation("ProviderProfileMart")
-
-  accountBalance           AccountBalance?    @relation("ProviderAccountBalance")
-
-  status                   ProfileStatus      @default(UNDER_REVIEW)       
-  createdAt                DateTime           @default(now())
-  updatedAt                DateTime           @updatedAt
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
 }
 
 model DriverProfile {
   driverProfileId      String          @id
+  profile              Profile         @relation("AuthDriverProfile", fields: [driverProfileId], references: [sub])
 
-  firstName            String
-  lastName             String
-  email                String          @unique
-
-  gender               GenderType
-  birthday             DateTime
-  profilePhoto         String
-  cinPhotos            String[]
-  permisPhotos         String[]
-
-  driverProfileMeanRate Float          @default(0)
-  driverFeedbackCount   Int            @default(0)
-
-  phoneNumber          PhoneNumber?    @relation("DriverPhoneNumber")
-  vehicle              Vehicle?       @relation("DriverVehicles")
-  feedbacks            FeedBack[]      @relation("DriverProfileFeedbacks")
-
+  rideInvoice          RideInvoice[]   @relation("DriverRideInvoice")
   accountBalance       AccountBalance? @relation("DriverAccountBalance")
+  transaction          Transaction[]   @relation("DriverTransaction")
 
-  status               ProfileStatus   @default(UNDER_REVIEW) 
+  status               ProfileStatus   @default(UNDER_REVIEW)
+
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
 }
 
 model AdminProfile {
   adminProfileId       String          @id
+  profile              Profile         @relation("AuthAdminProfile", fields: [adminProfileId], references: [sub])
 
-  firstName            String
-  lastName             String
-  email                String          @unique
+  status               ProfileStatus   @default(UNDER_REVIEW)
 
-  status               ProfileStatus   @default(UNDER_REVIEW) 
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
 }
 
-// TOOLS
-enum VehicleRole {
-  RIDE
-  RENT
-  EXPRESS
-  DELIVERY
-}
-
-enum VehicleType {
-  MOTO
-  LITE_CAR
-  PREMIUM_CAR
-}
-
-model Vehicle {
-  vehicleId                    String         @id @default(uuid())
-
-  vehicleType                  VehicleType
-  vehicleModel                 String
-  vehicleMarque                String
-  vehiclePlace                 Int
-  vehicleRegistrationNumber    String?        @unique
-  vehiclePhotos                String[]
-
-  role                         VehicleRole   
-
-  driverProfileId              String         @unique
-  driverProfil                 DriverProfile  @relation("DriverVehicles", fields: [driverProfileId], references: [driverProfileId], onDelete: Cascade)
-
-  createdAt                    DateTime       @default(now())
-  updatedAt                    DateTime       @updatedAt
-}
-
-
 model Address {
-  addressId String @id @default(uuid())
+  addressId          String @id @default(uuid())
 
   name               String          
-  city               String          @default("Antananarivo")
-  country            String          @default("Madagascar")
-  lot                String?
   latitude           Float
   longitude          Float
   description        String?
@@ -186,423 +121,41 @@ model Address {
   clientProfileId    String?
   clientProfile      ClientProfile?   @relation("ClientAddress", fields: [clientProfileId], references: [clientProfileId], onDelete: Cascade)
 
-  providerProfileId  String?
-  providerProfile    ProviderProfile? @relation(fields: [providerProfileId], references: [providerProfileId], onDelete: Cascade)
-
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
 }
 
-model Schedule {
-  scheduleId         String         @id @default(uuid())
 
-  mondayIsOpen       Boolean
-  mondayOpenAt       String?
-  mondayCloseAt      String?
+model RideInvoice {
+  rideInvoiceId              String           @id @default(uuid())
 
-  tuesdayIsOpen      Boolean
-  tuesdayOpenAt      String?
-  tuesdayCloseAt     String?
+  pickUpLocationPlusCode     String
+  dropOffLocationPlusCode    String
+  distanceMeters             Float
+  realDuration               Float
+  realPrice                  Float
+  vehicleType                VehicleType
 
-  wendnesdayIsOpen   Boolean
-  wendnesdayOpenAt   String?
-  wendnesdayCloseAt  String?
+  clientProfileId            String
+  clientProfile              ClientProfile    @relation("ClientRideInvoice", fields: [clientProfileId], references: [clientProfileId])
 
-  thursdayIsOpen     Boolean
-  thursdayOpenAt     String?
-  thursdayCloseAt    String?
-
-  fridayIsOpen       Boolean
-  fridayOpenAt       String?
-  fridayCloseAt      String?
-
-  saturdayIsOpen     Boolean
-  saturdayOpenAt     String?
-  saturdayCloseAt    String?
-
-  sundayIsOpen       Boolean
-  sundayOpenAt       String?
-  sundayCloseAt      String?
-
-  providerProfileId  String?          @unique
-  providerProfile    ProviderProfile? @relation("ProviderProfileSchedule",fields: [providerProfileId], references: [providerProfileId])
-
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  driverProfileId            String
+  driverProfile              DriverProfile    @relation("DriverRideInvoice", fields: [driverProfileId], references: [driverProfileId])
+   
+  createdAt                  DateTime         @default(now())
+  updatedAt                  DateTime         @updatedAt
 }
 
-enum PhoneNumberStatus {
-  VERIFIED
-  UNVERIFIED
-}
+model Transaction {
+  transactionId              String             @id@default(uuid())
+  amount                     Float
+  transactionType            TransactionType    @default(TRANSFERT)
 
-model PhoneNumber {
-  phoneNumberId       String              @id @default(uuid())
+  driverProfileId            String
+  driverProfile              DriverProfile      @relation("DriverTransaction", fields: [driverProfileId], references: [driverProfileId])
 
-  phoneNumber         String              @unique
-  status              PhoneNumberStatus   @default(UNVERIFIED) 
 
-  clientProfileId     String?             @unique
-  clientProfile       ClientProfile?      @relation("ClientPhoneNumber", fields: [clientProfileId], references: [clientProfileId], onDelete: Cascade)
-
-  driverProfileId     String?             @unique
-  driverProfile       DriverProfile?      @relation("DriverPhoneNumber", fields: [driverProfileId], references: [driverProfileId], onDelete: Cascade)
-
-  providerProfileId   String?            
-  providerProfile     ProviderProfile?    @relation("ProviderPhoneNumber", fields: [providerProfileId], references: [providerProfileId], onDelete: Cascade)
-}
-
-// FOODS
-model Food {
-  foodId                  String           @id @default(uuid())
-
-  foodName                String
-  foodProfilePhoto        String
-  foodPhotos              String[]
-  foodDescriptions        String[]
-  foodPrice               Float
-  foodCategory            String 
-  foodOrigin              String           @default("Malagasy")
-  foodTypes               String[]
-  foodIngredients         String[]
-  foodCalory              Float?
-
-  foodIsAvailable         Boolean          @default(true)
-  foodIsPromotion         Boolean          @default(false) 
-  foodPromotionPercentage Float            @default(0)
-
-  foodMeanRate            Float            @default(0)
-  foodFeedbackCount       Int              @default(0)
-
-
-  providerProfileId       String
-  providerProfile         ProviderProfile  @relation("ProviderProfileFood", fields: [providerProfileId], references: [providerProfileId], onDelete: Cascade)
-
-  foodOnFavorite          FoodOnFavorite[]   @relation("FoodOnFavorite")
-     
-  foodCart                FoodOnCart[]     @relation("FoodOnCart")
-
-  foodSupplement          FoodSupplement[] @relation("FoodSupplements")
-  feedback                FeedBack[]       @relation("FoodFeedbacks")
-
-  isDeleted               Boolean          @default(false)
-  createdAt               DateTime         @default(now())
-  updatedAt               DateTime         @updatedAt
-}
-
-model FoodSupplement {
-  foodSupplementId        String                @id @default(uuid())
-
-  foodSupplementTitle     String
-  foodSupplementMaxChoice Int
-
-  foodId                  String?
-  food                    Food?                  @relation("FoodSupplements", fields: [foodId], references: [foodId], onDelete: Cascade)
-
-  foodSupplementItems     FoodSupplementItem[] @relation("FoodSupplementItems")
-}
-
-model FoodSupplementItem {
-  foodSupplementItemId    String                @id @default(uuid())
-
-  name                    String
-  isAvailable             Boolean
-
-  foodSupplementId        String?
-  foodSupplement          FoodSupplement?       @relation("FoodSupplementItems", fields: [foodSupplementId], references: [foodSupplementId], onDelete: Cascade)
-}
-
-// MART 
-model Mart {
-  martId                  String           @id @default(uuid())
-
-  martName                String
-  martProfilePhoto        String
-  martPhotos              String[]
-  martCategory            String
-  martType                String[]
-  martGuaranty            String
-  martPrice               Float
-
-  martIsAvailable         Boolean          @default(true)
-  martIsPromotion         Boolean          @default(false) 
-  martPromotionPercentage Float            @default(0)
-
-  martMeanRate            Float            @default(0)
-  martFeedbackCount       Int              @default(0)
-
-  providerProfileId       String
-  providerProfile         ProviderProfile  @relation("ProviderProfileMart", fields: [providerProfileId], references: [providerProfileId], onDelete: Cascade)
-
-  martOnFavorite          MartOnFavorite[]   @relation("MartOnFavorite")
-
-  martCart                MartOnCart[]     @relation("MartOnCart")
-
-  martItem                MartItem[]       @relation("MartItems")
-  feedback                FeedBack[]       @relation("MartFeedbacks")
-
-  isDeleted               Boolean          @default(false)
-  createdAt               DateTime         @default(now())
-  updatedAt               DateTime         @updatedAt
-}
-
-model MartItem {
-  martItemId      String     @id @default(uuid())
-
-
-  martItemName    String
-  martItemValues  String[]
-
-  martId          String
-  mart            Mart       @relation("MartItems", fields: [martId], references: [martId], onDelete: Cascade)
-}
-
-
-// ORDER
-enum InvoiceStatus {
-  PENDING
-  SUCCESS
-  FAILD
-}
-
-model FoodInvoice {
-  foodInvoiceId String @id @default(uuid())
-
-  subTotalInvoice   Float
-  tax               Float
-  deliveryPrice     Float
-  totalInvoice      Float
-
-  deliveryDistance  Float
-  deliveryAddress   String?
-  deliveryCity      String
-  deliveryZipCode   String?
-
-  invoiceStatus     InvoiceStatus   @default(PENDING)
-
-  clientProfileId   String
-  clientProfile     ClientProfile   @relation("ClientProfileFoodInvoices", fields: [clientProfileId], references: [clientProfileId])
-
-  foods             FoodOnInvoice[] @relation("FoodInvoices")
-  payment           Payment?        @relation("FoodInvoicePayment")
-
-  isDeleted         Boolean         @default(false)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-}
-
-model FoodOnInvoice {
-  foodOnInvoiceId         String           @id @default(uuid())
-
-  foodId                  String
-  foodName                String
-  foodPriceAtOrder        Float
-  foodCategory            String
-  foodOrigin              String
-  foodTypes               String[]
-  foodQuantity            Int              @default(1)
-
-  foodInvoiceId           String
-  foodInvoice             FoodInvoice      @relation("FoodInvoices", fields: [foodInvoiceId], references: [foodInvoiceId])
-
-  createdAt               DateTime         @default(now())
-}
-
-model FoodCart {
-  foodCartId       String        @id @default(uuid())
-
-  clientProfileId  String        @unique
-  clientProfile    ClientProfile @relation("ClientFoodCart", fields: [clientProfileId], references: [clientProfileId], onDelete: Cascade)
-
-  foods            FoodOnCart[]  @relation("CartOnFood") 
-
-  createdAt        DateTime      @default(now())
-}
-
-model FoodOnCart {
-  foodOnCartId String   @id @default(uuid())
-  quantity     Int      @default(1)
-
-  foodId       String
-  foods        Food     @relation("FoodOnCart", fields: [foodId], references: [foodId], onDelete: Cascade)
-
-  foodCartId   String
-  cart         FoodCart @relation("CartOnFood", fields: [foodCartId], references: [foodCartId], onDelete: Cascade)
-}
-
-model MartInvoice {
-  martInvoiceId     String @id @default(uuid())
-
-  subTotalInvoice   Float
-  tax               Float
-  deliveryPrice     Float
-  totalInvoice      Float
-
-  deliveryDistance  Float
-  deliveryAddress   String?
-  deliveryCity      String
-  deliveryZipCode   String?
-
-  invoiceStatus     InvoiceStatus   @default(PENDING)
-
-  clientProfileId   String
-  clientProfile     ClientProfile   @relation("ClientProfileMartInvoices", fields: [clientProfileId], references: [clientProfileId])
-
-  marts             MartOnInvoice[] @relation("MartInvoices")
-  payment           Payment?        @relation("MartInvoicePayment")
-
-  isDeleted         Boolean         @default(false)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-}
-
-model MartOnInvoice {
-  id                      String           @id @default(uuid())
-
-  martId                  String
-  martName                String
-  martPriceAtOrder        Float
-  martCategory            String
-  martOrigin              String
-  martTypes               String[]
-  martQuantity            Int              @default(1)
-  martItemsName           String[]
-  martItemsValue          String[]
-
-  martInvoiceId           String
-  martInvoice             MartInvoice      @relation("MartInvoices", fields: [martInvoiceId], references: [martInvoiceId])
-
-  createdAt               DateTime         @default(now())
-}
-
-model MartCart {
-  martCartId       String        @id @default(uuid())
-
-  clientProfileId  String        @unique
-  clientProfile    ClientProfile @relation("ClientMartCart", fields: [clientProfileId], references: [clientProfileId], onDelete: Cascade)
-
-  marts            MartOnCart[]  @relation("CartOnMart")
-
-  createdAt        DateTime      @default(now())
-}
-
-model MartOnCart {
-  martOnCartId String   @id @default(uuid())
-  quantity     Int      @default(1)
-
-  martId       String
-  marts        Mart     @relation("MartOnCart", fields: [martId], references: [martId], onDelete: Cascade)
-
-  martCartId   String
-  cart         MartCart @relation("CartOnMart", fields: [martCartId], references: [martCartId], onDelete: Cascade)
-}
-
-
-// FEEDBACK
-model FeedBack {
-  feedBackId         String              @id @default(uuid())
-
-  content            String
-  rate               Float
-  appreciates        String[]
-  noAppreciates      String[]
-
-  clientProfileId    String
-  clientProfile      ClientProfile       @relation("ClientFeedbacks",fields: [clientProfileId], references: [clientProfileId], onDelete: Cascade)
-
-  foodId             String?
-  food               Food?               @relation("FoodFeedbacks",fields: [foodId], references: [foodId], onDelete: Cascade)
-
-  martId             String?
-  mart               Mart?               @relation("MartFeedbacks",fields: [martId], references: [martId], onDelete: Cascade)
-
-  driverProfileId    String?
-  driverProfile      DriverProfile?      @relation("DriverProfileFeedbacks",fields: [driverProfileId], references: [driverProfileId], onDelete: Cascade)
-
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-}
-
-// PAYMENT
-
-enum PaymentMethod {
-  ACCOUNT_BALANCE
-  CASH
-  ORANGE_MONEY
-  MVOLA
-  CREDIT_CARD
-  BANK_TRANSFER
-}
-enum PaymentStatus {
-  PAID
-  UNPAID
-}
-
-model Payment {
-  paymentId                   String             @id @default(uuid())
-
-  paymentMethod               PaymentMethod
-
-  amount                      Float
-
-  foodIncome                  Float              @default(0)
-  martIncome                  Float              @default(0)
-  deliveryIncome              Float              @default(0)
-  rideIncome                  Float              @default(0)
-  rentIncome                  Float              @default(0)
-  expressIncome               Float              @default(0)
-
-  rapideIncomeForFood         Float              @default(0)
-  rapideIncomeForMart         Float              @default(0)
-  rapideIncomeForDelivery     Float              @default(0)
-  rapideIncomeForRide         Float              @default(0)
-  rapideIncomeForRent         Float              @default(0)
-  rapideIncomeForExpress      Float              @default(0)
-
-
-  paymentStatus               PaymentStatus
-
-  foodInvoiceId               String?            @unique
-  foodInvoice                 FoodInvoice?       @relation("FoodInvoicePayment",fields: [foodInvoiceId], references: [foodInvoiceId])
-
-  martInvoiceId               String?            @unique
-  martInvoice                 MartInvoice?       @relation("MartInvoicePayment",fields: [martInvoiceId], references: [martInvoiceId])
-
-  rapideBalanceId             String             @unique
-  rapideBalance               RapideBalance      @relation("RapideBalances", fields: [rapideBalanceId], references: [rapideBalanceId])
-
-  createdAt                   DateTime           @default(now())
-  updatedAt                   DateTime           @updatedAt
-
-}
-
-model MobilePaymentAccount {
-  mobilePaymentAccountId String            @id @default(uuid())
-
-  name            String
-  type            MobilePamentType
-  phoneNumber     String
-  isValidate      Boolean           @default(false)
-
-  clientProfileId String
-  clientProfile   ClientProfile     @relation("MobilePaymentAccountClient", fields: [clientProfileId], references: [clientProfileId], onDelete: Cascade)
-
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-}
-
-enum MobilePamentType {
-  MVOLA
-  ORANGE_MONEY
-}
-
-// ACCOUNT BALANCE
-enum BalanceStatus {
-  ACTIVE          // Le solde est utilisable.
-  PENDING         // Le solde est en attente d'une confirmation.
-  FROZEN          // Le solde est gelé pour une raison donnée.
-  INSUFFICIENT    // Le solde est insuffisant pour effectuer des transactions.
-  CLOSED          // Le compte ou le solde est clôturé.
+  createdAt                  DateTime           @default(now())
 }
 
 model AccountBalance {
@@ -616,55 +169,16 @@ model AccountBalance {
   driverProfileId      String?            @unique
   driverProfile        DriverProfile?     @relation("DriverAccountBalance",fields: [driverProfileId], references: [driverProfileId])
 
-  providerProfileId    String?            @unique
-  providerProfile      ProviderProfile?   @relation("ProviderAccountBalance",fields: [providerProfileId], references: [providerProfileId])
-
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
 }
 
 model RapideBalance {
-  rapideBalanceId      String             @id @default(uuid())
+  rapideBalanceId      String           @id @default(uuid())
 
   balance              Float
 
-  payment              Payment?           @relation("RapideBalances")
-
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
 }
 
-// Favorites
-
-model Favorite {
-  favoriteId          String             @id @default(uuid())
-
-  clientProfileId     String             @unique
-  clientProfile       ClientProfile      @relation("ClientFavorites",fields: [clientProfileId], references: [clientProfileId], onDelete: Cascade)
-
-  foods               FoodOnFavorite[]   @relation("FoodFavorites")
-  marts               MartOnFavorite[]   @relation("MartFavorites")
-
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-}
-
-model FoodOnFavorite {
-  foodOnFavoriteId  String    @id @default(uuid())
-
-  foodId            String
-  food              Food      @relation("FoodOnFavorite", fields: [foodId], references: [foodId], onDelete: Cascade)
-
-  favoriteId        String?
-  favorite          Favorite? @relation("FoodFavorites",fields: [favoriteId], references: [favoriteId], onDelete: Cascade)
-}
-
-model MartOnFavorite {
-  martOnFavoriteId  String    @id @default(uuid())
-
-  martId            String
-  mart              Mart    @relation("MartOnFavorite", fields: [martId], references: [martId], onDelete: Cascade)
-
-  favoriteId        String?
-  favorite          Favorite? @relation("MartFavorites",fields: [favoriteId], references: [favoriteId], onDelete: Cascade)
-}

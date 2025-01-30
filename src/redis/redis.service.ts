@@ -27,6 +27,12 @@ export class RedisService implements OnModuleInit {
       )
    }
 
+   async ttl(key: string) {
+      return await this.client.ttl(key)
+   }
+   async expire(key: string, ttl: number) {
+      return await this.client.expire(key, ttl)
+   }
    async get(key: string) {
       return await this.client.get(key)
    }
