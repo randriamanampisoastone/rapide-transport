@@ -40,7 +40,7 @@ export class GetProfileService {
             },
          })
          const updateDriverProfile = {
-            clientProfileId: driverProfile.driverProfile.driverProfileId,
+            driverProfileId: driverProfile.driverProfile.driverProfileId,
             firstName: driverProfile.firstName,
             lastName: driverProfile.lastName,
             birthday: driverProfile.birthday,
