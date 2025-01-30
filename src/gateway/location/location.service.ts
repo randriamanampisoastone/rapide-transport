@@ -7,8 +7,8 @@ import {
    UpdateClientLocationInterface,
 } from 'interfaces/location.interface'
 
-import { ClientRole } from 'interfaces/user.inteface'
 import { RedisService } from 'src/redis/redis.service'
+import { UserRole } from 'enums/profile.enum'
 
 @Injectable()
 export class LocationService {
@@ -35,7 +35,7 @@ export class LocationService {
          })
       }
 
-      server.to(ClientRole.Admin).emit('clientLocation', {
+      server.to(UserRole.ADMIN).emit('clientLocation', {
          clientProfileId,
          clientLocation,
          isOnRide,
@@ -67,7 +67,7 @@ export class LocationService {
          })
       }
 
-      server.to(ClientRole.Admin).emit('driverLocation', {
+      server.to(UserRole.ADMIN).emit('driverLocation', {
          driverProfileId,
          driverLocation,
          vehicleType,

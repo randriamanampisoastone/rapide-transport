@@ -1,7 +1,14 @@
-import { Controller, Post, Body, Get, Query } from '@nestjs/common'
+import {
+   Controller,
+   Post,
+   Body,
+   Get,
+   Query,
+   SetMetadata,
+   UseGuards,
+} from '@nestjs/common'
 import { CreateItineraryService } from './create-itinerary.service'
 import { CreateRideService } from './create-ride.service'
-import { Authorization, CognitoUser } from '@nestjs-cognito/auth'
 import { DriverArrivedService } from './driver-arrived.service'
 
 import { GetRideService } from './get-ride.service'
@@ -18,6 +25,8 @@ import { LatLng } from 'interfaces/location.interface'
 import { VehicleType } from 'enums/vehicle.enum'
 import { PaymentMethodType } from 'enums/payment.enum'
 import { StoppedService } from './stopped.service'
+import { RolesGuard } from 'src/jwt/roles.guard'
+import { GetUser } from 'src/jwt/get.user.decorator'
 
 @Controller('ride')
 export class RideController {
@@ -39,12 +48,20 @@ export class RideController {
       private readonly getRideService: GetRideService,
    ) {}
 
-   @Authorization({ allowedGroups: ['ClientGroup'] })
+   @Get('test')
+   @SetMetadata('allowedRole', ['CLIENT'])
+   @UseGuards(RolesGuard)
+   test(@GetUser('gender') clientProfileId: string) {
+      return `Test ${clientProfileId}`
+   }
+
    @Post('create-itinerary')
+   @SetMetadata('allowedRole', ['CLIENT'])
+   @UseGuards(RolesGuard)
    createItinerary(
       @Body()
       data: { pickUpLocation: LatLng; dropOffLocation: LatLng },
-      @CognitoUser('sub') clientProfileId,
+      @GetUser('clientProfileId') clientProfileId: string,
    ) {
       return this.createItineraryService.createItinerary({
          ...data,
@@ -52,8 +69,9 @@ export class RideController {
       })
    }
 
-   @Authorization({ allowedGroups: ['ClientGroup'] })
    @Post('create-ride')
+   @SetMetadata('allowedRole', ['CLIENT'])
+   @UseGuards(RolesGuard)
    createRide(
       @Body()
       data: {
@@ -62,7 +80,7 @@ export class RideController {
          vehicleType: VehicleType
          paymentMethodType: PaymentMethodType
       },
-      @CognitoUser('sub') clientProfileId,
+      @GetUser('clientProfileId') clientProfileId: string,
    ) {
       return this.createRideService.createRide({
          ...data,
@@ -70,29 +88,32 @@ export class RideController {
       })
    }
 
-   @Authorization({ allowedGroups: ['ClientGroup'] })
    @Post('cancelled')
+   @SetMetadata('allowedRole', ['CLIENT'])
+   @UseGuards(RolesGuard)
    cancelled(
       @Body() { rideId }: { rideId: string },
-      @CognitoUser('sub') clientProfileId,
+      @GetUser('clientProfileId') clientProfileId: string,
    ) {
       return this.cancelledService.cancelled({ rideId, clientProfileId })
    }
 
-   @Authorization({ allowedGroups: ['DriverGroup'] })
    @Post('driver-accept')
+   @SetMetadata('allowedRole', ['DRIVER'])
+   @UseGuards(RolesGuard)
    driverAccept(
       @Body() { rideId }: { rideId: string },
-      @CognitoUser('sub') driverProfileId,
+      @GetUser('driverProfileId') driverProfileId: string,
    ) {
       return this.driverAcceptService.driverAccept({ driverProfileId, rideId })
    }
 
-   @Authorization({ allowedGroups: ['DriverGroup'] })
    @Post('driver-on-the-way')
+   @SetMetadata('allowedRole', ['DRIVER'])
+   @UseGuards(RolesGuard)
    driverOnTheWay(
       @Body() data: { rideId: string; driverLocation: LatLng },
-      @CognitoUser('sub') driverProfileId,
+      @GetUser('driverProfileId') driverProfileId: string,
    ) {
       return this.driverOnTheWayService.driverOnTheWay({
          driverProfileId,
@@ -100,34 +121,35 @@ export class RideController {
       })
    }
 
-   @Authorization({ allowedGroups: ['ClientGroup'] })
    @Post('stopped')
+   @SetMetadata('allowedRole', ['CLIENT'])
+   @UseGuards(RolesGuard)
    stopped(
       @Body() { rideId }: { rideId: string },
-      @CognitoUser('sub') clientProfileId,
+      @GetUser('clientProfileId') clientProfileId: string,
    ) {
       return this.stoppedService.clientStopped({ rideId, clientProfileId })
    }
 
-   @Authorization({ allowedGroups: ['DriverGroup'] })
    @Post('driver-arrived')
+   @SetMetadata('allowedRole', ['DRIVER'])
+   @UseGuards(RolesGuard)
    drivertArrived(
       @Body() { rideId }: { rideId: string },
-      @CognitoUser('sub') driverProfileId,
+      @GetUser('driverProfileId') driverProfileId: string,
    ) {
-      console.log('driver arrived')
-
       return this.driverArrivedService.drivertArrived({
          driverProfileId,
          rideId,
       })
    }
 
-   @Authorization({ allowedGroups: ['DriverGroup'] })
    @Post('client-not-found')
+   @SetMetadata('allowedRole', ['DRIVER'])
+   @UseGuards(RolesGuard)
    clientNotFound(
       @Body() { rideId }: { rideId: string },
-      @CognitoUser('sub') driverProfileId,
+      @GetUser('driverProfileId') driverProfileId: string,
    ) {
       return this.clientNotFoundService.clientNotFound({
          driverProfileId,
@@ -135,11 +157,12 @@ export class RideController {
       })
    }
 
-   @Authorization({ allowedGroups: ['DriverGroup'] })
    @Post('start')
+   @SetMetadata('allowedRole', ['DRIVER'])
+   @UseGuards(RolesGuard)
    start(
       @Body() { rideId }: { rideId: string },
-      @CognitoUser('sub') driverProfileId,
+      @GetUser('driverProfileId') driverProfileId: string,
    ) {
       return this.startService.start({
          driverProfileId,
@@ -147,20 +170,22 @@ export class RideController {
       })
    }
 
-   @Authorization({ allowedGroups: ['ClientGroup'] })
    @Post('client-give-up')
+   @SetMetadata('allowedRole', ['DRIVER'])
+   @UseGuards(RolesGuard)
    clientGiveUp(
       @Body() { rideId }: { rideId: string },
-      @CognitoUser('sub') clientProfileId,
+      @GetUser('clientProfileId') clientProfileId: string,
    ) {
       return this.clientGiveUpService.clientGiveUp({ rideId, clientProfileId })
    }
 
-   @Authorization({ allowedGroups: ['DriverGroup'] })
    @Post('arrived-destination')
+   @SetMetadata('allowedRole', ['DRIVER'])
+   @UseGuards(RolesGuard)
    arrivedDestination(
       @Body() { rideId }: { rideId: string },
-      @CognitoUser('sub') driverProfileId,
+      @GetUser('driverProfileId') driverProfileId: string,
    ) {
       return this.arrivedDestinationService.arrivedDestination({
          driverProfileId,
@@ -168,11 +193,12 @@ export class RideController {
       })
    }
 
-   @Authorization({ allowedGroups: ['DriverGroup'] })
    @Post('complete')
+   @SetMetadata('allowedRole', ['DRIVER'])
+   @UseGuards(RolesGuard)
    complete(
       @Body() { rideId }: { rideId: string },
-      @CognitoUser('sub') driverProfileId,
+      @GetUser('driverProfileId') driverProfileId: string,
    ) {
       return this.completeService.complete({
          driverProfileId,
@@ -180,8 +206,9 @@ export class RideController {
       })
    }
 
-   @Authorization({ allowedGroups: ['ClientGroup'] })
    @Post('review')
+   @SetMetadata('allowedRole', ['CLIENT'])
+   @UseGuards(RolesGuard)
    review(
       @Body()
       data: {
@@ -189,12 +216,12 @@ export class RideController {
          review: string
          rideId: string
       },
-      @CognitoUser('sub') clientProfileId,
+      @GetUser('clientProfileId') clientProfileId: string,
    ) {
       return this.reviewService.review({ clientProfileId, ...data })
    }
-
    @Get('find-ride-by-id-redis')
+   @UseGuards(RolesGuard)
    findRide(@Query('rideId') rideId: string) {
       return this.getRideService.getRideRedis(rideId)
    }
