@@ -173,8 +173,6 @@ model Transaction {
 
   driverProfileId            String
   driverProfile              DriverProfile      @relation("DriverTransaction", fields: [driverProfileId], references: [driverProfileId])
-
-
   createdAt                  DateTime           @default(now())
 }
 

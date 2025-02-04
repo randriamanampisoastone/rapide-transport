@@ -21,8 +21,6 @@ export class DriverArrivedService {
    ) {}
 
    async drivertArrived(driverArrivedDto: DriverArrivedDto) {
-     
-
       try {
          const rideId = driverArrivedDto.rideId
          const driverProfileId = driverArrivedDto.driverProfileId
