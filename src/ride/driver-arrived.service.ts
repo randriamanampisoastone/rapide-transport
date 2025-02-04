@@ -21,7 +21,7 @@ export class DriverArrivedService {
    ) {}
 
    async drivertArrived(driverArrivedDto: DriverArrivedDto) {
-      console.log('iCICI')
+     
 
       try {
          const rideId = driverArrivedDto.rideId

@@ -23,7 +23,6 @@ export class VehicleService {
          VehicleType.PREMIUM_CAR,
          [2000],
       )
-      console.log('motos', motos)
 
       return {
          drivers: [...motos, ...lite_cars, ...premium_cars],
