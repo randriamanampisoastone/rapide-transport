@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Get, Query } from '@nestjs/common'
+import {
+   Controller,
+   Post,
+   Body,
+   Get,
+   Query,
+   SetMetadata,
+   UseGuards,
+} from '@nestjs/common'
 import { SignUpService } from './sign.up.service'
 import { SignUpDto } from './dto/sign.up.dto'
 import { ConfirmSignUpService } from './confirm.sign.up.service'
@@ -10,6 +18,7 @@ import { ResendConfirmSignInService } from './resend.confirm.sign.in.service'
 import { ResendConfirmSignUpService } from './resend.confirm.sign.up.service'
 import { ResendConfirmDto } from './dto/resend.confirm.dto'
 import { GetProfileService } from './get.profile.service'
+import { RolesGuard } from 'src/jwt/roles.guard'
 
 @Controller('auth')
 export class AuthController {
@@ -79,6 +88,26 @@ export class AuthController {
       clientProfileId: string,
    ) {
       return await this.getProfileService.getClientProfile(clientProfileId)
+   }
+
+   @Get('getFullClientProfile')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   async getFullClientProfile(
+      @Query('clientProfileId')
+      clientProfileId: string,
+   ) {
+      return await this.getProfileService.getFullClientProfile(clientProfileId)
+   }
+
+   @Get('getClients')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   async getClients(
+      @Query('page') page: number,
+      @Query('pageSize') pageSize: number,
+   ) {
+      return await this.getProfileService.getClients(page || 1, pageSize || 10)
    }
 
    @Get('getDriverProfile')

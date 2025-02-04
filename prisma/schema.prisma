@@ -52,6 +52,26 @@ enum UserRole {
   DRIVER
   ADMIN
 }
+enum PaymentMethodType {
+  CASH
+  MVOLA
+  ORANGE_MONEY
+  PROMO
+}
+enum RideStatus {
+  FINDING_DRIVER
+  CANCELLED
+  DRIVER_ACCEPTED
+  DRIVER_ON_THE_WAY
+  STOPPED
+  DRIVER_ARRIVED
+  CLIENT_NOT_FOUND
+  ON_RIDE
+  CLIENT_GIVE_UP
+  ARRIVED_DESTINATION
+  COMPLETED
+  ADMIN_CHECK
+}
 
 model Profile {
   sub                  String          @id @default(uuid())
@@ -147,7 +167,7 @@ model RideInvoice {
 }
 
 model Transaction {
-  transactionId              String             @id@default(uuid())
+  transactionId              String             @id @default(uuid())
   amount                     Float
   transactionType            TransactionType    @default(TRANSFERT)
 
@@ -182,3 +202,33 @@ model RapideBalance {
   updatedAt            DateTime         @updatedAt
 }
 
+model Ride {
+  rideId String @id
+
+  clientProfileId String
+  driverProfileId String?
+
+  vehicleType VehicleType
+  vehicleId   String?
+
+  paymentMethodType   PaymentMethodType
+  pickUpLatitude      Float
+  pickUpLongitude     Float
+  dropOffLatitude     Float
+  dropOffLongitude    Float
+  encodedPolyline     String
+  distanceMeters      Float
+  estimatedDuration   Float
+  estimatedPriceLower Float
+  estimatedPriceUpper Float
+  realDuration        Float?
+  realPrice           Float?
+  status              RideStatus?
+  note                Float?
+  review              String?
+  startTime           Float?
+  endTime             Float?
+
+  createdAt String?
+  updateAt  String?
+}
