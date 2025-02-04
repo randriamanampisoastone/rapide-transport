@@ -40,8 +40,6 @@ export class InfoOnRideService {
       //    rideDataUpdatedString,
       // )
 
-      // // console.log('rideData', rideData)
-
       server
          .to(clientProfileId)
          .emit('infoOnRidePull', { realDuration, realPrice })

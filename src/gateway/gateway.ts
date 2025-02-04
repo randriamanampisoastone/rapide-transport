@@ -48,8 +48,6 @@ export class Gateway
       if (Object.values(UserRole).includes(role)) {
          client.join(role)
          if (client.data.user.clientProfileId) {
-            console.log('llllllleeeeoooo')
-
             client.join(client.data.user.clientProfileId)
          } else if (client.data.user.driverProfileId)
             client.join(client.data.user.driverProfileId)
@@ -92,7 +90,6 @@ export class Gateway
       if (!validation) return
 
       const { role } = validation
-      console.log('role:', role)
 
       this.assignUserToRoom(client, role)
       this.logger.log(
@@ -144,11 +141,13 @@ export class Gateway
    ) {
       await this.locationService.handleUpdateClientLocation(this.server, data)
    }
+   @SubscribeMessage('sendData')
+   async handleSendData(@MessageBody() data: any) {
+      console.log('Tonga : ', data)
+   }
 
    @SubscribeMessage('notifyClient')
    async notifyClient(@MessageBody() data: { clientProfileId: string }) {
-      console.log('notifyClient', data)
-
       this.server.to(data.clientProfileId).emit('notifyClient', {})
    }
 
