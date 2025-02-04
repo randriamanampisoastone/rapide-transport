@@ -147,14 +147,12 @@ model RideInvoice {
 }
 
 model Transaction {
-  transactionId              String             @id@default(uuid())
+  transactionId              String             @id @default(uuid())
   amount                     Float
   transactionType            TransactionType    @default(TRANSFERT)
 
   driverProfileId            String
   driverProfile              DriverProfile      @relation("DriverTransaction", fields: [driverProfileId], references: [driverProfileId])
-
-
   createdAt                  DateTime           @default(now())
 }
 
