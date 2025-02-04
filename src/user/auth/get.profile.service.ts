@@ -31,6 +31,63 @@ export class GetProfileService {
          throw error
       }
    }
+   async getFullClientProfile(clientProfileId: string) {
+      try {
+         const clientProfile = await this.prismaService.profile.findUnique({
+            where: { sub: clientProfileId },
+            include: {
+               clientProfile: {
+                  select: {
+                     accountBalance: true,
+                     clientAddress: true,
+                     clientProfileId: true,
+                     profile: true,
+                     rideInvoice: true,
+                  },
+               },
+            },
+         })
+         return clientProfile
+      } catch (error) {
+         throw error
+      }
+   }
+   async getClients(page: number, pageSize: number) {
+      try {
+         const [clientProfiles, totalCount] = await Promise.all([
+            await this.prismaService.clientProfile.findMany({
+               select: {
+                  status: true,
+                  profile: {
+                     select: {
+                        sub: true,
+                        firstName: true,
+                        lastName: true,
+                        phoneNumber: true,
+                     },
+                  },
+                  accountBalance: {
+                     select: {
+                        balance: true,
+                        balanceStatus: true,
+                     },
+                  },
+               },
+               skip: (page - 1) * pageSize,
+               take: pageSize,
+            }),
+            this.prismaService.clientProfile.count(),
+         ])
+
+         return {
+            data: clientProfiles,
+            hasMore: page * pageSize < totalCount,
+            totalCount,
+         }
+      } catch (error) {
+         throw error
+      }
+   }
    async getDriverProfile(driverProfileId: string) {
       try {
          const driverProfile = await this.prismaService.profile.findUnique({

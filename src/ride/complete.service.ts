@@ -3,7 +3,9 @@ import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
 import { RideData, RideDataKey } from 'interfaces/ride.interface'
 import { InjectModel, Model } from 'nestjs-dynamoose'
+import { DriverBalanceService } from 'src/accountBalance/driverBalance.service'
 import { Gateway } from 'src/gateway/gateway'
+import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
 
 export interface CompleteDto {
@@ -18,6 +20,8 @@ export class CompleteService {
       private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly gateway: Gateway,
       private redisService: RedisService,
+      private readonly driverBalanceService: DriverBalanceService,
+      private readonly prismaService: PrismaService
    ) {}
    async complete(completeDto: CompleteDto) {
       try {
@@ -49,6 +53,24 @@ export class CompleteService {
                status: RideStatus.COMPLETED,
             },
          )
+
+         this.driverBalanceService.increaseBalance(
+            rideData.driverProfileId,
+            rideData.realPrice,
+         )
+         
+         const {pickUpLocation, dropOffLocation, estimatedPrice, ...rideDataRest} = rideData
+         await this.prismaService.ride.create({
+            data: {
+               ...rideDataRest,
+               pickUpLatitude: pickUpLocation.latitude,
+               pickUpLongitude: pickUpLocation.longitude,
+               dropOffLatitude: dropOffLocation.latitude,
+               dropOffLongitude: dropOffLocation.longitude,
+               estimatedPriceLower: estimatedPrice.lower,
+               estimatedPriceUpper: estimatedPrice.upper
+            }
+         })
       } catch (error) {
          throw error
       }

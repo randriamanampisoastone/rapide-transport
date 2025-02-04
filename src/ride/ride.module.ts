@@ -21,6 +21,8 @@ import { CompleteService } from './complete.service'
 import { ReviewService } from './review.service'
 import { GetRideService } from './get-ride.service'
 import { StoppedService } from './stopped.service'
+import { DriverBalanceService } from 'src/accountBalance/driverBalance.service'
+import { PrismaService } from 'src/prisma/prisma.service'
 
 @Module({
    imports: [
@@ -47,6 +49,9 @@ import { StoppedService } from './stopped.service'
       ArrivedDestinationService,
       CompleteService,
       ReviewService,
+
+      DriverBalanceService,
+      PrismaService
    ],
 })
 export class RideModule {}
