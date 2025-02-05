@@ -86,6 +86,7 @@ export class ConfirmSignUpService {
          const authProfile = await this.prismaService.profile.create({
             data: {
                phoneNumber: signUpDto.phoneNumber,
+               email: signUpDto.email,
                firstName: signUpDto.firstName,
                lastName: signUpDto.lastName,
                gender: signUpDto.gender,
@@ -109,6 +110,7 @@ export class ConfirmSignUpService {
          return {
             clientProfileId: clientProfile.clientProfileId,
             firstName: authProfile.firstName,
+            email: authProfile.email,
             lastName: authProfile.lastName,
             birthday: authProfile.birthday,
             gender: authProfile.gender,
@@ -124,6 +126,7 @@ export class ConfirmSignUpService {
          const authProfile = await this.prismaService.profile.create({
             data: {
                phoneNumber: signUpDto.phoneNumber,
+               email: signUpDto.email,
                firstName: signUpDto.firstName,
                lastName: signUpDto.lastName,
                gender: signUpDto.gender,
@@ -146,6 +149,7 @@ export class ConfirmSignUpService {
 
          return {
             driverProfileId: driverProfile.driverProfileId,
+            email: authProfile.email,
             firstName: authProfile.firstName,
             lastName: authProfile.lastName,
             birthday: authProfile.birthday,
@@ -162,6 +166,7 @@ export class ConfirmSignUpService {
          const authProfile = await this.prismaService.profile.create({
             data: {
                phoneNumber: signUpDto.phoneNumber,
+               email: signUpDto.email,
                firstName: signUpDto.firstName,
                lastName: signUpDto.lastName,
                gender: signUpDto.gender,
@@ -179,6 +184,7 @@ export class ConfirmSignUpService {
 
          return {
             adminProfileId: adminProfile.adminProfileId,
+            email: authProfile.email,
             firstName: authProfile.firstName,
             lastName: authProfile.lastName,
             birthday: authProfile.birthday,

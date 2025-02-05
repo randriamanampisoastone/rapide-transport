@@ -95,7 +95,7 @@ model Profile {
 
 model ClientProfile {
   clientProfileId      String          @id
-  profile              Profile         @relation("AuthClientProfile", fields: [clientProfileId], references: [sub])
+  profile              Profile         @relation("AuthClientProfile", fields: [clientProfileId], references: [sub], onDelete: Cascade)
 
   clientAddress        Address[]       @relation("ClientAddress")
   rideInvoice          RideInvoice[]   @relation("ClientRideInvoice")
@@ -109,7 +109,7 @@ model ClientProfile {
 
 model DriverProfile {
   driverProfileId      String          @id
-  profile              Profile         @relation("AuthDriverProfile", fields: [driverProfileId], references: [sub])
+  profile              Profile         @relation("AuthDriverProfile", fields: [driverProfileId], references: [sub], onDelete: Cascade)
 
   rideInvoice          RideInvoice[]   @relation("DriverRideInvoice")
   accountBalance       AccountBalance? @relation("DriverAccountBalance")
@@ -123,7 +123,7 @@ model DriverProfile {
 
 model AdminProfile {
   adminProfileId       String          @id
-  profile              Profile         @relation("AuthAdminProfile", fields: [adminProfileId], references: [sub])
+  profile              Profile         @relation("AuthAdminProfile", fields: [adminProfileId], references: [sub], onDelete: Cascade)
 
   status               ProfileStatus   @default(UNDER_REVIEW)
 

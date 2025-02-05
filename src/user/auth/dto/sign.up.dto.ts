@@ -5,6 +5,7 @@ import {
    IsDate,
    IsString,
    Matches,
+   IsEmail,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 import { GenderType, UserRole } from 'enums/profile.enum'
@@ -16,6 +17,9 @@ export class SignUpDto {
          'Phone number must be in the format: +261XXXXXXXXX, 261XXXXXXXXX, or 0XXXXXXXXX',
    })
    phoneNumber: string
+
+   @IsEmail()
+   email: string
 
    @IsNotEmpty()
    @IsString()
