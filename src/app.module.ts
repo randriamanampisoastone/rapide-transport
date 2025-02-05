@@ -9,6 +9,7 @@ import { UserModule } from './user/user.module'
 import { RideModule } from './ride/ride.module'
 import { GatewayModule } from './gateway/gatway.module'
 import { VehicleModule } from './vehicle/vehicle.module'
+import { AccountBalanceModule } from './accountBalance/accountBalance.module'
 
 @Module({
    imports: [
@@ -42,6 +43,7 @@ import { VehicleModule } from './vehicle/vehicle.module'
       RideModule,
       GatewayModule,
       VehicleModule,
+      AccountBalanceModule,
    ],
    controllers: [AppController],
    providers: [],
