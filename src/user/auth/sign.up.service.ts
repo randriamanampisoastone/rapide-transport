@@ -23,8 +23,13 @@ export class SignUpService implements OnModuleInit {
 
    async signUp(signUpDto: SignUpDto) {
       try {
-         const existingUser = await this.prismaService.profile.findUnique({
-            where: { phoneNumber: signUpDto.phoneNumber },
+         const existingUser = await this.prismaService.profile.findFirst({
+            where: {
+               OR: [
+                  { email: signUpDto.email },
+                  { phoneNumber: signUpDto.phoneNumber },
+               ],
+            },
          })
 
          if (existingUser) {
@@ -39,10 +44,10 @@ export class SignUpService implements OnModuleInit {
             encoding: 'base32',
          })
 
-         await this.smsService.sendSMS(
-            [signUpDto.phoneNumber],
-            `Your Rapide App OTP Code is : ${confirmationCode}`,
-         )
+         // await this.smsService.sendSMS(
+         //    [signUpDto.phoneNumber],
+         //    `Your Rapide App OTP Code is : ${confirmationCode}`,
+         // )
          const updateSignUpDto = {
             attempt: 0,
             confirmationCode,
