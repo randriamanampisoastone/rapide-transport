@@ -39,10 +39,10 @@ export class SignUpService implements OnModuleInit {
             encoding: 'base32',
          })
 
-         await this.smsService.sendSMS(
-            [signUpDto.phoneNumber],
-            `Your Rapide App OTP Code is : ${confirmationCode}`,
-         )
+         // await this.smsService.sendSMS(
+         //    [signUpDto.phoneNumber],
+         //    `Your Rapide App OTP Code is : ${confirmationCode}`,
+         // )
          const updateSignUpDto = {
             attempt: 0,
             confirmationCode,

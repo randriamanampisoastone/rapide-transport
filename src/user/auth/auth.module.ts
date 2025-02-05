@@ -13,9 +13,15 @@ import { ResendConfirmSignUpService } from './resend.confirm.sign.up.service'
 import { ResendConfirmSignInService } from './resend.confirm.sign.in.service'
 import { GetProfileService } from './get.profile.service'
 import { GoogleAuthService } from './google.auth.service'
+import { DynamooseModule } from 'nestjs-dynamoose'
+import { RideModel } from 'src/ride/Model/ride.model'
+import { GetByStatusService } from 'src/ride/get-by-status.service'
 
 @Module({
-   imports: [JwtModule.registerAsync(jwtConfig)],
+   imports: [
+      JwtModule.registerAsync(jwtConfig),
+      // DynamooseModule.forFeature([RideModel]),
+   ],
    controllers: [AuthController],
    providers: [
       RedisService,
@@ -29,6 +35,7 @@ import { GoogleAuthService } from './google.auth.service'
       ResendConfirmSignInService,
       GetProfileService,
       GoogleAuthService,
+      // GetByStatusService,
    ],
 })
 export class AuthModule {}

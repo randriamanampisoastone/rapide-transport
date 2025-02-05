@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common'
+// import { RideStatus } from 'enums/ride.enum'
 
 import { PrismaService } from 'src/prisma/prisma.service'
+import { GetByStatusService } from 'src/ride/get-by-status.service'
 
 @Injectable()
 export class GetProfileService {
-   constructor(private readonly prismaService: PrismaService) {}
+   constructor(
+      private readonly prismaService: PrismaService,
+      // private readonly getByStatusService: GetByStatusService,
+   ) {}
 
    async getClientProfile(clientProfileId: string) {
       try {
@@ -36,15 +41,7 @@ export class GetProfileService {
          const clientProfile = await this.prismaService.profile.findUnique({
             where: { sub: clientProfileId },
             include: {
-               clientProfile: {
-                  select: {
-                     accountBalance: true,
-                     clientAddress: true,
-                     clientProfileId: true,
-                     profile: true,
-                     rideInvoice: true,
-                  },
-               },
+               clientProfile: true,
             },
          })
          return clientProfile
@@ -54,25 +51,27 @@ export class GetProfileService {
    }
    async getClients(page: number, pageSize: number) {
       try {
+         const select = {
+            status: true,
+            profile: {
+               select: {
+                  sub: true,
+                  firstName: true,
+                  lastName: true,
+                  phoneNumber: true,
+               },
+            },
+            accountBalance: {
+               select: {
+                  balance: true,
+                  balanceStatus: true,
+               },
+            },
+         }
+
          const [clientProfiles, totalCount] = await Promise.all([
             await this.prismaService.clientProfile.findMany({
-               select: {
-                  status: true,
-                  profile: {
-                     select: {
-                        sub: true,
-                        firstName: true,
-                        lastName: true,
-                        phoneNumber: true,
-                     },
-                  },
-                  accountBalance: {
-                     select: {
-                        balance: true,
-                        balanceStatus: true,
-                     },
-                  },
-               },
+               select,
                skip: (page - 1) * pageSize,
                take: pageSize,
             }),
@@ -108,6 +107,57 @@ export class GetProfileService {
             status: driverProfile.driverProfile.status,
          }
          return updateDriverProfile
+      } catch (error) {
+         throw error
+      }
+   }
+   async getDrivers(page: number, pageSize: number) {
+      try {
+         const select = {
+            status: true,
+            profile: {
+               select: {
+                  sub: true,
+                  firstName: true,
+                  lastName: true,
+                  phoneNumber: true,
+               },
+            },
+            accountBalance: {
+               select: {
+                  balance: true,
+                  balanceStatus: true,
+               },
+            },
+         }
+
+         const [driverProfiles, totalCount] = await Promise.all([
+            await this.prismaService.driverProfile.findMany({
+               select,
+               skip: (page - 1) * pageSize,
+               take: pageSize,
+            }),
+            this.prismaService.driverProfile.count(),
+         ])
+
+         return {
+            data: driverProfiles,
+            hasMore: page * pageSize < totalCount,
+            totalCount,
+         }
+      } catch (error) {
+         throw error
+      }
+   }
+   async getFullDriverProfile(driverProfileId: string) {
+      try {
+         const clientProfile = await this.prismaService.profile.findUnique({
+            where: { sub: driverProfileId },
+            include: {
+               driverProfile: true,
+            },
+         })
+         return clientProfile
       } catch (error) {
          throw error
       }
