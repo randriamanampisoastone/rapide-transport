@@ -1,59 +1,99 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
-import { SignInDto } from './dto/sign.in.dto'
 import { PrismaService } from 'src/prisma/prisma.service'
-import * as speakeasy from 'speakeasy'
-import { SmsService } from 'src/sms/sms.service'
-import { RedisService } from 'src/redis/redis.service'
-import { ConfigService } from '@nestjs/config'
-import { AUTH_SIGN_IN_PREFIX } from 'constants/redis.constant'
+import { OAuth2Client } from 'google-auth-library'
+import { UserRole } from 'enums/profile.enum'
+import { JwtService } from '@nestjs/jwt'
+import { Injectable } from '@nestjs/common'
 
 @Injectable()
 export class GoogleAuthService {
-   private AUTH_OTP_TTL = 0
+   private WEB_CLIENT_ID =
+      '378200763630-4tevtt89ff6g7alvigl1r041ditle8j5.apps.googleusercontent.com'
+   private client = new OAuth2Client(this.WEB_CLIENT_ID)
 
    constructor(
-      private readonly redisService: RedisService,
-      private readonly configService: ConfigService,
-      private readonly smsService: SmsService,
+      private readonly jwtService: JwtService,
       private readonly prismaService: PrismaService,
    ) {}
 
-   onModuleInit() {
-      this.AUTH_OTP_TTL = this.configService.get<number>('AUTH_OTP_TTL')
+   async verifyGoogleToken(idToken: string) {
+      try {
+         const ticket = await this.client.verifyIdToken({
+            idToken,
+            audience: this.WEB_CLIENT_ID,
+         })
+         const payload = ticket.getPayload()
+         return payload
+      } catch (error) {
+         throw error
+      }
    }
 
-   async signIn(signInDto: SignInDto) {
+   async googleAuth(idToken: string) {
       try {
+         const payload = await this.verifyGoogleToken(idToken)
+
          const existingUser = await this.prismaService.profile.findUnique({
-            where: { phoneNumber: signInDto.phoneNumber },
+            where: { email: payload.email },
+            include: {
+               clientProfile: true,
+               driverProfile: true,
+               adminProfile: true,
+            },
          })
 
          if (!existingUser) {
-            throw new BadRequestException(
-               `User with this phone number doesn't exists`,
-            )
+            return {
+               email: payload.email,
+               firstName: payload.given_name,
+               lastName: payload.family_name,
+               profilePhoto: payload.picture,
+               status: 'NOT_REGISTERED',
+            }
          }
 
-         const secret = speakeasy.generateSecret({ length: 20 })
-         const confirmationCode = speakeasy.totp({
-            secret: secret.base32,
-            encoding: 'base32',
-         })
-
-         await this.smsService.sendSMS(
-            [signInDto.phoneNumber],
-            `Your Rapide App OTP Code is : ${confirmationCode}`,
-         )
-         const updateSignInDto = {
-            attempt: 0,
-            confirmationCode,
-            ...signInDto,
+         if (existingUser.role === UserRole.CLIENT) {
+            const updateClientProfile = {
+               clientProfileId: existingUser.clientProfile.clientProfileId,
+               firstName: existingUser.firstName,
+               lastName: existingUser.lastName,
+               birthday: existingUser.birthday,
+               gender: existingUser.gender,
+               phoneNumber: existingUser.phoneNumber,
+               profilePhoto: existingUser.profilePhoto,
+               role: existingUser.role,
+               status: existingUser.clientProfile.status,
+            }
+            const token = await this.jwtService.signAsync(updateClientProfile)
+            return { token, status: 'REGISTERED' }
+         } else if (existingUser.role === UserRole.DRIVER) {
+            const updateDriverProfile = {
+               driverProfileId: existingUser.driverProfile.driverProfileId,
+               firstName: existingUser.firstName,
+               lastName: existingUser.lastName,
+               birthday: existingUser.birthday,
+               gender: existingUser.gender,
+               phoneNumber: existingUser.phoneNumber,
+               profilePhoto: existingUser.profilePhoto,
+               role: existingUser.role,
+               status: existingUser.driverProfile.status,
+            }
+            const token = await this.jwtService.signAsync(updateDriverProfile)
+            return { token, status: 'REGISTERED' }
+         } else if (existingUser.role === UserRole.ADMIN) {
+            const updateAdminProfile = {
+               adminProfileId: existingUser.adminProfile.adminProfileId,
+               firstName: existingUser.firstName,
+               lastName: existingUser.lastName,
+               birthday: existingUser.birthday,
+               gender: existingUser.gender,
+               phoneNumber: existingUser.phoneNumber,
+               profilePhoto: existingUser.profilePhoto,
+               role: existingUser.role,
+               status: existingUser.adminProfile.status,
+            }
+            const token = await this.jwtService.signAsync(updateAdminProfile)
+            return { token, status: 'REGISTERED' }
          }
-         await this.redisService.set(
-            `${AUTH_SIGN_IN_PREFIX + signInDto.phoneNumber}`,
-            JSON.stringify(updateSignInDto),
-            this.AUTH_OTP_TTL,
-         )
       } catch (error) {
          throw error
       }

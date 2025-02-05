@@ -21,7 +21,7 @@ export class CompleteService {
       private readonly gateway: Gateway,
       private redisService: RedisService,
       private readonly driverBalanceService: DriverBalanceService,
-      private readonly prismaService: PrismaService
+      private readonly prismaService: PrismaService,
    ) {}
    async complete(completeDto: CompleteDto) {
       try {
@@ -58,8 +58,13 @@ export class CompleteService {
             rideData.driverProfileId,
             rideData.realPrice,
          )
-         
-         const {pickUpLocation, dropOffLocation, estimatedPrice, ...rideDataRest} = rideData
+
+         const {
+            pickUpLocation,
+            dropOffLocation,
+            estimatedPrice,
+            ...rideDataRest
+         } = rideData
          await this.prismaService.ride.create({
             data: {
                ...rideDataRest,
@@ -68,8 +73,8 @@ export class CompleteService {
                dropOffLatitude: dropOffLocation.latitude,
                dropOffLongitude: dropOffLocation.longitude,
                estimatedPriceLower: estimatedPrice.lower,
-               estimatedPriceUpper: estimatedPrice.upper
-            }
+               estimatedPriceUpper: estimatedPrice.upper,
+            },
          })
       } catch (error) {
          throw error

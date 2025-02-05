@@ -19,6 +19,7 @@ import { ResendConfirmSignUpService } from './resend.confirm.sign.up.service'
 import { ResendConfirmDto } from './dto/resend.confirm.dto'
 import { GetProfileService } from './get.profile.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
+import { GoogleAuthService } from './google.auth.service'
 
 @Controller('auth')
 export class AuthController {
@@ -30,6 +31,7 @@ export class AuthController {
       private readonly confirmSignInService: ConfirmSignInService,
       private readonly resendConfirmSignInService: ResendConfirmSignInService,
       private readonly getProfileService: GetProfileService,
+      private readonly googleAuthService: GoogleAuthService,
    ) {}
 
    @Post('signUp')
@@ -116,5 +118,15 @@ export class AuthController {
       driverProfileId: string,
    ) {
       return await this.getProfileService.getDriverProfile(driverProfileId)
+   }
+
+   @Post('googleAuth')
+   async googleAuth(
+      @Body()
+      data: {
+         idToken: string
+      },
+   ) {
+      return await this.googleAuthService.googleAuth(data.idToken)
    }
 }

@@ -12,6 +12,7 @@ import { ConfirmSignInService } from './confirm.sign.in.service'
 import { ResendConfirmSignUpService } from './resend.confirm.sign.up.service'
 import { ResendConfirmSignInService } from './resend.confirm.sign.in.service'
 import { GetProfileService } from './get.profile.service'
+import { GoogleAuthService } from './google.auth.service'
 
 @Module({
    imports: [JwtModule.registerAsync(jwtConfig)],
@@ -27,6 +28,7 @@ import { GetProfileService } from './get.profile.service'
       ConfirmSignInService,
       ResendConfirmSignInService,
       GetProfileService,
+      GoogleAuthService,
    ],
 })
 export class AuthModule {}
