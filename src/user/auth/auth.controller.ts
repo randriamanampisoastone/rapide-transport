@@ -120,6 +120,26 @@ export class AuthController {
       return await this.getProfileService.getDriverProfile(driverProfileId)
    }
 
+   @Get('getFullDriverProfile')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   async getFullDriverProfile(
+      @Query('driverProfileId')
+      driverProfileId: string,
+   ) {
+      return await this.getProfileService.getFullDriverProfile(driverProfileId)
+   }
+
+   @Get('getDrivers')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   async getDrivers(
+      @Query('page') page: number,
+      @Query('pageSize') pageSize: number,
+   ) {
+      return await this.getProfileService.getDrivers(page || 1, pageSize || 10)
+   }
+
    @Post('googleAuth')
    async googleAuth(
       @Body()

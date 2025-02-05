@@ -146,27 +146,6 @@ model Address {
   updatedAt          DateTime        @updatedAt
 }
 
-
-model RideInvoice {
-  rideInvoiceId              String           @id @default(uuid())
-
-  pickUpLocationPlusCode     String
-  dropOffLocationPlusCode    String
-  distanceMeters             Float
-  realDuration               Float
-  realPrice                  Float
-  vehicleType                VehicleType
-
-  clientProfileId            String
-  clientProfile              ClientProfile    @relation("ClientRideInvoice", fields: [clientProfileId], references: [clientProfileId])
-
-  driverProfileId            String
-  driverProfile              DriverProfile    @relation("DriverRideInvoice", fields: [driverProfileId], references: [driverProfileId])
-   
-  createdAt                  DateTime         @default(now())
-  updatedAt                  DateTime         @updatedAt
-}
-
 model Transaction {
   transactionId              String             @id @default(uuid())
   amount                     Float
@@ -201,11 +180,14 @@ model RapideBalance {
   updatedAt            DateTime         @updatedAt
 }
 
-model Ride {
-  rideId String @id
+model RideInvoice {
+  rideInvoiceId              String           @id @default(uuid())
 
-  clientProfileId String
-  driverProfileId String?
+  clientProfileId            String?
+  clientProfile              ClientProfile?    @relation("ClientRideInvoice", fields: [clientProfileId], references: [clientProfileId])
+
+  driverProfileId            String?
+  driverProfile              DriverProfile?    @relation("DriverRideInvoice", fields: [driverProfileId], references: [driverProfileId])
 
   vehicleType VehicleType
   vehicleId   String?

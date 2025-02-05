@@ -47,7 +47,7 @@ export class CompleteService {
 
          await this.rideModel.update(
             {
-               rideId,
+               rideId
             },
             {
                status: RideStatus.COMPLETED,
@@ -63,10 +63,12 @@ export class CompleteService {
             pickUpLocation,
             dropOffLocation,
             estimatedPrice,
+            rideId: rideInvoiceId,
             ...rideDataRest
          } = rideData
-         await this.prismaService.ride.create({
+         await this.prismaService.rideInvoice.create({
             data: {
+               rideInvoiceId,
                ...rideDataRest,
                pickUpLatitude: pickUpLocation.latitude,
                pickUpLongitude: pickUpLocation.longitude,
