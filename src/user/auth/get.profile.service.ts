@@ -41,7 +41,14 @@ export class GetProfileService {
          const clientProfile = await this.prismaService.profile.findUnique({
             where: { sub: clientProfileId },
             include: {
-               clientProfile: true,
+               clientProfile: {
+                  include: {
+                     accountBalance: true,
+                     clientAddress: true,
+                     profile: true,
+                     rideInvoice: true,
+                  },
+               },
             },
          })
          return clientProfile
@@ -61,12 +68,7 @@ export class GetProfileService {
                   phoneNumber: true,
                },
             },
-            accountBalance: {
-               select: {
-                  balance: true,
-                  balanceStatus: true,
-               },
-            },
+            accountBalance: true,
          }
 
          const [clientProfiles, totalCount] = await Promise.all([
@@ -83,6 +85,56 @@ export class GetProfileService {
             hasMore: page * pageSize < totalCount,
             totalCount,
          }
+      } catch (error) {
+         throw error
+      }
+   }
+   async searchClientByTerm(term: string, page: number, pageSize: number) {
+      try {
+         const select = {
+            status: true,
+            profile: {
+               select: {
+                  sub: true,
+                  firstName: true,
+                  lastName: true,
+                  phoneNumber: true,
+               },
+            },
+            accountBalance: true,
+         }
+
+         const data = await this.prismaService.clientProfile.findMany({
+            where: {
+               OR: [
+                  {
+                     profile: {
+                        firstName: { contains: term, mode: 'insensitive' },
+                     },
+                  },
+                  {
+                     profile: {
+                        lastName: { contains: term, mode: 'insensitive' },
+                     },
+                  },
+                  {
+                     profile: {
+                        email: { contains: term, mode: 'insensitive' },
+                     },
+                  },
+                  {
+                     profile: {
+                        phoneNumber: { contains: term, mode: 'insensitive' },
+                     },
+                  },
+               ],
+            },
+            select,
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+         })
+
+         return data
       } catch (error) {
          throw error
       }
@@ -123,12 +175,7 @@ export class GetProfileService {
                   phoneNumber: true,
                },
             },
-            accountBalance: {
-               select: {
-                  balance: true,
-                  balanceStatus: true,
-               },
-            },
+            accountBalance: true,
          }
 
          const [driverProfiles, totalCount] = await Promise.all([
@@ -149,12 +196,69 @@ export class GetProfileService {
          throw error
       }
    }
+   async searchDriverByTerm(term: string, page: number, pageSize: number) {
+      try {
+         const select = {
+            status: true,
+            profile: {
+               select: {
+                  sub: true,
+                  firstName: true,
+                  lastName: true,
+                  phoneNumber: true,
+               },
+            },
+            accountBalance: true,
+         }
+
+         const data = await this.prismaService.driverProfile.findMany({
+            where: {
+               OR: [
+                  {
+                     profile: {
+                        firstName: { contains: term, mode: 'insensitive' },
+                     },
+                  },
+                  {
+                     profile: {
+                        lastName: { contains: term, mode: 'insensitive' },
+                     },
+                  },
+                  {
+                     profile: {
+                        email: { contains: term, mode: 'insensitive' },
+                     },
+                  },
+                  {
+                     profile: {
+                        phoneNumber: { contains: term, mode: 'insensitive' },
+                     },
+                  },
+               ],
+            },
+            select,
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+         })
+
+         return data
+      } catch (error) {
+         throw error
+      }
+   }
    async getFullDriverProfile(driverProfileId: string) {
       try {
          const clientProfile = await this.prismaService.profile.findUnique({
             where: { sub: driverProfileId },
             include: {
-               driverProfile: true,
+               driverProfile: {
+                  include: {
+                     accountBalance: true,
+                     transaction: true,
+                     profile: true,
+                     rideInvoice: true,
+                  },
+               },
             },
          })
          return clientProfile

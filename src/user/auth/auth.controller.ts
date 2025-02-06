@@ -112,6 +112,21 @@ export class AuthController {
       return await this.getProfileService.getClients(page || 1, pageSize || 10)
    }
 
+   @Get('searchClientByTerm')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   async searchClientByTerm(
+      @Query('term') term: string,
+      @Query('page') page: number,
+      @Query('pageSize') pageSize: number,
+   ) {
+      return await this.getProfileService.searchClientByTerm(
+         term,
+         page || 1,
+         pageSize || 10,
+      )
+   }
+
    @Get('getDriverProfile')
    async getDriverProfile(
       @Query('driverProfileId')
@@ -138,6 +153,21 @@ export class AuthController {
       @Query('pageSize') pageSize: number,
    ) {
       return await this.getProfileService.getDrivers(page || 1, pageSize || 10)
+   }
+
+   @Get('searchDriverByTerm')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   async searchDriverByTerm(
+      @Query('term') term: string,
+      @Query('page') page: number,
+      @Query('pageSize') pageSize: number,
+   ) {
+      return await this.getProfileService.searchDriverByTerm(
+         term,
+         page || 1,
+         pageSize || 10,
+      )
    }
 
    @Post('googleAuth')
