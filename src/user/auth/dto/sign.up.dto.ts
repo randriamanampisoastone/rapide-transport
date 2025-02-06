@@ -9,6 +9,7 @@ import {
 } from 'class-validator'
 import { Type } from 'class-transformer'
 import { GenderType, UserRole } from 'enums/profile.enum'
+import { Optional } from '@nestjs/common'
 
 export class SignUpDto {
    @IsNotEmpty()
@@ -18,8 +19,9 @@ export class SignUpDto {
    })
    phoneNumber: string
 
+   @IsOptional()
    @IsEmail()
-   email: string
+   email?: string
 
    @IsNotEmpty()
    @IsString()

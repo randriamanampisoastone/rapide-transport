@@ -134,7 +134,7 @@ export class GetProfileService {
             take: pageSize,
          })
 
-         return data
+         return term ? data : []
       } catch (error) {
          throw error
       }
@@ -241,7 +241,7 @@ export class GetProfileService {
             take: pageSize,
          })
 
-         return data
+         return term ? data : []
       } catch (error) {
          throw error
       }

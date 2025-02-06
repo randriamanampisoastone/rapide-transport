@@ -6,6 +6,7 @@ import { RideData, RideDataKey } from 'interfaces/ride.interface'
 import { RideStatus } from 'enums/ride.enum'
 import { RedisService } from 'src/redis/redis.service'
 import { RIDE_PREFIX } from 'constants/redis.constant'
+import { PrismaService } from 'src/prisma/prisma.service'
 
 export interface DriverAcceptDto {
    driverProfileId: string
@@ -20,6 +21,7 @@ export class DriverAcceptService {
 
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
+      private readonly postgresService: PrismaService
    ) {}
 
    async driverAccept(driverAcceptDto: DriverAcceptDto) {
@@ -59,15 +61,25 @@ export class DriverAcceptService {
             1800,
          )
 
-         await this.rideModel.update(
-            {
+         // await this.rideModel.update(
+         //    {
+         //       rideId,
+         //    },
+         //    {
+         //       driverProfileId,
+         //       status: RideStatus.DRIVER_ACCEPTED,
+         //    },
+         // )
+         await this.postgresService.ride.update({
+            where: {
                rideId,
             },
-            {
+            data: {
                driverProfileId,
                status: RideStatus.DRIVER_ACCEPTED,
             },
-         )
+         })
+         
 
          const clientProfileId = rideDataUpdated.clientProfileId
 

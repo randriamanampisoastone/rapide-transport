@@ -16,6 +16,8 @@ import { RideStatus } from 'enums/ride.enum'
 import { PaymentMethodType } from 'enums/payment.enum'
 import { LatLng } from 'interfaces/location.interface'
 import { FindDriverService } from './find-driver.service'
+import { PrismaService } from 'src/prisma/prisma.service'
+import { parseRideDataForPostgres } from 'utils/rideDataParser.util'
 
 export interface CreateRideDto {
    clientProfileId: string
@@ -33,6 +35,7 @@ export class CreateRideService {
       private readonly createItineraryService: CreateItineraryService,
       private readonly redisService: RedisService,
       private readonly FindDriverService: FindDriverService,
+      private readonly prismaService: PrismaService
    ) {}
 
    private getPrice(
@@ -60,7 +63,12 @@ export class CreateRideService {
 
    async sendRideDataBase(data: RideData) {
       try {
-         return await this.rideModel.create(data)
+         return await this.prismaService.ride.create({
+            data: {
+               ...parseRideDataForPostgres(data)
+            }
+         })
+         // return await this.rideModel.create(data)
       } catch (error) {
          throw DynamoDBError(error)
       }

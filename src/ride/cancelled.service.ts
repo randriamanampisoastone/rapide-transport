@@ -4,6 +4,7 @@ import { RideStatus } from 'enums/ride.enum'
 import { RideData, RideDataKey } from 'interfaces/ride.interface'
 import { InjectModel, Model } from 'nestjs-dynamoose'
 import { Gateway } from 'src/gateway/gateway'
+import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
 
 export interface CancelledDto {
@@ -18,6 +19,7 @@ export class CancelledService {
       private readonly rideModel: Model<RideData, RideDataKey>,
       private redisService: RedisService,
       private readonly gateway: Gateway,
+      private readonly prismaService: PrismaService
    ) {}
    async cancelled(cancelledDto: CancelledDto) {
       try {
@@ -63,14 +65,23 @@ export class CancelledService {
 
          await this.redisService.remove(`${RIDE_PREFIX + rideId}`)
 
-         await this.rideModel.update(
-            {
+         // await this.rideModel.update(
+         //    {
+         //       rideId,
+         //    },
+         //    {
+         //       status: RideStatus.CANCELLED,
+         //    },
+         // )
+
+         await this.prismaService.ride.update({
+            where: {
                rideId,
             },
-            {
+            data: {
                status: RideStatus.CANCELLED,
             },
-         )
+         })
       } catch (error) {
          throw new HttpException(
             error.message,

@@ -6,6 +6,8 @@ import { RideStatus } from 'enums/ride.enum'
 
 export interface RideDataKey {
    rideId: string
+   clientProfileId?: string
+   driverProfileId?: string
 }
 
 export interface RideData {

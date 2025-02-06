@@ -4,6 +4,7 @@ import { RideStatus } from 'enums/ride.enum'
 import { RideData, RideDataKey } from 'interfaces/ride.interface'
 import { InjectModel, Model } from 'nestjs-dynamoose'
 import { Gateway } from 'src/gateway/gateway'
+import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
 
 export interface StartDto {
@@ -18,6 +19,7 @@ export class StartService {
       private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly gateway: Gateway,
       private redisService: RedisService,
+      private readonly prismaService: PrismaService
    ) {}
    async start(startDto: StartDto) {
       try {
@@ -65,15 +67,24 @@ export class StartService {
             estimatedDuration + 7200, // EstimatedDuration + 2 heures
          )
 
-         await this.rideModel.update(
-            {
+         // await this.rideModel.update(
+         //    {
+         //       rideId,
+         //    },
+         //    {
+         //       status: RideStatus.ON_RIDE,
+         //       startTime: Date.now(),
+         //    },
+         // )
+         await this.prismaService.ride.update({
+            where: {
                rideId,
             },
-            {
+            data: {
                status: RideStatus.ON_RIDE,
-               startTime: Date.now(),
+               startTime: Date.now()
             },
-         )
+         })
          const clientProfileId = rideDataUpdated.clientProfileId
          const topic = 'startRide'
          this.gateway.sendNotificationToClient(clientProfileId, topic, {

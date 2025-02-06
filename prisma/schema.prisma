@@ -99,6 +99,7 @@ model ClientProfile {
 
   clientAddress        Address[]       @relation("ClientAddress")
   rideInvoice          RideInvoice[]   @relation("ClientRideInvoice")
+  ride                 Ride[]          @relation("ClientRide")
   accountBalance       AccountBalance? @relation("ClientAccountBalance")
 
   status               ProfileStatus   @default(ACTIVE)
@@ -112,6 +113,7 @@ model DriverProfile {
   profile              Profile         @relation("AuthDriverProfile", fields: [driverProfileId], references: [sub], onDelete: Cascade)
 
   rideInvoice          RideInvoice[]   @relation("DriverRideInvoice")
+  ride                 Ride[]          @relation("DriverRide")
   accountBalance       AccountBalance? @relation("DriverAccountBalance")
   transaction          Transaction[]   @relation("DriverTransaction")
 
@@ -212,4 +214,34 @@ model RideInvoice {
 
   createdAt String?
   updateAt  String?
+}
+
+model Ride {
+  rideId              String             @id @default(uuid())
+
+  clientProfileId     String?
+  clientProfile       ClientProfile?    @relation("ClientRide", fields: [clientProfileId], references: [clientProfileId])
+
+  driverProfileId     String?
+  driverProfile       DriverProfile?    @relation("DriverRide", fields: [driverProfileId], references: [driverProfileId])
+
+  vehicleType         VehicleType
+  vehicleId           String?
+  paymentMethodType   PaymentMethodType
+  pickUpLocation      String
+  dropOffLocation     String
+  encodedPolyline     String
+  distanceMeters      Float
+  estimatedDuration   Float
+  estimatedPrice      String
+  realDuration        Float?
+  realPrice           Float?
+  status              RideStatus?
+  note                Float?
+  review              String?
+  startTime           Float?
+  endTime             Float?
+
+  createdAt DateTime        @default(now())
+  updateAt  DateTime        @updatedAt
 }
