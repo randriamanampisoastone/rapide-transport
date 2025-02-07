@@ -128,6 +128,11 @@ const RideSchema = new Schema(
          type: Number,
          required: false,
       },
+      adminCheck: {
+         type: Boolean,
+         required: false,
+         default: false,
+      }
    },
    {
       timestamps: true,

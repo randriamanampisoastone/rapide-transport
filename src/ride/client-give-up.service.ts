@@ -4,6 +4,7 @@ import { RideStatus } from 'enums/ride.enum'
 import { RideData, RideDataKey } from 'interfaces/ride.interface'
 import { InjectModel, Model } from 'nestjs-dynamoose'
 import { Gateway } from 'src/gateway/gateway'
+import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
 
 export interface ClientGiveUpDto {
@@ -18,6 +19,7 @@ export class ClientGiveUpService {
       private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly gateway: Gateway,
       private redisService: RedisService,
+      private readonly prismaService: PrismaService
    ) {}
    async clientGiveUp(clientGiveUpDto: ClientGiveUpDto) {
       try {
@@ -58,14 +60,23 @@ export class ClientGiveUpService {
             120, // 2 minutes
          )
 
-         await this.rideModel.update(
-            {
+         // await this.rideModel.update(
+         //    {
+         //       rideId,
+         //    },
+         //    {
+         //       status: RideStatus.CLIENT_GIVE_UP,
+         //    },
+         // )
+         await this.prismaService.ride.update({
+            where: {
                rideId,
             },
-            {
+            data: {
                status: RideStatus.CLIENT_GIVE_UP,
             },
-         )
+         })
+         
          const driverProfileId = rideDataUpdated.driverProfileId
 
          const topic = 'clientGiveUp'

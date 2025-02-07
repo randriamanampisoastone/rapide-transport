@@ -45,14 +45,23 @@ export class CompleteService {
 
          await this.redisService.remove(`${RIDE_PREFIX + rideId}`)
 
-         await this.rideModel.update(
-            {
+         // await this.rideModel.update(
+         //    {
+         //       rideId
+         //    },
+         //    {
+         //       status: RideStatus.COMPLETED,
+         //    },
+         // )
+        
+         await this.prismaService.ride.update({
+            where: {
                rideId,
             },
-            {
+            data: {
                status: RideStatus.COMPLETED,
             },
-         )
+         })
 
          this.driverBalanceService.increaseBalance(
             rideData.driverProfileId,

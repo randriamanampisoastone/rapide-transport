@@ -113,8 +113,8 @@ export class AuthController {
    }
 
    @Get('searchClientByTerm')
-   @SetMetadata('allowedRole', ['ADMIN'])
-   @UseGuards(RolesGuard)
+   // @SetMetadata('allowedRole', ['ADMIN'])
+   // @UseGuards(RolesGuard)
    async searchClientByTerm(
       @Query('term') term: string,
       @Query('page') page: number,

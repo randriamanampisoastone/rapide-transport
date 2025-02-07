@@ -10,6 +10,7 @@ import { RideModule } from './ride/ride.module'
 import { GatewayModule } from './gateway/gatway.module'
 import { VehicleModule } from './vehicle/vehicle.module'
 import { AccountBalanceModule } from './accountBalance/accountBalance.module'
+import { HistoricalModule } from './historical/historical.module'
 
 @Module({
    imports: [
@@ -44,6 +45,7 @@ import { AccountBalanceModule } from './accountBalance/accountBalance.module'
       GatewayModule,
       VehicleModule,
       AccountBalanceModule,
+      HistoricalModule
    ],
    controllers: [AppController],
    providers: [],

@@ -9,6 +9,7 @@ import { RIDE_PREFIX } from 'constants/redis.constant'
 import { LatLng } from 'interfaces/location.interface'
 import { getRouteGoogleMap } from 'api/route.googlemap.api'
 import { parseDuration } from 'utils/time.util'
+import { PrismaService } from 'src/prisma/prisma.service'
 
 export interface DriverOnTheWayDto {
    driverProfileId: string
@@ -25,6 +26,7 @@ export class DriverOnTheWayService implements OnModuleInit {
       private readonly configService: ConfigService,
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
+      private readonly prismaService: PrismaService
    ) {}
    onModuleInit() {
       this.GOOGLE_MAP_API_KEY =
@@ -88,16 +90,26 @@ export class DriverOnTheWayService implements OnModuleInit {
             estimatedDuration + 7200, // Estimated Duration + 2 heures
          )
 
-         await this.rideModel.update(
-            {
+         // await this.rideModel.update(
+         //    {
+         //       rideId,
+         //    },
+         //    {
+         //       startTime,
+         //       driverProfileId,
+         //       status: RideStatus.DRIVER_ON_THE_WAY,
+         //    },
+         // )
+         await this.prismaService.ride.update({
+            where: {
                rideId,
             },
-            {
+            data: {
                startTime,
                driverProfileId,
                status: RideStatus.DRIVER_ON_THE_WAY,
             },
-         )
+         })
 
          const topic = 'driverOnTheWay'
          this.gateway.sendNotificationToClient(clientProfileId, topic, {

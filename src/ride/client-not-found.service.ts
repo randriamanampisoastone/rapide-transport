@@ -5,6 +5,7 @@ import { RideData, RideDataKey } from 'interfaces/ride.interface'
 import { RideStatus } from 'enums/ride.enum'
 import { RedisService } from 'src/redis/redis.service'
 import { RIDE_PREFIX } from 'constants/redis.constant'
+import { PrismaService } from 'src/prisma/prisma.service'
 
 export interface ClientNotFoundDto {
    driverProfileId: string
@@ -18,6 +19,7 @@ export class ClientNotFoundService {
       private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
+      private readonly prismaService: PrismaService
    ) {}
 
    async clientNotFound(clientNotFoundDto: ClientNotFoundDto) {
@@ -59,14 +61,22 @@ export class ClientNotFoundService {
             1800,
          )
 
-         await this.rideModel.update(
-            {
+         // await this.rideModel.update(
+         //    {
+         //       rideId,
+         //    },
+         //    {
+         //       status: RideStatus.CLIENT_NOT_FOUND,
+         //    },
+         // )
+         await this.prismaService.ride.update({
+            where: {
                rideId,
             },
-            {
+            data: {
                status: RideStatus.CLIENT_NOT_FOUND,
             },
-         )
+         })
          const clientProfileId = rideDataUpdated.clientProfileId
 
          const topic = 'clientNotFound'

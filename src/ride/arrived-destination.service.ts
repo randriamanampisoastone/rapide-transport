@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import { RIDE_PREFIX } from 'constants/redis.constant'
+import { UserRole } from 'enums/profile.enum'
 import { RideStatus } from 'enums/ride.enum'
 import { RideData, RideDataKey } from 'interfaces/ride.interface'
 import { InjectModel, Model } from 'nestjs-dynamoose'
 import { Gateway } from 'src/gateway/gateway'
+import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
 
 export interface ArrivedDestinationDto {
@@ -18,6 +20,7 @@ export class ArrivedDestinationService {
       private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly gateway: Gateway,
       private redisService: RedisService,
+      private readonly prismaService: PrismaService
    ) {}
    async arrivedDestination(arrivedDestinationDto: ArrivedDestinationDto) {
       try {
@@ -59,21 +62,35 @@ export class ArrivedDestinationService {
             1800,
          )
 
-         await this.rideModel.update(
-            {
-               rideId,
+         // await this.rideModel.update(
+         //    {
+         //       rideId,
+         //    },
+         //    {
+         //       status: RideStatus.ARRIVED_DESTINATION,
+         //       endTime: Date.now(),
+         //    },
+         // )
+
+         await this.prismaService.ride.update({
+            where: {
+               rideId
             },
-            {
+            data: {
                status: RideStatus.ARRIVED_DESTINATION,
-               endTime: Date.now(),
-            },
-         )
+               endTime: Date.now()
+            }
+         })
+         
          const clientProfileId = rideDataUpdated.clientProfileId
 
          const topic = 'arrivedDestination'
          this.gateway.sendNotificationToClient(clientProfileId, topic, {
             ...rideDataUpdated,
          })
+
+         this.gateway.sendNotificationToAdmin(topic, { ...rideDataUpdated })
+
          return { ...rideDataUpdated }
       } catch (error) {
          throw error

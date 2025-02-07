@@ -104,37 +104,75 @@ export class GetProfileService {
             accountBalance: true,
          }
 
-         const data = await this.prismaService.clientProfile.findMany({
-            where: {
-               OR: [
-                  {
-                     profile: {
-                        firstName: { contains: term, mode: 'insensitive' },
+         const [data, totalCount] = await Promise.all([
+            await this.prismaService.clientProfile.findMany({
+               where: {
+                  OR: [
+                     {
+                        profile: {
+                           firstName: { contains: term, mode: 'insensitive' },
+                        },
                      },
-                  },
-                  {
-                     profile: {
-                        lastName: { contains: term, mode: 'insensitive' },
+                     {
+                        profile: {
+                           lastName: { contains: term, mode: 'insensitive' },
+                        },
                      },
-                  },
-                  {
-                     profile: {
-                        email: { contains: term, mode: 'insensitive' },
+                     {
+                        profile: {
+                           email: { contains: term, mode: 'insensitive' },
+                        },
                      },
-                  },
-                  {
-                     profile: {
-                        phoneNumber: { contains: term, mode: 'insensitive' },
+                     {
+                        profile: {
+                           phoneNumber: { contains: term, mode: 'insensitive' },
+                        },
                      },
-                  },
-               ],
-            },
-            select,
-            skip: (page - 1) * pageSize,
-            take: pageSize,
-         })
+                  ],
+               },
+               select,
+               skip: (page - 1) * pageSize,
+               take: pageSize,
+            }),
+            this.prismaService.clientProfile.count({
+               where: {
+                  OR: [
+                     {
+                        profile: {
+                           firstName: { contains: term, mode: 'insensitive' },
+                        },
+                     },
+                     {
+                        profile: {
+                           lastName: { contains: term, mode: 'insensitive' },
+                        },
+                     },
+                     {
+                        profile: {
+                           email: { contains: term, mode: 'insensitive' },
+                        },
+                     },
+                     {
+                        profile: {
+                           phoneNumber: { contains: term, mode: 'insensitive' },
+                        },
+                     },
+                  ],
+               },
+            }),
+         ])
 
-         return data
+         return term
+            ? {
+                 data,
+                 hasMore: page * pageSize < totalCount,
+                 totalCount,
+              }
+            : {
+                 data: [],
+                 hasMore: false,
+                 totalCount: 0,
+              }
       } catch (error) {
          throw error
       }
@@ -211,37 +249,75 @@ export class GetProfileService {
             accountBalance: true,
          }
 
-         const data = await this.prismaService.driverProfile.findMany({
-            where: {
-               OR: [
-                  {
-                     profile: {
-                        firstName: { contains: term, mode: 'insensitive' },
+         const [data, totalCount] = await Promise.all([
+            await this.prismaService.driverProfile.findMany({
+               where: {
+                  OR: [
+                     {
+                        profile: {
+                           firstName: { contains: term, mode: 'insensitive' },
+                        },
                      },
-                  },
-                  {
-                     profile: {
-                        lastName: { contains: term, mode: 'insensitive' },
+                     {
+                        profile: {
+                           lastName: { contains: term, mode: 'insensitive' },
+                        },
                      },
-                  },
-                  {
-                     profile: {
-                        email: { contains: term, mode: 'insensitive' },
+                     {
+                        profile: {
+                           email: { contains: term, mode: 'insensitive' },
+                        },
                      },
-                  },
-                  {
-                     profile: {
-                        phoneNumber: { contains: term, mode: 'insensitive' },
+                     {
+                        profile: {
+                           phoneNumber: { contains: term, mode: 'insensitive' },
+                        },
                      },
-                  },
-               ],
-            },
-            select,
-            skip: (page - 1) * pageSize,
-            take: pageSize,
-         })
+                  ],
+               },
+               select,
+               skip: (page - 1) * pageSize,
+               take: pageSize,
+            }),
+            await this.prismaService.driverProfile.count({
+               where: {
+                  OR: [
+                     {
+                        profile: {
+                           firstName: { contains: term, mode: 'insensitive' },
+                        },
+                     },
+                     {
+                        profile: {
+                           lastName: { contains: term, mode: 'insensitive' },
+                        },
+                     },
+                     {
+                        profile: {
+                           email: { contains: term, mode: 'insensitive' },
+                        },
+                     },
+                     {
+                        profile: {
+                           phoneNumber: { contains: term, mode: 'insensitive' },
+                        },
+                     },
+                  ],
+               },
+            }),
+         ])
 
-         return data
+         return term
+            ? {
+                 data,
+                 hasMore: page * pageSize < totalCount,
+                 totalCount,
+              }
+            : {
+                 data: [],
+                 hasMore: false,
+                 totalCount: 0,
+              }
       } catch (error) {
          throw error
       }
