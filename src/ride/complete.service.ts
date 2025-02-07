@@ -47,7 +47,7 @@ export class CompleteService {
 
          await this.rideModel.update(
             {
-               rideId
+               rideId,
             },
             {
                status: RideStatus.COMPLETED,
