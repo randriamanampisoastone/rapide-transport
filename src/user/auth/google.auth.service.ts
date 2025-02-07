@@ -15,14 +15,19 @@ export class GoogleAuthService {
       private readonly prismaService: PrismaService,
    ) {}
 
-   async verifyGoogleToken(idToken: string) {
+   async verifyGoogleToken(
+      idToken: string,
+      userRole: UserRole = UserRole.CLIENT,
+   ) {
       try {
-         const ticket = await this.client.verifyIdToken({
-            idToken,
-            audience: this.WEB_CLIENT_ID,
-         })
-         const payload = ticket.getPayload()
-         return payload
+         if (userRole === UserRole.CLIENT) {
+            const ticket = await this.client.verifyIdToken({
+               idToken,
+               audience: this.WEB_CLIENT_ID,
+            })
+            const payload = ticket.getPayload()
+            return payload
+         }
       } catch (error) {
          throw error
       }
