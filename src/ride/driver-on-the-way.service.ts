@@ -26,7 +26,7 @@ export class DriverOnTheWayService implements OnModuleInit {
       private readonly configService: ConfigService,
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
-      private readonly prismaService: PrismaService
+      private readonly prismaService: PrismaService,
    ) {}
    onModuleInit() {
       this.GOOGLE_MAP_API_KEY =
@@ -116,6 +116,7 @@ export class DriverOnTheWayService implements OnModuleInit {
             encodedPolyline,
             estimatedDuration,
          })
+         this.gateway.sendNotificationToAdmin(topic, { ...rideDataUpdated })
          return {
             encodedPolyline,
             estimatedDuration,

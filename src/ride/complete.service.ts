@@ -54,7 +54,7 @@ export class CompleteService {
          //    },
          // )
         
-         await this.prismaService.ride.update({
+         const updatedRideData = await this.prismaService.ride.update({
             where: {
                rideId,
             },
@@ -86,6 +86,10 @@ export class CompleteService {
                estimatedPriceLower: estimatedPrice.lower,
                estimatedPriceUpper: estimatedPrice.upper,
             },
+         })
+
+         this.gateway.sendNotificationToAdmin('rideCompleted', {
+            ...updatedRideData,
          })
       } catch (error) {
          throw error

@@ -65,6 +65,9 @@ export class ConfirmSignUpService {
 
          if (restSignUpDto.role === UserRole.CLIENT) {
             const clientProfile = await this.createClientProfile(restSignUpDto)
+            await this.redisService.setClientToNew(
+               clientProfile.clientProfileId,
+            )
             const token = await this.jwtService.signAsync(clientProfile)
             return { token }
          } else if (restSignUpDto.role === UserRole.DRIVER) {

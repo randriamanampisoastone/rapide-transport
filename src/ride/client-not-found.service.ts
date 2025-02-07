@@ -19,7 +19,7 @@ export class ClientNotFoundService {
       private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
-      private readonly prismaService: PrismaService
+      private readonly prismaService: PrismaService,
    ) {}
 
    async clientNotFound(clientNotFoundDto: ClientNotFoundDto) {
@@ -81,6 +81,7 @@ export class ClientNotFoundService {
 
          const topic = 'clientNotFound'
          this.gateway.sendNotificationToClient(clientProfileId, topic, {})
+         this.gateway.sendNotificationToAdmin(topic, { ...rideDataUpdated })
       } catch (error) {
          throw error
       }

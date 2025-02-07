@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { RIDE_PREFIX } from 'constants/redis.constant'
+import { UserRole } from 'enums/profile.enum'
 import { Server } from 'socket.io'
 import { RedisService } from 'src/redis/redis.service'
 import { calculateRealTimeCostByTime } from 'utils/price.util'
@@ -46,5 +47,6 @@ export class InfoOnRideService {
       server
          .to(driverProfileId)
          .emit('infoOnRidePull', { realDuration, realPrice })
+      server.to(UserRole.ADMIN).emit('infoOnRidePull', { ...rideDataUpdated })
    }
 }

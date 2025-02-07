@@ -19,7 +19,7 @@ export class ClientGiveUpService {
       private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly gateway: Gateway,
       private redisService: RedisService,
-      private readonly prismaService: PrismaService
+      private readonly prismaService: PrismaService,
    ) {}
    async clientGiveUp(clientGiveUpDto: ClientGiveUpDto) {
       try {
@@ -76,11 +76,12 @@ export class ClientGiveUpService {
                status: RideStatus.CLIENT_GIVE_UP,
             },
          })
-         
+
          const driverProfileId = rideDataUpdated.driverProfileId
 
          const topic = 'clientGiveUp'
          this.gateway.sendNotificationToDriver(driverProfileId, topic, {})
+         this.gateway.sendNotificationToAdmin(topic, { ...rideDataUpdated })
       } catch (error) {
          throw error
       }
