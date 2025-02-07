@@ -53,6 +53,7 @@ export class CompleteService {
          //       status: RideStatus.COMPLETED,
          //    },
          // )
+        
          await this.prismaService.ride.update({
             where: {
                rideId,
