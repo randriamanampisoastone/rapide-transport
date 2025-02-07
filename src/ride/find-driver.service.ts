@@ -42,6 +42,11 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
          }
          console.log(`Found ${ridesAvailable.length} rides requiring drivers.`)
 
+         this.gateway.sendNotificationToAdmin('clientsWaiting', {
+            count: ridesAvailable.length,
+            data: ridesAvailable,
+         })
+
          await Promise.all(
             ridesAvailable.map((ride) => this.notifyDrivers(ride)),
          )
@@ -65,6 +70,10 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
          )
 
          console.log(`Drivers  ${drivers.length} found`)
+         this.gateway.sendNotificationToAdmin('driversAvailable', {
+            count: drivers.length,
+            data: drivers,
+         })
 
          const rideId = ride.rideId
 
