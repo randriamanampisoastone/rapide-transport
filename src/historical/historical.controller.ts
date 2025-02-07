@@ -41,8 +41,8 @@ export class HistoricalController {
    }
 
    @Get('getDriverHistorical')
-   // @SetMetadata('allowedRole', ['DRIVER'])
-   // @UseGuards(RolesGuard)
+   @SetMetadata('allowedRole', ['DRIVER'])
+   @UseGuards(RolesGuard)
    async getDriverHistorical(
       @Query('driverProfileId') driverProfileId: string,
       @Query('status') status: RideStatus,

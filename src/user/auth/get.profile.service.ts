@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common'
 // import { RideStatus } from 'enums/ride.enum'
 
 import { PrismaService } from 'src/prisma/prisma.service'
+import { RedisService } from 'src/redis/redis.service'
 import { GetByStatusService } from 'src/ride/get-by-status.service'
 
 @Injectable()
 export class GetProfileService {
    constructor(
       private readonly prismaService: PrismaService,
+      private readonly redisService: RedisService,
       // private readonly getByStatusService: GetByStatusService,
    ) {}
 
@@ -71,17 +73,19 @@ export class GetProfileService {
             accountBalance: true,
          }
 
-         const [clientProfiles, totalCount] = await Promise.all([
+         const [clientProfiles, totalCount, newClients] = await Promise.all([
             await this.prismaService.clientProfile.findMany({
                select,
                skip: (page - 1) * pageSize,
                take: pageSize,
             }),
-            this.prismaService.clientProfile.count(),
+            await this.prismaService.clientProfile.count(),
+            await this.redisService.getNewClients(),
          ])
 
          return {
             data: clientProfiles,
+            newClients,
             hasMore: page * pageSize < totalCount,
             totalCount,
          }
@@ -104,7 +108,7 @@ export class GetProfileService {
             accountBalance: true,
          }
 
-         const [data, totalCount] = await Promise.all([
+         const [data, totalCount, newClients] = await Promise.all([
             await this.prismaService.clientProfile.findMany({
                where: {
                   OR: [
@@ -160,16 +164,19 @@ export class GetProfileService {
                   ],
                },
             }),
+            await this.redisService.getNewClients(),
          ])
 
          return term
             ? {
                  data,
+                 newClients,
                  hasMore: page * pageSize < totalCount,
                  totalCount,
               }
             : {
                  data: [],
+                 newClients,
                  hasMore: false,
                  totalCount: 0,
               }

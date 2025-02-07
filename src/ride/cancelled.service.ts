@@ -19,7 +19,7 @@ export class CancelledService {
       private readonly rideModel: Model<RideData, RideDataKey>,
       private redisService: RedisService,
       private readonly gateway: Gateway,
-      private readonly prismaService: PrismaService
+      private readonly prismaService: PrismaService,
    ) {}
    async cancelled(cancelledDto: CancelledDto) {
       try {
@@ -74,13 +74,17 @@ export class CancelledService {
          //    },
          // )
 
-         await this.prismaService.ride.update({
+         const rideUpdated = await this.prismaService.ride.update({
             where: {
                rideId,
             },
             data: {
                status: RideStatus.CANCELLED,
             },
+         })
+
+         this.gateway.sendNotificationToAdmin('cancelledRide', {
+            ...rideUpdated,
          })
       } catch (error) {
          throw new HttpException(

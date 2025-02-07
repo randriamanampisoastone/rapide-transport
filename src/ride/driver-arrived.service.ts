@@ -19,7 +19,7 @@ export class DriverArrivedService {
       private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
-      private readonly prismaService: PrismaService
+      private readonly prismaService: PrismaService,
    ) {}
 
    async drivertArrived(driverArrivedDto: DriverArrivedDto) {
@@ -81,6 +81,9 @@ export class DriverArrivedService {
 
          const topic = 'driverArrived'
          this.gateway.sendNotificationToClient(clientProfileId, topic, {})
+         this.gateway.sendNotificationToAdmin(topic, {
+            ...rideDataUpdated,
+         })
       } catch (error) {
          throw error
       }

@@ -21,7 +21,7 @@ export class DriverAcceptService {
 
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
-      private readonly postgresService: PrismaService
+      private readonly postgresService: PrismaService,
    ) {}
 
    async driverAccept(driverAcceptDto: DriverAcceptDto) {
@@ -79,12 +79,15 @@ export class DriverAcceptService {
                status: RideStatus.DRIVER_ACCEPTED,
             },
          })
-         
 
          const clientProfileId = rideDataUpdated.clientProfileId
 
          const topic = 'acceptedRide'
          this.gateway.sendNotificationToClient(clientProfileId, topic, {
+            ...rideDataUpdated,
+         })
+
+         this.gateway.sendNotificationToAdmin(topic, {
             ...rideDataUpdated,
          })
 

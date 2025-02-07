@@ -19,7 +19,7 @@ export class StoppedService {
       private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly gateway: Gateway,
       private redisService: RedisService,
-      private readonly prismaService: PrismaService
+      private readonly prismaService: PrismaService,
    ) {}
    async clientStopped(stoppedDto: StoppedDto) {
       try {
@@ -86,6 +86,7 @@ export class StoppedService {
 
          const topic = 'clientStopped'
          this.gateway.sendNotificationToDriver(driverProfileId, topic, {})
+         this.gateway.sendNotificationToAdmin(topic, { ...rideDataUpdated })
       } catch (error) {
          throw error
       }

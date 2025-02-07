@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { DRIVER_LOCATION_PREFIX, RIDE_PREFIX } from 'constants/redis.constant'
+import { DRIVER_LOCATION_PREFIX, NEW_CLIENT, RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
 import { VehicleType } from 'enums/vehicle.enum'
 import { getDistance } from 'geolib'
@@ -161,6 +161,27 @@ export class RedisService implements OnModuleInit {
       } catch (error) {
          console.error('Error finding nearby drivers:', error)
          return []
+      }
+   }
+
+   async setClientToNew(clientProfileId: string) {
+      try {
+         await this.set(`${NEW_CLIENT}-${clientProfileId}`, clientProfileId, 24 * 3600)
+      } catch (error) {
+         throw error
+      }
+   }
+
+   async getNewClients() {
+      try {
+         const newClients = await this.keys(`${NEW_CLIENT}-*`)
+         const data = newClients.reduce((acc, key) => {
+            acc.push(key.replace(`${NEW_CLIENT}-`, ''))
+            return acc
+         }, [])
+         return data
+      } catch (error) {
+         throw error
       }
    }
 }
