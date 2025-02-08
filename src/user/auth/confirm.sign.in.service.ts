@@ -1,5 +1,6 @@
 import {
    BadRequestException,
+   Inject,
    Injectable,
    NotFoundException,
    RequestTimeoutException,
@@ -14,8 +15,10 @@ import { ConfirmDto } from './dto/confirm.dto'
 @Injectable()
 export class ConfirmSignInService {
    constructor(
+      @Inject('jwtClient') private readonly jwtClientService: JwtService,
+      @Inject('jwtDriver') private readonly jwtDriverService: JwtService,
+      @Inject('jwtAdmin') private readonly jwtAdminService: JwtService,
       private readonly redisService: RedisService,
-      private readonly jwtService: JwtService,
       private readonly prismaService: PrismaService,
    ) {}
 
@@ -69,62 +72,65 @@ export class ConfirmSignInService {
          if (restSignInDto.role === UserRole.CLIENT) {
             const clientProfile = await this.prismaService.profile.findUnique({
                where: { phoneNumber: signInDto.phoneNumber },
-               include: {
-                  clientProfile: true,
+               select: {
+                  sub: true,
+                  role: true,
+                  clientProfile: {
+                     select: {
+                        status: true,
+                     },
+                  },
                },
             })
             const updateClientProfile = {
-               clientProfileId: clientProfile.clientProfile.clientProfileId,
-               firstName: clientProfile.firstName,
-               lastName: clientProfile.lastName,
-               birthday: clientProfile.birthday,
-               gender: clientProfile.gender,
-               phoneNumber: clientProfile.phoneNumber,
-               profilePhoto: clientProfile.profilePhoto,
+               sub: clientProfile.sub,
                role: clientProfile.role,
                status: clientProfile.clientProfile.status,
             }
-            const token = await this.jwtService.signAsync(updateClientProfile)
+            const token =
+               await this.jwtClientService.signAsync(updateClientProfile)
             return { token }
          } else if (restSignInDto.role === UserRole.DRIVER) {
             const driverProfile = await this.prismaService.profile.findUnique({
                where: { phoneNumber: signInDto.phoneNumber },
-               include: {
-                  driverProfile: true,
+               select: {
+                  sub: true,
+                  role: true,
+                  driverProfile: {
+                     select: {
+                        status: true,
+                     },
+                  },
                },
             })
             const updateDriverProfile = {
-               driverProfileId: driverProfile.driverProfile.driverProfileId,
-               firstName: driverProfile.firstName,
-               lastName: driverProfile.lastName,
-               birthday: driverProfile.birthday,
-               gender: driverProfile.gender,
-               phoneNumber: driverProfile.phoneNumber,
-               profilePhoto: driverProfile.profilePhoto,
+               sub: driverProfile.sub,
                role: driverProfile.role,
                status: driverProfile.driverProfile.status,
             }
-            const token = await this.jwtService.signAsync(updateDriverProfile)
+            const token =
+               await this.jwtDriverService.signAsync(updateDriverProfile)
             return { token }
          } else if (restSignInDto.role === UserRole.ADMIN) {
             const adminProfile = await this.prismaService.profile.findUnique({
                where: { phoneNumber: signInDto.phoneNumber },
-               include: {
-                  adminProfile: true,
+               select: {
+                  sub: true,
+                  role: true,
+                  adminProfile: {
+                     select: {
+                        status: true,
+                     },
+                  },
                },
             })
             const updateAdminProfile = {
-               adminProfileId: adminProfile.adminProfile.adminProfileId,
-               firstName: adminProfile.firstName,
-               lastName: adminProfile.lastName,
-               birthday: adminProfile.birthday,
-               gender: adminProfile.gender,
-               phoneNumber: adminProfile.phoneNumber,
-               profilePhoto: adminProfile.profilePhoto,
+               sub: adminProfile.sub,
                role: adminProfile.role,
                status: adminProfile.adminProfile.status,
             }
-            const token = await this.jwtService.signAsync(updateAdminProfile)
+            const token =
+               await this.jwtAdminService.signAsync(updateAdminProfile)
             return { token }
          }
       } catch (error) {

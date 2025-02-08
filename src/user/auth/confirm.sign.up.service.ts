@@ -1,5 +1,6 @@
 import {
    BadRequestException,
+   Inject,
    Injectable,
    NotFoundException,
    RequestTimeoutException,
@@ -15,8 +16,10 @@ import { ConfirmDto } from './dto/confirm.dto'
 @Injectable()
 export class ConfirmSignUpService {
    constructor(
+      @Inject('jwtClient') private readonly jwtClientService: JwtService,
+      @Inject('jwtDriver') private readonly jwtDriverService: JwtService,
+      @Inject('jwtAdmin') private readonly jwtAdminService: JwtService,
       private readonly redisService: RedisService,
-      private readonly jwtService: JwtService,
       private readonly prismaService: PrismaService,
    ) {}
 
@@ -65,18 +68,19 @@ export class ConfirmSignUpService {
 
          if (restSignUpDto.role === UserRole.CLIENT) {
             const clientProfile = await this.createClientProfile(restSignUpDto)
-            await this.redisService.setClientToNew(
-               clientProfile.clientProfileId,
-            )
-            const token = await this.jwtService.signAsync(clientProfile)
+            await this.redisService.setClientToNew(clientProfile.sub)
+            const token = await this.jwtClientService.signAsync(clientProfile)
+            console.log('token client :', token)
             return { token }
          } else if (restSignUpDto.role === UserRole.DRIVER) {
             const driverProfile = await this.createDriverProfile(restSignUpDto)
-            const token = await this.jwtService.signAsync(driverProfile)
+            const token = await this.jwtDriverService.signAsync(driverProfile)
+            console.log('token driver :', token)
             return { token }
          } else if (restSignUpDto.role === UserRole.ADMIN) {
             const adminProfile = await this.createAdminProfile(restSignUpDto)
-            const token = await this.jwtService.signAsync(adminProfile)
+            const token = await this.jwtAdminService.signAsync(adminProfile)
+            console.log('token driver :', token)
             return { token }
          }
       } catch (error) {
@@ -111,14 +115,7 @@ export class ConfirmSignUpService {
          })
 
          return {
-            clientProfileId: clientProfile.clientProfileId,
-            firstName: authProfile.firstName,
-            email: authProfile.email,
-            lastName: authProfile.lastName,
-            birthday: authProfile.birthday,
-            gender: authProfile.gender,
-            phoneNumber: authProfile.phoneNumber,
-            profilePhoto: authProfile.profilePhoto,
+            sub: clientProfile.clientProfileId,
             role: authProfile.role,
             status: clientProfile.status,
          }
@@ -151,14 +148,7 @@ export class ConfirmSignUpService {
          })
 
          return {
-            driverProfileId: driverProfile.driverProfileId,
-            email: authProfile.email,
-            firstName: authProfile.firstName,
-            lastName: authProfile.lastName,
-            birthday: authProfile.birthday,
-            gender: authProfile.gender,
-            phoneNumber: authProfile.phoneNumber,
-            profilePhoto: authProfile.profilePhoto,
+            sub: driverProfile.driverProfileId,
             role: authProfile.role,
             status: driverProfile.status,
          }
@@ -186,14 +176,7 @@ export class ConfirmSignUpService {
          })
 
          return {
-            adminProfileId: adminProfile.adminProfileId,
-            email: authProfile.email,
-            firstName: authProfile.firstName,
-            lastName: authProfile.lastName,
-            birthday: authProfile.birthday,
-            gender: authProfile.gender,
-            phoneNumber: authProfile.phoneNumber,
-            profilePhoto: authProfile.profilePhoto,
+            sub: adminProfile.adminProfileId,
             role: authProfile.role,
             status: adminProfile.status,
          }

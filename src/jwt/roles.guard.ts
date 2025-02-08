@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Reflector } from '@nestjs/core'
+import { UserRole } from 'enums/profile.enum'
 import { Request } from 'express'
 import * as jwt from 'jsonwebtoken'
 
@@ -31,10 +32,32 @@ export class RolesGuard implements CanActivate {
       }
 
       try {
-         const decoded: any = jwt.verify(
-            token,
-            this.configService.get<string>('JWT_SECRET'),
-         )
+         // Décoder le token sans vérification pour extraire le rôle
+         const decodedHeader: any = jwt.decode(token)
+         if (!decodedHeader || !decodedHeader.role) {
+            throw new UnauthorizedException('Rôle non spécifié dans le token')
+         }
+
+         // Sélectionner la clé secrète en fonction du rôle
+         let secretKey: string
+         switch (decodedHeader.role) {
+            case UserRole.CLIENT:
+               secretKey = this.configService.get<string>('JWT_SECRET_CLIENT')
+               break
+            case UserRole.DRIVER:
+               secretKey = this.configService.get<string>('JWT_SECRET_DRIVER')
+               break
+            case UserRole.ADMIN:
+               secretKey = this.configService.get<string>('JWT_SECRET_ADMIN')
+               break
+            default:
+               throw new UnauthorizedException(
+                  `Rôle invalide: ${decodedHeader.role}`,
+               )
+         }
+
+         // Vérification du token avec la bonne clé secrète
+         const decoded: any = jwt.verify(token, secretKey)
 
          // Ajouter l'utilisateur au request
          request['user'] = decoded
@@ -45,10 +68,9 @@ export class RolesGuard implements CanActivate {
             context.getHandler(),
          )
 
-         console.log(requiredRoles)
          if (requiredRoles && !requiredRoles.includes(decoded.role)) {
             throw new ForbiddenException(
-               `Access denied. User role: ${decoded.role} `,
+               `Access denied. User role: ${decoded.role}`,
             )
          }
 
