@@ -193,6 +193,23 @@ export class GetProfileService {
          throw error
       }
    }
+   async getClientByIds(clientProfileIds: string[]) {
+      try {
+         const condition = clientProfileIds.length? { clientProfileId: { in: clientProfileIds } } : {}
+         const clientProfiles = await this.prismaService.clientProfile.findMany(
+            {
+               where: condition,
+               include: {
+                  profile: true,
+               },
+            },
+         )
+
+         return clientProfiles
+      } catch (error) {
+         throw error
+      }
+   }
    async getDriverProfile(driverProfileId: string) {
       try {
          const driverProfile = await this.prismaService.profile.findUnique({
