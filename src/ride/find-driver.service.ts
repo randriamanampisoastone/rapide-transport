@@ -42,8 +42,10 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
          }
          console.log(`Found ${ridesAvailable.length} rides requiring drivers.`)
 
+         const clientProfileIds = ridesAvailable.map((ride) => ride.clientProfileId)
          this.gateway.sendNotificationToAdmin('clientsWaiting', {
             count: ridesAvailable.length,
+            clientProfileIds,
             data: ridesAvailable,
          })
 

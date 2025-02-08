@@ -70,7 +70,6 @@ export class AuthController {
          resendConfirmDto,
       )
    }
-
    @Post('googleAuth')
    async googleAuth(
       @Body()

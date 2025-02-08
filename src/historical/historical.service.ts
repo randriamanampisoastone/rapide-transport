@@ -21,14 +21,13 @@ export class HistoricalService {
                orderBy: {
                   createdAt: 'desc',
                },
-               skip: (page - 1) * pageSize,
                take: pageSize,
+               skip: (page - 1) * pageSize,
             }),
             await this.prismaService.ride.count({ where: condition }),
          ])
          return {
             data: rides,
-            hasMore: page * pageSize < totalCount,
             totalCount,
          }
       } catch (error) {
