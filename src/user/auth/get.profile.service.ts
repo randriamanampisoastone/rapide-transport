@@ -283,7 +283,9 @@ export class GetProfileService {
 
    async getClientByIds(clientProfileIds: string[]) {
       try {
-         const condition = clientProfileIds.length? { clientProfileId: { in: clientProfileIds } } : {}
+         const condition = clientProfileIds.length
+            ? { clientProfileId: { in: clientProfileIds } }
+            : {}
          const clientProfiles = await this.prismaService.clientProfile.findMany(
             {
                where: condition,
@@ -298,8 +300,7 @@ export class GetProfileService {
          throw error
       }
    }
- 
- 
+
    async getDrivers(page: number, pageSize: number) {
       try {
          const select = {
