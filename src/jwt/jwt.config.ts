@@ -5,7 +5,6 @@ export const jwtClientConfig: JwtModuleAsyncOptions = {
    useFactory: async (configService: ConfigService) => ({
       secret: configService.get<string>('JWT_SECRET_CLIENT'),
       signOptions: {
-         algorithm: 'RS256',
          expiresIn: configService.get<string>('JWT_EXPIRES_IN'),
       },
    }),
@@ -16,7 +15,6 @@ export const jwtDriverConfig: JwtModuleAsyncOptions = {
    useFactory: async (configService: ConfigService) => ({
       secret: configService.get<string>('JWT_SECRET_DRIVER'),
       signOptions: {
-         algorithm: 'RS256',
          expiresIn: configService.get<string>('JWT_EXPIRES_IN'),
       },
    }),
@@ -27,7 +25,6 @@ export const jwtAdminConfig: JwtModuleAsyncOptions = {
    useFactory: async (configService: ConfigService) => ({
       secret: configService.get<string>('JWT_SECRET_ADMIN'),
       signOptions: {
-         algorithm: 'RS256',
          expiresIn: configService.get<string>('JWT_EXPIRES_IN'),
       },
    }),

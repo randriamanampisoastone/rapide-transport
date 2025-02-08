@@ -73,6 +73,7 @@ export class Gateway
          if (!token) {
             return next(new Error('TokenNotFound'))
          }
+
          try {
             // Décoder le token sans vérification pour extraire le rôle
             const decodedHeader: any = jwt.decode(token)

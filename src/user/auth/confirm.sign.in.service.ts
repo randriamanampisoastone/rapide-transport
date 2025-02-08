@@ -1,26 +1,34 @@
 import {
    BadRequestException,
-   Inject,
    Injectable,
    NotFoundException,
    RequestTimeoutException,
 } from '@nestjs/common'
 import { RedisService } from 'src/redis/redis.service'
 import { AUTH_SIGN_IN_PREFIX } from 'constants/redis.constant'
-import { JwtService } from '@nestjs/jwt'
+import * as jwt from 'jsonwebtoken'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { UserRole } from 'enums/profile.enum'
 import { ConfirmDto } from './dto/confirm.dto'
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export class ConfirmSignInService {
+   private JWT_SECRET_CLIENT = ''
+   private JWT_SECRET_DRIVER = ''
+   private JWT_SECRET_ADMIN = ''
+
    constructor(
-      @Inject('jwtClient') private readonly jwtClientService: JwtService,
-      @Inject('jwtDriver') private readonly jwtDriverService: JwtService,
-      @Inject('jwtAdmin') private readonly jwtAdminService: JwtService,
       private readonly redisService: RedisService,
       private readonly prismaService: PrismaService,
-   ) {}
+      private readonly configService: ConfigService,
+   ) {
+      this.JWT_SECRET_CLIENT =
+         this.configService.get<string>('JWT_SECRET_CLIENT')
+      this.JWT_SECRET_DRIVER =
+         this.configService.get<string>('JWT_SECRET_DRIVER')
+      this.JWT_SECRET_ADMIN = this.configService.get<string>('JWT_SECRET_ADMIN')
+   }
 
    async confirmSignIn(confirmSignInDto: ConfirmDto) {
       try {
@@ -87,8 +95,7 @@ export class ConfirmSignInService {
                role: clientProfile.role,
                status: clientProfile.clientProfile.status,
             }
-            const token =
-               await this.jwtClientService.signAsync(updateClientProfile)
+            const token = jwt.sign(updateClientProfile, this.JWT_SECRET_CLIENT)
             return { token }
          } else if (restSignInDto.role === UserRole.DRIVER) {
             const driverProfile = await this.prismaService.profile.findUnique({
@@ -108,8 +115,7 @@ export class ConfirmSignInService {
                role: driverProfile.role,
                status: driverProfile.driverProfile.status,
             }
-            const token =
-               await this.jwtDriverService.signAsync(updateDriverProfile)
+            const token = jwt.sign(updateDriverProfile, this.JWT_SECRET_DRIVER)
             return { token }
          } else if (restSignInDto.role === UserRole.ADMIN) {
             const adminProfile = await this.prismaService.profile.findUnique({
@@ -129,8 +135,7 @@ export class ConfirmSignInService {
                role: adminProfile.role,
                status: adminProfile.adminProfile.status,
             }
-            const token =
-               await this.jwtAdminService.signAsync(updateAdminProfile)
+            const token = jwt.sign(updateAdminProfile, this.JWT_SECRET_ADMIN)
             return { token }
          }
       } catch (error) {

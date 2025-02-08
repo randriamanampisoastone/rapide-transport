@@ -1,27 +1,35 @@
 import {
    BadRequestException,
-   Inject,
    Injectable,
    NotFoundException,
    RequestTimeoutException,
 } from '@nestjs/common'
 import { RedisService } from 'src/redis/redis.service'
 import { AUTH_SIGN_UP_PREFIX } from 'constants/redis.constant'
-import { JwtService } from '@nestjs/jwt'
+import * as jwt from 'jsonwebtoken'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { SignUpDto } from './dto/sign.up.dto'
 import { UserRole } from 'enums/profile.enum'
 import { ConfirmDto } from './dto/confirm.dto'
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export class ConfirmSignUpService {
+   private JWT_SECRET_CLIENT = ''
+   private JWT_SECRET_DRIVER = ''
+   private JWT_SECRET_ADMIN = ''
+
    constructor(
-      @Inject('jwtClient') private readonly jwtClientService: JwtService,
-      @Inject('jwtDriver') private readonly jwtDriverService: JwtService,
-      @Inject('jwtAdmin') private readonly jwtAdminService: JwtService,
       private readonly redisService: RedisService,
       private readonly prismaService: PrismaService,
-   ) {}
+      private readonly confiService: ConfigService,
+   ) {
+      this.JWT_SECRET_CLIENT =
+         this.confiService.get<string>('JWT_SECRET_CLIENT')
+      this.JWT_SECRET_DRIVER =
+         this.confiService.get<string>('JWT_SECRET_DRIVER')
+      this.JWT_SECRET_ADMIN = this.confiService.get<string>('JWT_SECRET_ADMIN')
+   }
 
    async confirmSignUp(confirmSignUpDto: ConfirmDto) {
       try {
@@ -69,17 +77,17 @@ export class ConfirmSignUpService {
          if (restSignUpDto.role === UserRole.CLIENT) {
             const clientProfile = await this.createClientProfile(restSignUpDto)
             await this.redisService.setClientToNew(clientProfile.sub)
-            const token = await this.jwtClientService.signAsync(clientProfile)
+            const token = jwt.sign(clientProfile, this.JWT_SECRET_CLIENT)
             console.log('token client :', token)
             return { token }
          } else if (restSignUpDto.role === UserRole.DRIVER) {
             const driverProfile = await this.createDriverProfile(restSignUpDto)
-            const token = await this.jwtDriverService.signAsync(driverProfile)
+            const token = jwt.sign(driverProfile, this.JWT_SECRET_DRIVER)
             console.log('token driver :', token)
             return { token }
          } else if (restSignUpDto.role === UserRole.ADMIN) {
             const adminProfile = await this.createAdminProfile(restSignUpDto)
-            const token = await this.jwtAdminService.signAsync(adminProfile)
+            const token = jwt.sign(adminProfile, this.JWT_SECRET_ADMIN)
             console.log('token driver :', token)
             return { token }
          }

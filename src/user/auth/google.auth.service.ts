@@ -1,8 +1,9 @@
 import { PrismaService } from 'src/prisma/prisma.service'
 import { OAuth2Client } from 'google-auth-library'
 import { UserRole } from 'enums/profile.enum'
-import { JwtService } from '@nestjs/jwt'
 import { Injectable } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import * as jwt from 'jsonwebtoken'
 
 @Injectable()
 export class GoogleAuthService {
@@ -10,10 +11,20 @@ export class GoogleAuthService {
       '378200763630-4tevtt89ff6g7alvigl1r041ditle8j5.apps.googleusercontent.com'
    private client = new OAuth2Client(this.WEB_CLIENT_ID)
 
+   private JWT_SECRET_CLIENT = ''
+   private JWT_SECRET_DRIVER = ''
+   private JWT_SECRET_ADMIN = ''
+
    constructor(
-      private readonly jwtService: JwtService,
       private readonly prismaService: PrismaService,
-   ) {}
+      private readonly confiService: ConfigService,
+   ) {
+      this.JWT_SECRET_CLIENT =
+         this.confiService.get<string>('JWT_SECRET_CLIENT')
+      this.JWT_SECRET_DRIVER =
+         this.confiService.get<string>('JWT_SECRET_DRIVER')
+      this.JWT_SECRET_ADMIN = this.confiService.get<string>('JWT_SECRET_ADMIN')
+   }
 
    async verifyGoogleToken(
       idToken: string,
@@ -68,7 +79,7 @@ export class GoogleAuthService {
                role: existingUser.role,
                status: existingUser.clientProfile.status,
             }
-            const token = await this.jwtService.signAsync(updateClientProfile)
+            const token = jwt.sign(updateClientProfile, this.JWT_SECRET_CLIENT)
             return { token, status: 'REGISTERED' }
          } else if (existingUser.role === UserRole.DRIVER) {
             const updateDriverProfile = {
@@ -82,7 +93,7 @@ export class GoogleAuthService {
                role: existingUser.role,
                status: existingUser.driverProfile.status,
             }
-            const token = await this.jwtService.signAsync(updateDriverProfile)
+            const token = jwt.sign(updateDriverProfile, this.JWT_SECRET_DRIVER)
             return { token, status: 'REGISTERED' }
          } else if (existingUser.role === UserRole.ADMIN) {
             const updateAdminProfile = {
@@ -96,7 +107,7 @@ export class GoogleAuthService {
                role: existingUser.role,
                status: existingUser.adminProfile.status,
             }
-            const token = await this.jwtService.signAsync(updateAdminProfile)
+            const token = jwt.sign(updateAdminProfile, this.JWT_SECRET_ADMIN)
             return { token, status: 'REGISTERED' }
          }
       } catch (error) {
