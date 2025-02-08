@@ -16,37 +16,124 @@ export class GetProfileService {
             where: { sub },
             select: {
                sub: true,
+               phoneNumber: true,
+               email: true,
                firstName: true,
                lastName: true,
                birthday: true,
                gender: true,
-               phoneNumber: true,
                profilePhoto: true,
                role: true,
                clientProfile: {
+                  select: {
+                     status: true,
+                     accountBalance: {
+                        select: {
+                           balance: true,
+                        },
+                     },
+                  },
+               },
+            },
+         })
+         return {
+            clientProfileId: clientProfile.sub,
+            phoneNumber: clientProfile.phoneNumber,
+            email: clientProfile.email,
+            firstName: clientProfile.firstName,
+            lastName: clientProfile.lastName,
+            birthday: clientProfile.birthday,
+            gender: clientProfile.gender,
+            profilePhoto: clientProfile.profilePhoto,
+            role: clientProfile.role,
+            status: clientProfile.clientProfile.status,
+            balance: clientProfile.clientProfile.accountBalance.balance,
+         }
+      } catch (error) {
+         throw error
+      }
+   }
+   async getDriverProfile(sub: string) {
+      try {
+         const driverProfile = await this.prismaService.profile.findUnique({
+            where: { sub },
+            select: {
+               sub: true,
+               phoneNumber: true,
+               email: true,
+               firstName: true,
+               lastName: true,
+               birthday: true,
+               gender: true,
+               profilePhoto: true,
+               role: true,
+               driverProfile: {
+                  select: {
+                     status: true,
+                     accountBalance: {
+                        select: {
+                           balance: true,
+                        },
+                     },
+                  },
+               },
+            },
+         })
+         return {
+            driverProfileId: driverProfile.sub,
+            phoneNumber: driverProfile.phoneNumber,
+            email: driverProfile.email,
+            firstName: driverProfile.firstName,
+            lastName: driverProfile.lastName,
+            birthday: driverProfile.birthday,
+            gender: driverProfile.gender,
+            profilePhoto: driverProfile.profilePhoto,
+            role: driverProfile.role,
+            status: driverProfile.driverProfile.status,
+            balance: driverProfile.driverProfile.accountBalance.balance,
+         }
+      } catch (error) {
+         throw error
+      }
+   }
+   async getAdminProfile(sub: string) {
+      try {
+         const driverProfile = await this.prismaService.profile.findUnique({
+            where: { sub },
+            select: {
+               sub: true,
+               phoneNumber: true,
+               email: true,
+               firstName: true,
+               lastName: true,
+               birthday: true,
+               gender: true,
+               profilePhoto: true,
+               role: true,
+               adminProfile: {
                   select: {
                      status: true,
                   },
                },
             },
          })
-         const updateDriverProfile = {
-            clientProfileId: clientProfile.sub,
-            firstName: clientProfile.firstName,
-            lastName: clientProfile.lastName,
-            birthday: clientProfile.birthday,
-            gender: clientProfile.gender,
-            phoneNumber: clientProfile.phoneNumber,
-            profilePhoto: clientProfile.profilePhoto,
-            role: clientProfile.role,
-            status: clientProfile.clientProfile.status,
+         return {
+            adminProfileId: driverProfile.sub,
+            phoneNumber: driverProfile.phoneNumber,
+            email: driverProfile.email,
+            firstName: driverProfile.firstName,
+            lastName: driverProfile.lastName,
+            birthday: driverProfile.birthday,
+            gender: driverProfile.gender,
+            profilePhoto: driverProfile.profilePhoto,
+            role: driverProfile.role,
+            status: driverProfile.adminProfile.status,
          }
-
-         return updateDriverProfile
       } catch (error) {
          throw error
       }
    }
+
    async getFullClientProfile(clientProfileId: string) {
       try {
          const clientProfile = await this.prismaService.profile.findUnique({
@@ -193,6 +280,7 @@ export class GetProfileService {
          throw error
       }
    }
+
    async getClientByIds(clientProfileIds: string[]) {
       try {
          const condition = clientProfileIds.length? { clientProfileId: { in: clientProfileIds } } : {}
@@ -210,30 +298,8 @@ export class GetProfileService {
          throw error
       }
    }
-   async getDriverProfile(driverProfileId: string) {
-      try {
-         const driverProfile = await this.prismaService.profile.findUnique({
-            where: { sub: driverProfileId },
-            include: {
-               driverProfile: true,
-            },
-         })
-         const updateDriverProfile = {
-            driverProfileId: driverProfile.driverProfile.driverProfileId,
-            firstName: driverProfile.firstName,
-            lastName: driverProfile.lastName,
-            birthday: driverProfile.birthday,
-            gender: driverProfile.gender,
-            phoneNumber: driverProfile.phoneNumber,
-            profilePhoto: driverProfile.profilePhoto,
-            role: driverProfile.role,
-            status: driverProfile.driverProfile.status,
-         }
-         return updateDriverProfile
-      } catch (error) {
-         throw error
-      }
-   }
+ 
+ 
    async getDrivers(page: number, pageSize: number) {
       try {
          const select = {

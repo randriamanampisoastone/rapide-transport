@@ -11,10 +11,11 @@ import { ResendConfirmSignUpService } from './resend.confirm.sign.up.service'
 import { ResendConfirmSignInService } from './resend.confirm.sign.in.service'
 import { GetProfileService } from './get.profile.service'
 import { GoogleAuthService } from './google.auth.service'
+import { ProfileController } from './profile.controller'
 
 @Module({
    imports: [],
-   controllers: [AuthController],
+   controllers: [AuthController, ProfileController],
    providers: [
       RedisService,
       SmsService,

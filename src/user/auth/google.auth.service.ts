@@ -14,6 +14,7 @@ export class GoogleAuthService {
    private JWT_SECRET_CLIENT = ''
    private JWT_SECRET_DRIVER = ''
    private JWT_SECRET_ADMIN = ''
+   private JWT_EXPIRES_IN = ''
 
    constructor(
       private readonly prismaService: PrismaService,
@@ -24,6 +25,7 @@ export class GoogleAuthService {
       this.JWT_SECRET_DRIVER =
          this.confiService.get<string>('JWT_SECRET_DRIVER')
       this.JWT_SECRET_ADMIN = this.confiService.get<string>('JWT_SECRET_ADMIN')
+      this.JWT_EXPIRES_IN = this.confiService.get<string>('JWT_EXPIRES_IN')
    }
 
    async verifyGoogleToken(
@@ -79,7 +81,13 @@ export class GoogleAuthService {
                role: existingUser.role,
                status: existingUser.clientProfile.status,
             }
-            const token = jwt.sign(updateClientProfile, this.JWT_SECRET_CLIENT)
+            const token = jwt.sign(
+               updateClientProfile,
+               this.JWT_SECRET_CLIENT,
+               {
+                  expiresIn: this.JWT_EXPIRES_IN,
+               },
+            )
             return { token, status: 'REGISTERED' }
          } else if (existingUser.role === UserRole.DRIVER) {
             const updateDriverProfile = {
@@ -93,7 +101,13 @@ export class GoogleAuthService {
                role: existingUser.role,
                status: existingUser.driverProfile.status,
             }
-            const token = jwt.sign(updateDriverProfile, this.JWT_SECRET_DRIVER)
+            const token = jwt.sign(
+               updateDriverProfile,
+               this.JWT_SECRET_DRIVER,
+               {
+                  expiresIn: this.JWT_EXPIRES_IN,
+               },
+            )
             return { token, status: 'REGISTERED' }
          } else if (existingUser.role === UserRole.ADMIN) {
             const updateAdminProfile = {
@@ -107,7 +121,9 @@ export class GoogleAuthService {
                role: existingUser.role,
                status: existingUser.adminProfile.status,
             }
-            const token = jwt.sign(updateAdminProfile, this.JWT_SECRET_ADMIN)
+            const token = jwt.sign(updateAdminProfile, this.JWT_SECRET_ADMIN, {
+               expiresIn: this.JWT_EXPIRES_IN,
+            })
             return { token, status: 'REGISTERED' }
          }
       } catch (error) {

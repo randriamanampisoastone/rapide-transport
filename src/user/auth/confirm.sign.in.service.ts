@@ -17,6 +17,7 @@ export class ConfirmSignInService {
    private JWT_SECRET_CLIENT = ''
    private JWT_SECRET_DRIVER = ''
    private JWT_SECRET_ADMIN = ''
+   private JWT_EXPIRES_IN = ''
 
    constructor(
       private readonly redisService: RedisService,
@@ -28,6 +29,7 @@ export class ConfirmSignInService {
       this.JWT_SECRET_DRIVER =
          this.configService.get<string>('JWT_SECRET_DRIVER')
       this.JWT_SECRET_ADMIN = this.configService.get<string>('JWT_SECRET_ADMIN')
+      this.JWT_EXPIRES_IN = this.configService.get<string>('JWT_EXPIRES_IN')
    }
 
    async confirmSignIn(confirmSignInDto: ConfirmDto) {
@@ -95,7 +97,13 @@ export class ConfirmSignInService {
                role: clientProfile.role,
                status: clientProfile.clientProfile.status,
             }
-            const token = jwt.sign(updateClientProfile, this.JWT_SECRET_CLIENT)
+            const token = jwt.sign(
+               updateClientProfile,
+               this.JWT_SECRET_CLIENT,
+               {
+                  expiresIn: this.JWT_EXPIRES_IN,
+               },
+            )
             return { token }
          } else if (restSignInDto.role === UserRole.DRIVER) {
             const driverProfile = await this.prismaService.profile.findUnique({
@@ -115,7 +123,13 @@ export class ConfirmSignInService {
                role: driverProfile.role,
                status: driverProfile.driverProfile.status,
             }
-            const token = jwt.sign(updateDriverProfile, this.JWT_SECRET_DRIVER)
+            const token = jwt.sign(
+               updateDriverProfile,
+               this.JWT_SECRET_DRIVER,
+               {
+                  expiresIn: this.JWT_EXPIRES_IN,
+               },
+            )
             return { token }
          } else if (restSignInDto.role === UserRole.ADMIN) {
             const adminProfile = await this.prismaService.profile.findUnique({
@@ -135,7 +149,9 @@ export class ConfirmSignInService {
                role: adminProfile.role,
                status: adminProfile.adminProfile.status,
             }
-            const token = jwt.sign(updateAdminProfile, this.JWT_SECRET_ADMIN)
+            const token = jwt.sign(updateAdminProfile, this.JWT_SECRET_ADMIN, {
+               expiresIn: this.JWT_EXPIRES_IN,
+            })
             return { token }
          }
       } catch (error) {
