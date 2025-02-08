@@ -18,17 +18,19 @@ export class ConfirmSignUpService {
    private JWT_SECRET_CLIENT = ''
    private JWT_SECRET_DRIVER = ''
    private JWT_SECRET_ADMIN = ''
+   private JWT_EXPIRES_IN = ''
 
    constructor(
       private readonly redisService: RedisService,
       private readonly prismaService: PrismaService,
-      private readonly confiService: ConfigService,
+      private readonly configService: ConfigService,
    ) {
       this.JWT_SECRET_CLIENT =
-         this.confiService.get<string>('JWT_SECRET_CLIENT')
+         this.configService.get<string>('JWT_SECRET_CLIENT')
       this.JWT_SECRET_DRIVER =
-         this.confiService.get<string>('JWT_SECRET_DRIVER')
-      this.JWT_SECRET_ADMIN = this.confiService.get<string>('JWT_SECRET_ADMIN')
+         this.configService.get<string>('JWT_SECRET_DRIVER')
+      this.JWT_SECRET_ADMIN = this.configService.get<string>('JWT_SECRET_ADMIN')
+      this.JWT_EXPIRES_IN = this.configService.get<string>('JWT_EXPIRES_IN')
    }
 
    async confirmSignUp(confirmSignUpDto: ConfirmDto) {
@@ -77,17 +79,23 @@ export class ConfirmSignUpService {
          if (restSignUpDto.role === UserRole.CLIENT) {
             const clientProfile = await this.createClientProfile(restSignUpDto)
             await this.redisService.setClientToNew(clientProfile.sub)
-            const token = jwt.sign(clientProfile, this.JWT_SECRET_CLIENT)
+            const token = jwt.sign(clientProfile, this.JWT_SECRET_CLIENT, {
+               expiresIn: this.JWT_EXPIRES_IN,
+            })
             console.log('token client :', token)
             return { token }
          } else if (restSignUpDto.role === UserRole.DRIVER) {
             const driverProfile = await this.createDriverProfile(restSignUpDto)
-            const token = jwt.sign(driverProfile, this.JWT_SECRET_DRIVER)
+            const token = jwt.sign(driverProfile, this.JWT_SECRET_DRIVER, {
+               expiresIn: this.JWT_EXPIRES_IN,
+            })
             console.log('token driver :', token)
             return { token }
          } else if (restSignUpDto.role === UserRole.ADMIN) {
             const adminProfile = await this.createAdminProfile(restSignUpDto)
-            const token = jwt.sign(adminProfile, this.JWT_SECRET_ADMIN)
+            const token = jwt.sign(adminProfile, this.JWT_SECRET_ADMIN, {
+               expiresIn: this.JWT_EXPIRES_IN,
+            })
             console.log('token driver :', token)
             return { token }
          }
