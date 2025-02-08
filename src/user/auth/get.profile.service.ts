@@ -10,16 +10,28 @@ export class GetProfileService {
       // private readonly getByStatusService: GetByStatusService,
    ) {}
 
-   async getClientProfile(clientProfileId: string) {
+   async getClientProfile(sub: string) {
       try {
          const clientProfile = await this.prismaService.profile.findUnique({
-            where: { sub: clientProfileId },
-            include: {
-               clientProfile: true,
+            where: { sub },
+            select: {
+               sub: true,
+               firstName: true,
+               lastName: true,
+               birthday: true,
+               gender: true,
+               phoneNumber: true,
+               profilePhoto: true,
+               role: true,
+               clientProfile: {
+                  select: {
+                     status: true,
+                  },
+               },
             },
          })
          const updateDriverProfile = {
-            clientProfileId: clientProfile.clientProfile.clientProfileId,
+            clientProfileId: clientProfile.sub,
             firstName: clientProfile.firstName,
             lastName: clientProfile.lastName,
             birthday: clientProfile.birthday,

@@ -84,9 +84,9 @@ export class AuthController {
       )
    }
 
-   @Get('getClientProfile')
-   async getClientProfile(
-      @Query('clientProfileId')
+   @Get('findClientProfile')
+   async findClientProfile(
+      @Query('sub')
       clientProfileId: string,
    ) {
       return await this.getProfileService.getClientProfile(clientProfileId)

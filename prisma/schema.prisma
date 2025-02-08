@@ -79,7 +79,7 @@ model Profile {
   phoneNumber          String?         @unique
   email                String?         @unique
   firstName            String
-  lastName             String
+  lastName             String?
   gender               GenderType
   birthday             DateTime
   role                 UserRole        @default(CLIENT) 
