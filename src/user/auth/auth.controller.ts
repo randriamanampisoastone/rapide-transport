@@ -103,13 +103,20 @@ export class AuthController {
    }
 
    @Get('getClients')
-   // @SetMetadata('allowedRole', ['ADMIN'])
-   // @UseGuards(RolesGuard)
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
    async getClients(
       @Query('page') page: number,
       @Query('pageSize') pageSize: number,
    ) {
       return await this.getProfileService.getClients(page || 1, pageSize || 10)
+   }
+
+   @Get('getClientByIds')
+   // @SetMetadata('allowedRole', ['ADMIN'])
+   // @UseGuards(RolesGuard)
+   async getClientByIds(@Query('clientProfileIds') clientProfileIds: string[]) {
+      return await this.getProfileService.getClientByIds(clientProfileIds)
    }
 
    @Get('searchClientByTerm')
