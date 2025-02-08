@@ -18,7 +18,6 @@ import { HistoricalModule } from './historical/historical.module'
          isGlobal: true,
          validationSchema: ValidationEnv.object({
             PORT: ValidationEnv.number().required(),
-
             AWS_REGION: ValidationEnv.string().required(),
             REDIS_HOST: ValidationEnv.string().required(),
             REDIS_PORT: ValidationEnv.number().required(),
@@ -26,7 +25,9 @@ import { HistoricalModule } from './historical/historical.module'
             REDIS_TTL_SECONDS: ValidationEnv.number().required(),
             DATABASE_URL: ValidationEnv.string().required(),
             RADIUS_FINDING_DRIVER: ValidationEnv.number().required(),
-            JWT_SECRET: ValidationEnv.string().required(),
+            JWT_SECRET_CLIENT: ValidationEnv.string().required(),
+            JWT_SECRET_DRIVER: ValidationEnv.string().required(),
+            JWT_SECRET_ADMIN: ValidationEnv.string().required(),
             JWT_EXPIRES_IN: ValidationEnv.string().required(),
          }),
       }),
@@ -45,7 +46,7 @@ import { HistoricalModule } from './historical/historical.module'
       GatewayModule,
       VehicleModule,
       AccountBalanceModule,
-      HistoricalModule
+      HistoricalModule,
    ],
    controllers: [AppController],
    providers: [],

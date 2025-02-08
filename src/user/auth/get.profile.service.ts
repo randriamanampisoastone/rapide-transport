@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common'
-// import { RideStatus } from 'enums/ride.enum'
-
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
-import { GetByStatusService } from 'src/ride/get-by-status.service'
 
 @Injectable()
 export class GetProfileService {

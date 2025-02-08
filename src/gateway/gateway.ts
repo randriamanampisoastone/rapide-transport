@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common'
 import {
    MessageBody,
    OnGatewayConnection,
@@ -19,8 +19,9 @@ import {
 import { InfoOnRideService } from 'src/ride/info-on-ride.service'
 import { CheckRideService } from 'src/ride/check-ride.service'
 import { RideData } from 'interfaces/ride.interface'
-import { JwtService } from '@nestjs/jwt'
 import { UserRole } from 'enums/profile.enum'
+import * as jwt from 'jsonwebtoken'
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 @WebSocketGateway({ cors: true })
@@ -63,7 +64,7 @@ export class Gateway
       private readonly locationService: LocationService,
       private readonly infoOnRideService: InfoOnRideService,
       private readonly checkRideService: CheckRideService,
-      private readonly jwtService: JwtService,
+      private readonly configService: ConfigService,
    ) {}
 
    afterInit(server: Server) {
@@ -73,7 +74,37 @@ export class Gateway
             return next(new Error('TokenNotFound'))
          }
          try {
-            const user = await this.jwtService.verify(token)
+            // Décoder le token sans vérification pour extraire le rôle
+            const decodedHeader: any = jwt.decode(token)
+            if (!decodedHeader || !decodedHeader.role) {
+               throw new UnauthorizedException(
+                  'Rôle non spécifié dans le token',
+               )
+            }
+
+            // Sélectionner la clé secrète en fonction du rôle
+            let secretKey: string
+            switch (decodedHeader.role) {
+               case UserRole.CLIENT:
+                  secretKey =
+                     this.configService.get<string>('JWT_SECRET_CLIENT')
+                  break
+               case UserRole.DRIVER:
+                  secretKey =
+                     this.configService.get<string>('JWT_SECRET_DRIVER')
+                  break
+               case UserRole.ADMIN:
+                  secretKey = this.configService.get<string>('JWT_SECRET_ADMIN')
+                  break
+               default:
+                  throw new UnauthorizedException(
+                     `Rôle invalide: ${decodedHeader.role}`,
+                  )
+            }
+
+            // Vérification du token avec la bonne clé secrète
+            const user = jwt.verify(token, secretKey)
+
             socket.data.user = user
 
             next()

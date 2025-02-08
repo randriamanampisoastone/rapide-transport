@@ -1,6 +1,10 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { DRIVER_LOCATION_PREFIX, NEW_CLIENT, RIDE_PREFIX } from 'constants/redis.constant'
+import {
+   DRIVER_LOCATION_PREFIX,
+   NEW_CLIENT,
+   RIDE_PREFIX,
+} from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
 import { VehicleType } from 'enums/vehicle.enum'
 import { getDistance } from 'geolib'
@@ -166,7 +170,11 @@ export class RedisService implements OnModuleInit {
 
    async setClientToNew(clientProfileId: string) {
       try {
-         await this.set(`${NEW_CLIENT}-${clientProfileId}`, clientProfileId, 24 * 3600)
+         await this.set(
+            `${NEW_CLIENT}-${clientProfileId}`,
+            clientProfileId,
+            24 * 3600,
+         )
       } catch (error) {
          throw error
       }

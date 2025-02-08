@@ -26,9 +26,9 @@ export class SignUpDto {
    @IsString()
    firstName: string
 
-   @IsNotEmpty()
+   @IsOptional()
    @IsString()
-   lastName: string
+   lastName?: string
 
    @IsEnum(GenderType, {
       message:

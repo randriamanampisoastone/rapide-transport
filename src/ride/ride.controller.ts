@@ -48,20 +48,13 @@ export class RideController {
       private readonly getRideService: GetRideService,
    ) {}
 
-   @Get('test')
-   @SetMetadata('allowedRole', ['CLIENT'])
-   @UseGuards(RolesGuard)
-   test(@GetUser('gender') clientProfileId: string) {
-      return `Test ${clientProfileId}`
-   }
-
    @Post('create-itinerary')
    @SetMetadata('allowedRole', ['CLIENT'])
    @UseGuards(RolesGuard)
    createItinerary(
       @Body()
       data: { pickUpLocation: LatLng; dropOffLocation: LatLng },
-      @GetUser('clientProfileId') clientProfileId: string,
+      @GetUser('sub') clientProfileId: string,
    ) {
       return this.createItineraryService.createItinerary({
          ...data,
@@ -80,7 +73,7 @@ export class RideController {
          vehicleType: VehicleType
          paymentMethodType: PaymentMethodType
       },
-      @GetUser('clientProfileId') clientProfileId: string,
+      @GetUser('sub') clientProfileId: string,
    ) {
       return this.createRideService.createRide({
          ...data,
@@ -93,7 +86,7 @@ export class RideController {
    @UseGuards(RolesGuard)
    cancelled(
       @Body() { rideId }: { rideId: string },
-      @GetUser('clientProfileId') clientProfileId: string,
+      @GetUser('sub') clientProfileId: string,
    ) {
       return this.cancelledService.cancelled({ rideId, clientProfileId })
    }
@@ -103,7 +96,7 @@ export class RideController {
    @UseGuards(RolesGuard)
    driverAccept(
       @Body() { rideId }: { rideId: string },
-      @GetUser('driverProfileId') driverProfileId: string,
+      @GetUser('sub') driverProfileId: string,
    ) {
       return this.driverAcceptService.driverAccept({ driverProfileId, rideId })
    }
@@ -113,7 +106,7 @@ export class RideController {
    @UseGuards(RolesGuard)
    driverOnTheWay(
       @Body() data: { rideId: string; driverLocation: LatLng },
-      @GetUser('driverProfileId') driverProfileId: string,
+      @GetUser('sub') driverProfileId: string,
    ) {
       return this.driverOnTheWayService.driverOnTheWay({
          driverProfileId,
@@ -126,7 +119,7 @@ export class RideController {
    @UseGuards(RolesGuard)
    stopped(
       @Body() { rideId }: { rideId: string },
-      @GetUser('clientProfileId') clientProfileId: string,
+      @GetUser('sub') clientProfileId: string,
    ) {
       return this.stoppedService.clientStopped({ rideId, clientProfileId })
    }
@@ -136,7 +129,7 @@ export class RideController {
    @UseGuards(RolesGuard)
    drivertArrived(
       @Body() { rideId }: { rideId: string },
-      @GetUser('driverProfileId') driverProfileId: string,
+      @GetUser('sub') driverProfileId: string,
    ) {
       return this.driverArrivedService.drivertArrived({
          driverProfileId,
@@ -149,7 +142,7 @@ export class RideController {
    @UseGuards(RolesGuard)
    clientNotFound(
       @Body() { rideId }: { rideId: string },
-      @GetUser('driverProfileId') driverProfileId: string,
+      @GetUser('sub') driverProfileId: string,
    ) {
       return this.clientNotFoundService.clientNotFound({
          driverProfileId,
@@ -162,7 +155,7 @@ export class RideController {
    @UseGuards(RolesGuard)
    start(
       @Body() { rideId }: { rideId: string },
-      @GetUser('driverProfileId') driverProfileId: string,
+      @GetUser('sub') driverProfileId: string,
    ) {
       return this.startService.start({
          driverProfileId,
@@ -175,7 +168,7 @@ export class RideController {
    @UseGuards(RolesGuard)
    clientGiveUp(
       @Body() { rideId }: { rideId: string },
-      @GetUser('clientProfileId') clientProfileId: string,
+      @GetUser('sub') clientProfileId: string,
    ) {
       return this.clientGiveUpService.clientGiveUp({ rideId, clientProfileId })
    }
@@ -185,7 +178,7 @@ export class RideController {
    @UseGuards(RolesGuard)
    arrivedDestination(
       @Body() { rideId }: { rideId: string },
-      @GetUser('driverProfileId') driverProfileId: string,
+      @GetUser('sub') driverProfileId: string,
    ) {
       return this.arrivedDestinationService.arrivedDestination({
          driverProfileId,
@@ -198,7 +191,7 @@ export class RideController {
    @UseGuards(RolesGuard)
    complete(
       @Body() { rideId }: { rideId: string },
-      @GetUser('driverProfileId') driverProfileId: string,
+      @GetUser('sub') driverProfileId: string,
    ) {
       return this.completeService.complete({
          driverProfileId,
@@ -216,7 +209,7 @@ export class RideController {
          review: string
          rideId: string
       },
-      @GetUser('clientProfileId') clientProfileId: string,
+      @GetUser('sub') clientProfileId: string,
    ) {
       return this.reviewService.review({ clientProfileId, ...data })
    }
