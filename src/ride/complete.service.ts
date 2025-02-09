@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { EVENT_RIDE_COMPLETED } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
 import { RideData, RideDataKey } from 'interfaces/ride.interface'
@@ -88,7 +89,7 @@ export class CompleteService {
             },
          })
 
-         this.gateway.sendNotificationToAdmin('rideCompleted', {
+         this.gateway.sendNotificationToAdmin(EVENT_RIDE_COMPLETED, {
             ...updatedRideData,
          })
       } catch (error) {

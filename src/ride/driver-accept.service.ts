@@ -7,6 +7,7 @@ import { RideStatus } from 'enums/ride.enum'
 import { RedisService } from 'src/redis/redis.service'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { EVENT_ACCEPTED_RIDE } from 'constants/event.constant'
 
 export interface DriverAcceptDto {
    driverProfileId: string
@@ -70,9 +71,21 @@ export class DriverAcceptService {
          //       status: RideStatus.DRIVER_ACCEPTED,
          //    },
          // )
-         await this.postgresService.ride.update({
+         const rideDataUpdatedOnDb = await this.postgresService.ride.update({
             where: {
                rideId,
+            },
+            include: {
+               clientProfile: {
+                  include: {
+                     profile: true,
+                  },
+               },
+               driverProfile: {
+                  include: {
+                     profile: true,
+                  },
+               },
             },
             data: {
                driverProfileId,
@@ -82,13 +95,16 @@ export class DriverAcceptService {
 
          const clientProfileId = rideDataUpdated.clientProfileId
 
-         const topic = 'acceptedRide'
-         this.gateway.sendNotificationToClient(clientProfileId, topic, {
-            ...rideDataUpdated,
-         })
+         this.gateway.sendNotificationToClient(
+            clientProfileId,
+            EVENT_ACCEPTED_RIDE,
+            {
+               ...rideDataUpdatedOnDb,
+            },
+         )
 
-         this.gateway.sendNotificationToAdmin(topic, {
-            ...rideDataUpdated,
+         this.gateway.sendNotificationToAdmin(EVENT_ACCEPTED_RIDE, {
+            ...rideDataUpdatedOnDb,
          })
 
          return { ...rideDataUpdated }

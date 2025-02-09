@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { EVENT_INFO_ON_RIDE_PULL } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { UserRole } from 'enums/profile.enum'
 import { Server } from 'socket.io'
@@ -41,12 +42,16 @@ export class InfoOnRideService {
       //    rideDataUpdatedString,
       // )
 
-      server
-         .to(clientProfileId)
-         .emit('infoOnRidePull', { realDuration, realPrice })
-      server
-         .to(driverProfileId)
-         .emit('infoOnRidePull', { realDuration, realPrice })
-      server.to(UserRole.ADMIN).emit('infoOnRidePull', { ...rideDataUpdated })
+      // server
+      //    .to(clientProfileId)
+      //    .emit(EVENT_INFO_ON_RIDE_PULL, { realDuration, realPrice })
+      // server
+      //    .to(driverProfileId)
+      //    .emit(EVENT_INFO_ON_RIDE_PULL, { realDuration, realPrice })
+      // server
+      //    .to(UserRole.ADMIN)
+      //    .emit(EVENT_INFO_ON_RIDE_PULL, { ...rideDataUpdated })
+
+      return rideDataUpdated
    }
 }

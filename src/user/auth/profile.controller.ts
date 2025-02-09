@@ -127,4 +127,11 @@ export class ProfileController {
    ) {
       return await this.googleAuthService.googleAuth(data.idToken)
    }
+
+   @Get('getClientByIds')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   async getClientByIds(@Query('clientProfileIds') clientProfileIds: string[]) {
+      return await this.getProfileService.getClientByIds(clientProfileIds)
+   }
 }

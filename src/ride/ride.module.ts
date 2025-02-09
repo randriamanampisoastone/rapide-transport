@@ -23,6 +23,7 @@ import { GetRideService } from './get-ride.service'
 import { StoppedService } from './stopped.service'
 import { DriverBalanceService } from 'src/accountBalance/driverBalance.service'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { InfoOnRideService } from './info-on-ride.service'
 
 @Module({
    imports: [
@@ -51,7 +52,8 @@ import { PrismaService } from 'src/prisma/prisma.service'
       ReviewService,
 
       DriverBalanceService,
-      PrismaService
+      PrismaService,
+      InfoOnRideService
    ],
 })
 export class RideModule {}
