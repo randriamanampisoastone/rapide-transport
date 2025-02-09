@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import {
+   BadRequestException,
+   Injectable,
+   UnauthorizedException,
+} from '@nestjs/common'
 import { SignInDto } from './dto/sign.in.dto'
 import { PrismaService } from 'src/prisma/prisma.service'
 import * as speakeasy from 'speakeasy'
@@ -32,6 +36,9 @@ export class SignInService {
             throw new BadRequestException(
                `User with this phone number doesn't exists`,
             )
+         }
+         if (existingUser.role !== signInDto.role) {
+            throw new UnauthorizedException(`User role doesn't match`)
          }
 
          const secret = speakeasy.generateSecret({ length: 20 })

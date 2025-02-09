@@ -30,6 +30,7 @@ export class Gateway
 {
    private validateUserRole(client: Socket) {
       const user = client.data.user
+      console.log('user : ', user)
       if (!user) {
          this.logger.warn('Unauthorized client')
          client.disconnect(true)
@@ -48,12 +49,7 @@ export class Gateway
    private assignUserToRoom(client: Socket, role: UserRole) {
       if (Object.values(UserRole).includes(role)) {
          client.join(role)
-         if (client.data.user.clientProfileId) {
-            client.join(client.data.user.clientProfileId)
-         } else if (client.data.user.driverProfileId)
-            client.join(client.data.user.driverProfileId)
-      } else {
-         this.logger.warn(`Unknown role: ${role}`)
+         client.join(client.data.user.sub)
       }
    }
 
