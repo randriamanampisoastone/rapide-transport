@@ -22,6 +22,7 @@ import { RideData } from 'interfaces/ride.interface'
 import { UserRole } from 'enums/profile.enum'
 import * as jwt from 'jsonwebtoken'
 import { ConfigService } from '@nestjs/config'
+import { EVENT_INFO_ON_RIDE_PUSH, EVENT_NOTIFY_CLIENT, EVENT_RIDE_CHECKED, EVENT_SEND_DATA, EVENT_UPDATE_CLIENT_LOCATION, EVENT_UPDATE_DRIVER_LOCATION } from 'constants/event.constant'
 
 @Injectable()
 @WebSocketGateway({ cors: true })
@@ -140,16 +141,16 @@ export class Gateway
          }
 
          if (ride) {
-            client.emit('rideChecked', { success: true, ride })
+            client.emit(EVENT_RIDE_CHECKED, { success: true, ride })
          } else {
-            client.emit('rideChecked', {
+            client.emit(EVENT_RIDE_CHECKED, {
                success: false,
                message: 'No ride found',
             })
          }
       } catch (error) {
          console.log(error)
-         client.emit('rideChecked', {
+         client.emit(EVENT_RIDE_CHECKED, {
             success: false,
             message: 'Error checking ride',
          })
@@ -160,27 +161,27 @@ export class Gateway
       this.logger.log(`'Disconnected : ${client.id}`)
    }
 
-   @SubscribeMessage('updateDriverLocation')
+   @SubscribeMessage(EVENT_UPDATE_DRIVER_LOCATION)
    async handleUpdateDriverLocation(
       @MessageBody() data: UpdateDriverLocationInterface,
    ) {
       await this.locationService.handleUpdateDriverLocation(this.server, data)
    }
 
-   @SubscribeMessage('updateClientLocation')
+   @SubscribeMessage(EVENT_UPDATE_CLIENT_LOCATION)
    async handleUpdateClientLocation(
       @MessageBody() data: UpdateClientLocationInterface,
    ) {
       await this.locationService.handleUpdateClientLocation(this.server, data)
    }
-   @SubscribeMessage('sendData')
+   @SubscribeMessage(EVENT_SEND_DATA)
    async handleSendData(@MessageBody() data: any) {
       console.log('Tonga : ', data)
    }
 
-   @SubscribeMessage('notifyClient')
+   @SubscribeMessage(EVENT_NOTIFY_CLIENT)
    async notifyClient(@MessageBody() data: { clientProfileId: string }) {
-      this.server.to(data.clientProfileId).emit('notifyClient', {})
+      this.server.to(data.clientProfileId).emit(EVENT_NOTIFY_CLIENT, {})
    }
 
    sendNotificationToDriver(
@@ -203,7 +204,7 @@ export class Gateway
       this.server.to(UserRole.ADMIN).emit(topic, payload)
    }
 
-   @SubscribeMessage('infoOnRidePush')
+   @SubscribeMessage(EVENT_INFO_ON_RIDE_PUSH)
    async calculePrice(
       @MessageBody()
       data: {

@@ -9,6 +9,7 @@ import {
 
 import { RedisService } from 'src/redis/redis.service'
 import { UserRole } from 'enums/profile.enum'
+import { EVENT_CLIENT_LOCATION, EVENT_DRIVER_LOCATION } from 'constants/event.constant'
 
 @Injectable()
 export class LocationService {
@@ -29,13 +30,13 @@ export class LocationService {
       if (isOnRide) {
          const driverProfileId = data.driverProfileId
 
-         server.to(driverProfileId).emit('clientLocation', {
+         server.to(driverProfileId).emit(EVENT_CLIENT_LOCATION, {
             clientProfileId,
             clientLocation,
          })
       }
 
-      server.to(UserRole.ADMIN).emit('clientLocation', {
+      server.to(UserRole.ADMIN).emit(EVENT_CLIENT_LOCATION, {
          clientProfileId,
          clientLocation,
          isOnRide,
@@ -60,14 +61,14 @@ export class LocationService {
       } else {
          const clientProfileId = data.clientProfileId
 
-         server.to(clientProfileId).emit('driverLocation', {
+         server.to(clientProfileId).emit(EVENT_DRIVER_LOCATION, {
             driverProfileId,
             driverLocation,
             vehicleType,
          })
       }
 
-      server.to(UserRole.ADMIN).emit('driverLocation', {
+      server.to(UserRole.ADMIN).emit(EVENT_DRIVER_LOCATION, {
          driverProfileId,
          driverLocation,
          vehicleType,
