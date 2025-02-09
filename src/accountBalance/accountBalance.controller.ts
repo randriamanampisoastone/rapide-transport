@@ -17,11 +17,18 @@ export class AccountBalanceController {
       private readonly getRapideBalanceService: GetRapideBalanceService,
    ) {}
 
-   @Patch('reset')
+   @Patch('resetDriverBalance')
    @SetMetadata('allowedRole', ['ADMIN'])
    @UseGuards(RolesGuard)
-   async resetBalance(@Query('accountBalanceId') accountBalanceId: string) {
-      await this.resetBalanceService.resetBalance(accountBalanceId)
+   async resetRideBalance(@Query('accountBalanceId') accountBalanceId: string) {
+      await this.resetBalanceService.resetRideBalance(accountBalanceId)
+   }
+
+   @Patch('resetAllDriverBalance')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   async reseAllRideBalance() {
+      await this.resetBalanceService.resetAllRideBalance()
    }
 
    @Get('getRapideBalance')

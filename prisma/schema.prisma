@@ -177,7 +177,11 @@ model AccountBalance {
 model RapideBalance {
   rapideBalanceId      String           @id @default(uuid())
 
-  balance              Float
+  rent              Float
+  ride              Float
+  food              Float
+  mart              Float
+  express           Float
 
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
