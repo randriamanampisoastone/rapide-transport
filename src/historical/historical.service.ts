@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { profile } from 'console'
 import { RideStatus } from 'enums/ride.enum'
 import { RideData, RideDataKey } from 'interfaces/ride.interface'
 import { InjectModel, Model } from 'nestjs-dynamoose'
@@ -21,6 +22,18 @@ export class HistoricalService {
                orderBy: {
                   createdAt: 'desc',
                },
+               include: {
+                  clientProfile: {
+                     include: {
+                        profile: true,
+                     },
+                  },
+                  driverProfile: {
+                     include: {
+                        profile: true,
+                     },
+                  },
+               },
                take: pageSize,
                skip: (page - 1) * pageSize,
             }),
@@ -28,6 +41,7 @@ export class HistoricalService {
          ])
          return {
             data: rides,
+            hasMore: page * pageSize < totalCount,
             totalCount,
          }
       } catch (error) {
@@ -50,6 +64,18 @@ export class HistoricalService {
                },
                orderBy: {
                   createdAt: 'desc',
+               },
+               include: {
+                  clientProfile: {
+                     include: {
+                        profile: true,
+                     },
+                  },
+                  driverProfile: {
+                     include: {
+                        profile: true,
+                     },
+                  },
                },
                skip: (page - 1) * pageSize,
                take: pageSize,
@@ -83,6 +109,18 @@ export class HistoricalService {
                },
                orderBy: {
                   createdAt: 'desc',
+               },
+               include: {
+                  clientProfile: {
+                     include: {
+                        profile: true,
+                     },
+                  },
+                  driverProfile: {
+                     include: {
+                        profile: true,
+                     },
+                  },
                },
                skip: (page - 1) * pageSize,
                take: pageSize,
