@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { EVENT_CANCELLED_RIDE } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
 import { RideData, RideDataKey } from 'interfaces/ride.interface'
@@ -83,7 +84,7 @@ export class CancelledService {
             },
          })
 
-         this.gateway.sendNotificationToAdmin('cancelledRide', {
+         this.gateway.sendNotificationToAdmin(EVENT_CANCELLED_RIDE, {
             ...rideUpdated,
          })
       } catch (error) {

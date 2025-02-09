@@ -6,6 +6,7 @@ import { RideStatus } from 'enums/ride.enum'
 import { RedisService } from 'src/redis/redis.service'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { EVENT_CLIENT_NOT_FOUND } from 'constants/event.constant'
 
 export interface ClientNotFoundDto {
    driverProfileId: string
@@ -79,9 +80,14 @@ export class ClientNotFoundService {
          })
          const clientProfileId = rideDataUpdated.clientProfileId
 
-         const topic = 'clientNotFound'
-         this.gateway.sendNotificationToClient(clientProfileId, topic, {})
-         this.gateway.sendNotificationToAdmin(topic, { ...rideDataUpdated })
+         this.gateway.sendNotificationToClient(
+            clientProfileId,
+            EVENT_CLIENT_NOT_FOUND,
+            {},
+         )
+         this.gateway.sendNotificationToAdmin(EVENT_CLIENT_NOT_FOUND, {
+            ...rideDataUpdated,
+         })
       } catch (error) {
          throw error
       }

@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { EVENT_CLIENT_STOPPED } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
 import { RideData, RideDataKey } from 'interfaces/ride.interface'
@@ -84,9 +85,14 @@ export class StoppedService {
          })
          const driverProfileId = rideDataUpdated.driverProfileId
 
-         const topic = 'clientStopped'
-         this.gateway.sendNotificationToDriver(driverProfileId, topic, {})
-         this.gateway.sendNotificationToAdmin(topic, { ...rideDataUpdated })
+         this.gateway.sendNotificationToDriver(
+            driverProfileId,
+            EVENT_CLIENT_STOPPED,
+            {},
+         )
+         this.gateway.sendNotificationToAdmin(EVENT_CLIENT_STOPPED, {
+            ...rideDataUpdated,
+         })
       } catch (error) {
          throw error
       }

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { EVENT_DRIVER_DESTINATION } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { UserRole } from 'enums/profile.enum'
 import { RideStatus } from 'enums/ride.enum'
@@ -84,12 +85,13 @@ export class ArrivedDestinationService {
          
          const clientProfileId = rideDataUpdated.clientProfileId
 
-         const topic = 'arrivedDestination'
-         this.gateway.sendNotificationToClient(clientProfileId, topic, {
+         this.gateway.sendNotificationToClient(clientProfileId, EVENT_DRIVER_DESTINATION, {
             ...rideDataUpdated,
          })
 
-         this.gateway.sendNotificationToAdmin(topic, { ...rideDataUpdated })
+         this.gateway.sendNotificationToAdmin(EVENT_DRIVER_DESTINATION, {
+            ...rideDataUpdated,
+         })
 
          return { ...rideDataUpdated }
       } catch (error) {

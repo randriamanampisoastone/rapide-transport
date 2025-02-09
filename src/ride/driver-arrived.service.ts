@@ -6,6 +6,7 @@ import { RideStatus } from 'enums/ride.enum'
 import { RedisService } from 'src/redis/redis.service'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { EVENT_DRIVER_ARREIVED } from 'constants/event.constant'
 
 export interface DriverArrivedDto {
    driverProfileId: string
@@ -79,9 +80,12 @@ export class DriverArrivedService {
          })
          const clientProfileId = rideDataUpdated.clientProfileId
 
-         const topic = 'driverArrived'
-         this.gateway.sendNotificationToClient(clientProfileId, topic, {})
-         this.gateway.sendNotificationToAdmin(topic, {
+         this.gateway.sendNotificationToClient(
+            clientProfileId,
+            EVENT_DRIVER_ARREIVED,
+            {},
+         )
+         this.gateway.sendNotificationToAdmin(EVENT_DRIVER_ARREIVED, {
             ...rideDataUpdated,
          })
       } catch (error) {

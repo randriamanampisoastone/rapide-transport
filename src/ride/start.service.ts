@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { EVENT_START_RIDE } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
 import { RideData, RideDataKey } from 'interfaces/ride.interface'
@@ -86,8 +87,7 @@ export class StartService {
             },
          })
          const clientProfileId = rideDataUpdated.clientProfileId
-         const topic = 'startRide'
-         this.gateway.sendNotificationToClient(clientProfileId, topic, {
+         this.gateway.sendNotificationToClient(clientProfileId, EVENT_START_RIDE, {
             ...rideDataUpdated,
          })
 

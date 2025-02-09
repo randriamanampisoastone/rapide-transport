@@ -42,12 +42,16 @@ export class InfoOnRideService {
       //    rideDataUpdatedString,
       // )
 
-      server
-         .to(clientProfileId)
-         .emit(EVENT_INFO_ON_RIDE_PULL, { realDuration, realPrice })
-      server
-         .to(driverProfileId)
-         .emit(EVENT_INFO_ON_RIDE_PULL, { realDuration, realPrice })
-      server.to(UserRole.ADMIN).emit(EVENT_INFO_ON_RIDE_PULL, { ...rideDataUpdated })
+      // server
+      //    .to(clientProfileId)
+      //    .emit(EVENT_INFO_ON_RIDE_PULL, { realDuration, realPrice })
+      // server
+      //    .to(driverProfileId)
+      //    .emit(EVENT_INFO_ON_RIDE_PULL, { realDuration, realPrice })
+      // server
+      //    .to(UserRole.ADMIN)
+      //    .emit(EVENT_INFO_ON_RIDE_PULL, { ...rideDataUpdated })
+
+      return rideDataUpdated
    }
 }

@@ -3,6 +3,12 @@ import { ConfigService } from '@nestjs/config'
 import { Gateway } from 'src/gateway/gateway'
 import { RideData } from 'interfaces/ride.interface'
 import { RedisService } from 'src/redis/redis.service'
+import { InfoOnRideService } from './info-on-ride.service'
+import {
+   EVENT_CLIENT_WAITING,
+   EVENT_DRIVER_AVAILABLE,
+   EVENT_INFO_ON_RIDE,
+} from 'constants/event.constant'
 
 @Injectable()
 export class FindDriverService implements OnModuleInit, OnModuleDestroy {
@@ -12,6 +18,7 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
       private readonly configService: ConfigService,
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
+      private readonly infoOnRideService: InfoOnRideService,
    ) {}
 
    onModuleInit() {
@@ -20,10 +27,10 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
          throw new Error('Invalid SCAN_INTERVAL configuration')
       }
 
-      this.intervalId = setInterval(
-         () => this.scanAndNotifyDrivers(),
-         intervalInSeconds * 1000,
-      )
+      this.intervalId = setInterval(() => {
+         this.scanAndNotifyDrivers()
+         this.calculeAndShearRideInfo()
+      }, intervalInSeconds * 1000)
    }
 
    onModuleDestroy() {
@@ -42,8 +49,10 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
          }
          console.log(`Found ${ridesAvailable.length} rides requiring drivers.`)
 
-         const clientProfileIds = ridesAvailable.map((ride) => ride.clientProfileId)
-         this.gateway.sendNotificationToAdmin('clientsWaiting', {
+         const clientProfileIds = ridesAvailable.map(
+            (ride) => ride.clientProfileId,
+         )
+         this.gateway.sendNotificationToAdmin(EVENT_CLIENT_WAITING, {
             count: ridesAvailable.length,
             clientProfileIds,
             data: ridesAvailable,
@@ -72,7 +81,7 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
          )
 
          console.log(`Drivers  ${drivers.length} found`)
-         this.gateway.sendNotificationToAdmin('driversAvailable', {
+         this.gateway.sendNotificationToAdmin(EVENT_DRIVER_AVAILABLE, {
             count: drivers.length,
             data: drivers,
          })
@@ -98,6 +107,47 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
             `Error notifying drivers for ride ID ${ride.rideId}:`,
             error.message,
          )
+      }
+   }
+
+   private async calculeAndShearRideInfo() {
+      try {
+         const rideAvailable = await this.redisService.getRideOnRide()
+
+         if (!rideAvailable.length) {
+            console.log('No ride on process')
+            return
+         }
+
+         console.log(`Found ${rideAvailable.length} rides on process`)
+
+         await Promise.all(
+            rideAvailable.map(async (ride) => {
+               const rideUpdatedData = await this.infoOnRideService.infoOnRide(
+                  ride.rideId,
+                  ride.clientProfileId,
+                  ride.driverProfileId,
+                  this.gateway.server,
+               )
+
+               await this.gateway.sendNotificationToClient(
+                  ride.clientProfileId,
+                  EVENT_INFO_ON_RIDE,
+                  {
+                     ...rideUpdatedData,
+                  },
+               )
+               await this.gateway.sendNotificationToDriver(
+                  ride.driverProfileId,
+                  EVENT_INFO_ON_RIDE,
+                  {
+                     ...rideUpdatedData,
+                  },
+               )
+            }),
+         )
+      } catch (error) {
+         throw error
       }
    }
 }

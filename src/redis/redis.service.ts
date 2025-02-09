@@ -168,6 +168,32 @@ export class RedisService implements OnModuleInit {
       }
    }
 
+   async getRideOnRide() {
+      try {
+         const rides = await this.keys(`${RIDE_PREFIX}*`)
+
+         if (!rides.length) {
+            return []
+         }
+
+         const allRides = await this.mget(rides)
+
+         const rideAvailable: RideData[] = allRides.reduce(
+            (result: RideData[], ride: string) => {
+               const rideData: RideData = JSON.parse(ride)
+               if (rideData.status === RideStatus.ON_RIDE) {
+                  result.push(rideData)
+               }
+               return result
+            },
+            [],
+         )
+         return rideAvailable
+      } catch (error) {
+         throw new error()
+      }
+   }
+
    async setClientToNew(clientProfileId: string) {
       try {
          await this.set(
