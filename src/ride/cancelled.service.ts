@@ -28,6 +28,7 @@ export class CancelledService {
 
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
 
+
          console.log('Ride Foundeeeee : ', ride)
 
          if (!ride) {

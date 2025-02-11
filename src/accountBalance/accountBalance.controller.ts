@@ -32,8 +32,8 @@ export class AccountBalanceController {
    }
 
    @Get('getRapideBalance')
-   @SetMetadata('allowedRole', ['ADMIN'])
-   @UseGuards(RolesGuard)
+   // @SetMetadata('allowedRole', ['ADMIN'])
+   // @UseGuards(RolesGuard)
    async getRapideBalance() {
       return await this.getRapideBalanceService.getRapidebalance()
    }
