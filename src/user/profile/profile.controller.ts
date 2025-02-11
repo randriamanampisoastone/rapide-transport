@@ -6,17 +6,25 @@ import {
    Query,
    SetMetadata,
    UseGuards,
+   Delete,
+   Patch,
 } from '@nestjs/common'
 import { GetProfileService } from './get.profile.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
-import { GoogleAuthService } from './google.auth.service'
+import { GoogleAuthService } from '../auth/google.auth.service'
 import { GetUser } from 'src/jwt/get.user.decorator'
+import { UpdateProfileService } from './update.profile.service'
+import { DeleteProfileService } from './delete.profile.service'
+import { ProfileStatus } from '@prisma/client'
+import { UpdateProfileDto } from './dto/update.profile.dto'
 
 @Controller('profile')
 export class ProfileController {
    constructor(
       private readonly getProfileService: GetProfileService,
       private readonly googleAuthService: GoogleAuthService,
+      private readonly updateProfileService: UpdateProfileService,
+      private readonly deleteProfileService: DeleteProfileService,
    ) {}
 
    @SetMetadata('allowedRole', ['CLIENT'])
@@ -133,5 +141,64 @@ export class ProfileController {
    @UseGuards(RolesGuard)
    async getClientByIds(@Query('clientProfileIds') clientProfileIds: string[]) {
       return await this.getProfileService.getClientByIds(clientProfileIds)
+   }
+
+   @Delete('deleteProfile')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   async deleteProfile(@Query('sub') sub: string) {
+      return await this.deleteProfileService.deleteClientProfile(sub)
+   }
+
+   @Patch('updateProfile')
+   @SetMetadata('allowedRole', ['CLIENT', 'DRIVER'])
+   @UseGuards(RolesGuard)
+   async updateProfile(
+      @GetUser('sub') sub: string,
+      @Body() updateProfileDto: UpdateProfileDto,
+   ) {
+      return await this.updateProfileService.updateProfile(
+         sub,
+         updateProfileDto,
+      )
+   }
+
+   @Patch('updateProfileByAdmin')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   async updateProfileByAdmin(
+      @Query('sub') sub: string,
+      @Body() updateProfileDto: UpdateProfileDto,
+   ) {
+      return await this.updateProfileService.updateProfile(
+         sub,
+         updateProfileDto,
+      )
+   }
+
+   @Patch('udpateClientStatus')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   async updateClientProfile(
+      @Query('clientProfileId') clientProfileId: string,
+      @Query('status') status: ProfileStatus,
+   ) {
+      return await this.updateProfileService.updateClientStatus(
+         clientProfileId,
+         status,
+      )
+   }
+
+   @Patch('udpateDriverStatus')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   async updateDriverProfile(
+      @Query('driverProfileId') driverProfileId: string,
+      @Query('status') status: ProfileStatus,
+   ) {
+      return await this.updateProfileService.updateDriverStatus(
+         driverProfileId,
+         status,
+      )
    }
 }
