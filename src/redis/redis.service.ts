@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import {
+   DAILY_RAPIDE_BALANCE,
    DRIVER_LOCATION_PREFIX,
    NEW_CLIENT,
    RIDE_PREFIX,
@@ -214,6 +215,31 @@ export class RedisService implements OnModuleInit {
             return acc
          }, [])
          return data
+      } catch (error) {
+         throw error
+      }
+   }
+
+   async upsertDailyRedisBalance(amount: number) {
+      try {
+         const dailyRedisBalance = await this.get(DAILY_RAPIDE_BALANCE)
+
+         if (dailyRedisBalance) {
+            const ttl = await this.ttl(DAILY_RAPIDE_BALANCE)
+            if (ttl > 0) {
+               await this.set(
+                  DAILY_RAPIDE_BALANCE,
+                  (parseInt(dailyRedisBalance) + amount).toString(),
+                  ttl,
+               )
+            }
+         } else {
+            await this.set(
+               DAILY_RAPIDE_BALANCE,
+               (amount).toString(),
+               24 * 3600,
+            )
+         }
       } catch (error) {
          throw error
       }

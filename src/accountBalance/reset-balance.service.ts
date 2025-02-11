@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { GetRapideBalanceService } from './get-rapide-balance.service'
 import { log } from 'console'
+import { RedisService } from 'src/redis/redis.service'
 
 @Injectable()
 export class ResetBalanceServce {
    constructor(
       private readonly prismaService: PrismaService,
       private readonly getRapideBalanceService: GetRapideBalanceService,
+      private readonly redisService: RedisService,
    ) {}
 
    async resetRideBalance(accountBalanceId: string) {
@@ -24,9 +26,17 @@ export class ResetBalanceServce {
             const rapideBalance =
                await this.getRapideBalanceService.getRapidebalance()
             await prisma.rapideBalance.update({
-               where: { rapideBalanceId: rapideBalance.rapideBalanceId },
-               data: { ride: rapideBalance.ride + accountBalance.balance },
+               where: {
+                  rapideBalanceId: rapideBalance.rapideBalance.rapideBalanceId,
+               },
+               data: {
+                  ride:
+                     rapideBalance.rapideBalance.ride + accountBalance.balance,
+               },
             })
+            await this.redisService.upsertDailyRedisBalance(
+               accountBalance.balance,
+            )
          })
       } catch (error) {
          throw error
@@ -59,9 +69,12 @@ export class ResetBalanceServce {
             const rapideBalance =
                await this.getRapideBalanceService.getRapidebalance()
             await prisma.rapideBalance.update({
-               where: { rapideBalanceId: rapideBalance.rapideBalanceId },
-               data: { ride: rapideBalance.ride + balanceTotal },
+               where: {
+                  rapideBalanceId: rapideBalance.rapideBalance.rapideBalanceId,
+               },
+               data: { ride: rapideBalance.rapideBalance.ride + balanceTotal },
             })
+            await this.redisService.upsertDailyRedisBalance(balanceTotal)
          })
       } catch (error) {
          throw error

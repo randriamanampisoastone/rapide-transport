@@ -28,7 +28,7 @@ export class CancelledService {
          const clientProfileId = cancelledDto.clientProfileId
 
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
-
+         console.log('ride eeeeeee', ride)
          if (!ride) {
             throw new Error('Ride not found')
          }

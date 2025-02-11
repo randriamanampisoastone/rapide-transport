@@ -301,6 +301,26 @@ export class GetProfileService {
       }
    }
 
+   async getDriverByIds(driverProfileIds: string[]) {
+      try {
+         const condition = driverProfileIds.length
+            ? { driverProfileId: { in: driverProfileIds } }
+            : {}
+         const driverProfiles = await this.prismaService.driverProfile.findMany(
+            {
+               where: condition,
+               include: {
+                  profile: true,
+               },
+            },
+         )
+
+         return driverProfiles
+      } catch (error) {
+         throw error
+      }
+   }
+
    async getDrivers(page: number, pageSize: number) {
       try {
          const select = {
