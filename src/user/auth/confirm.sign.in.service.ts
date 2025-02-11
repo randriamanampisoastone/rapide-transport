@@ -34,8 +34,6 @@ export class ConfirmSignInService {
 
    async confirmSignIn(confirmSignInDto: ConfirmDto) {
       try {
-         console.log(`${AUTH_SIGN_IN_PREFIX + confirmSignInDto.phoneNumber}`)
-
          const signInDtoString = await this.redisService.get(
             `${AUTH_SIGN_IN_PREFIX + confirmSignInDto.phoneNumber}`,
          )
