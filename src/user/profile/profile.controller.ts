@@ -143,6 +143,13 @@ export class ProfileController {
       return await this.getProfileService.getClientByIds(clientProfileIds)
    }
 
+   @Get('getDriverByIds')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   async getDriverByIds(@Query('driverProfileIds') driverProfileIds: string[]) {
+      return await this.getProfileService.getDriverByIds(driverProfileIds)
+   }
+
    @Delete('deleteProfile')
    @SetMetadata('allowedRole', ['ADMIN'])
    @UseGuards(RolesGuard)
