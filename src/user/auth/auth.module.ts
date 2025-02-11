@@ -9,13 +9,11 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { ConfirmSignInService } from './confirm.sign.in.service'
 import { ResendConfirmSignUpService } from './resend.confirm.sign.up.service'
 import { ResendConfirmSignInService } from './resend.confirm.sign.in.service'
-import { GetProfileService } from './get.profile.service'
 import { GoogleAuthService } from './google.auth.service'
-import { ProfileController } from './profile.controller'
 
 @Module({
    imports: [],
-   controllers: [AuthController, ProfileController],
+   controllers: [AuthController],
    providers: [
       RedisService,
       SmsService,
@@ -26,7 +24,6 @@ import { ProfileController } from './profile.controller'
       SignInService,
       ConfirmSignInService,
       ResendConfirmSignInService,
-      GetProfileService,
       GoogleAuthService,
    ],
    exports: [],
