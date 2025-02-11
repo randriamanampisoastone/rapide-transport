@@ -22,7 +22,14 @@ import { RideData } from 'interfaces/ride.interface'
 import { UserRole } from 'enums/profile.enum'
 import * as jwt from 'jsonwebtoken'
 import { ConfigService } from '@nestjs/config'
-import { EVENT_INFO_ON_RIDE_PUSH, EVENT_NOTIFY_CLIENT, EVENT_RIDE_CHECKED, EVENT_SEND_DATA, EVENT_UPDATE_CLIENT_LOCATION, EVENT_UPDATE_DRIVER_LOCATION } from 'constants/event.constant'
+import {
+   EVENT_INFO_ON_RIDE_PUSH,
+   EVENT_NOTIFY_CLIENT,
+   EVENT_RIDE_CHECKED,
+   EVENT_SEND_DATA,
+   EVENT_UPDATE_CLIENT_LOCATION,
+   EVENT_UPDATE_DRIVER_LOCATION,
+} from 'constants/event.constant'
 
 @Injectable()
 @WebSocketGateway({ cors: true })
@@ -31,7 +38,6 @@ export class Gateway
 {
    private validateUserRole(client: Socket) {
       const user = client.data.user
-      console.log('user : ', user)
       if (!user) {
          this.logger.warn('Unauthorized client')
          client.disconnect(true)

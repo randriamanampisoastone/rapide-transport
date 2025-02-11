@@ -35,7 +35,7 @@ export class CreateRideService {
       private readonly createItineraryService: CreateItineraryService,
       private readonly redisService: RedisService,
       private readonly FindDriverService: FindDriverService,
-      private readonly prismaService: PrismaService
+      private readonly prismaService: PrismaService,
    ) {}
 
    private getPrice(
@@ -65,8 +65,8 @@ export class CreateRideService {
       try {
          return await this.prismaService.ride.create({
             data: {
-               ...parseRideDataForPostgres(data)
-            }
+               ...parseRideDataForPostgres(data),
+            },
          })
          // return await this.rideModel.create(data)
       } catch (error) {
@@ -109,6 +109,9 @@ export class CreateRideService {
                estimatedPrice,
                status: RideStatus.FINDING_DRIVER,
             }
+            await this.redisService.remove(
+               `${ITINERARY_PREFIX + clientProfileId}`,
+            )
          } else {
             const {
                pickUpLocation,
