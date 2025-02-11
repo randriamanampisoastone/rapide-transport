@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { log } from 'console'
 import { GOOGLE_DIRECTION_COMPUTE_ROUTE } from 'constants/api.constant'
 import { LatLng } from 'interfaces/location.interface'
 
@@ -41,7 +40,6 @@ export const getRouteGoogleMap = async (pickUp: LatLng, dropOff: LatLng) => {
             },
          },
       )
-      log('Reponse route : ', response.data.routes)
 
       return response.data.routes[0]
    } catch (error) {

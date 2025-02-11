@@ -1,6 +1,5 @@
 import {
    Controller,
-   Post,
    Body,
    Get,
    Query,
@@ -11,7 +10,6 @@ import {
 } from '@nestjs/common'
 import { GetProfileService } from './get.profile.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
-import { GoogleAuthService } from '../auth/google.auth.service'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { UpdateProfileService } from './update.profile.service'
 import { DeleteProfileService } from './delete.profile.service'
@@ -22,7 +20,6 @@ import { UpdateProfileDto } from './dto/update.profile.dto'
 export class ProfileController {
    constructor(
       private readonly getProfileService: GetProfileService,
-      private readonly googleAuthService: GoogleAuthService,
       private readonly updateProfileService: UpdateProfileService,
       private readonly deleteProfileService: DeleteProfileService,
    ) {}
@@ -48,12 +45,24 @@ export class ProfileController {
       return await this.getProfileService.getAdminProfile(sub)
    }
 
+   @SetMetadata('allowedRole', ['DRIVER', 'ADMIN'])
+   @UseGuards(RolesGuard)
    @Get('findClientProfile')
    async findClientProfile(
-      @Query('sub')
+      @Query('clientProfileId')
       clientProfileId: string,
    ) {
       return await this.getProfileService.getClientProfile(clientProfileId)
+   }
+
+   @SetMetadata('allowedRole', ['CLIENT', 'ADMIN'])
+   @UseGuards(RolesGuard)
+   @Get('findDriverProfile')
+   async findDriverProfile(
+      @Query('driverProfileId')
+      driverProfileId: string,
+   ) {
+      return await this.getProfileService.getDriverProfile(driverProfileId)
    }
 
    @Get('getFullClientProfile')
@@ -124,16 +133,6 @@ export class ProfileController {
          page || 1,
          pageSize || 10,
       )
-   }
-
-   @Post('googleAuth')
-   async googleAuth(
-      @Body()
-      data: {
-         idToken: string
-      },
-   ) {
-      return await this.googleAuthService.googleAuth(data.idToken)
    }
 
    @Get('getClientByIds')
