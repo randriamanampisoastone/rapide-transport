@@ -30,6 +30,8 @@ export class RedisService implements OnModuleInit {
       this.REDIS_GEO_TTL_SECONDS = this.configService.get<number>(
          'REDIS_GEO_TTL_SECONDS',
       )
+      this.REDIS_TTL_SECONDS =
+         this.configService.get<number>('REDIS_TTL_SECONDS')
    }
 
    async ttl(key: string) {
@@ -234,11 +236,7 @@ export class RedisService implements OnModuleInit {
                )
             }
          } else {
-            await this.set(
-               DAILY_RAPIDE_BALANCE,
-               (amount).toString(),
-               24 * 3600,
-            )
+            await this.set(DAILY_RAPIDE_BALANCE, amount.toString(), 24 * 3600)
          }
       } catch (error) {
          throw error

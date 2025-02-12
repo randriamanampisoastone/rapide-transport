@@ -5,25 +5,32 @@ import { PrismaService } from 'src/prisma/prisma.service'
 export class DriverBalanceService {
    constructor(private readonly prismaService: PrismaService) {}
    async increaseBalance(driverProfileId: string, toIncreaseAmount: number) {
-      const driver = await this.prismaService.profile.findUnique({
-         where: { sub: driverProfileId },
-         select: {
-            driverProfile: {
-               select: { accountBalance: { select: { balance: true } } },
+      try {
+         const driver = await this.prismaService.profile.findUnique({
+            where: { sub: driverProfileId },
+            select: {
+               driverProfile: {
+                  select: { accountBalance: true },
+               },
             },
-         },
-      })
-      const currentDriverBalance = driver.driverProfile.accountBalance.balance
+         })
+         const currentDriverBalance: number =
+            driver.driverProfile.accountBalance.balance
+         const accountBalanceId: string =
+            driver.driverProfile.accountBalance.accountBalanceId
 
-      const updatedDriver = this.prismaService.accountBalance.update({
-         where: {
-            driverProfileId,
-         },
-         data: {
-            balance: currentDriverBalance + toIncreaseAmount,
-         },
-      })
+         const updatedDriver = this.prismaService.accountBalance.update({
+            where: {
+               accountBalanceId,
+            },
+            data: {
+               balance: currentDriverBalance + toIncreaseAmount,
+            },
+         })
 
-      return updatedDriver
+         return updatedDriver
+      } catch (error) {
+         throw error
+      }
    }
 }
