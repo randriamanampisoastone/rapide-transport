@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { EVENT_START_RIDE } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
-import { RideData, RideDataKey } from 'interfaces/ride.interface'
-import { InjectModel, Model } from 'nestjs-dynamoose'
+import { RideData } from 'interfaces/ride.interface'
 import { Gateway } from 'src/gateway/gateway'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
@@ -16,11 +15,9 @@ export interface StartDto {
 @Injectable()
 export class StartService {
    constructor(
-      @InjectModel('Ride')
-      private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly gateway: Gateway,
       private redisService: RedisService,
-      private readonly prismaService: PrismaService
+      private readonly prismaService: PrismaService,
    ) {}
    async start(startDto: StartDto) {
       try {
@@ -68,28 +65,23 @@ export class StartService {
             estimatedDuration + 7200, // EstimatedDuration + 2 heures
          )
 
-         // await this.rideModel.update(
-         //    {
-         //       rideId,
-         //    },
-         //    {
-         //       status: RideStatus.ON_RIDE,
-         //       startTime: Date.now(),
-         //    },
-         // )
          await this.prismaService.ride.update({
             where: {
                rideId,
             },
             data: {
                status: RideStatus.ON_RIDE,
-               startTime: Date.now()
+               startTime: Date.now(),
             },
          })
          const clientProfileId = rideDataUpdated.clientProfileId
-         this.gateway.sendNotificationToClient(clientProfileId, EVENT_START_RIDE, {
-            ...rideDataUpdated,
-         })
+         this.gateway.sendNotificationToClient(
+            clientProfileId,
+            EVENT_START_RIDE,
+            {
+               ...rideDataUpdated,
+            },
+         )
 
          return { ...rideDataUpdated }
       } catch (error) {

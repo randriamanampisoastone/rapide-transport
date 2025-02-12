@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common'
-import { RideData, RideDataKey } from 'interfaces/ride.interface'
-import { InjectModel, Model } from 'nestjs-dynamoose'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { parseRidePostgresDataForRideData } from 'utils/rideDataParser.util'
 
@@ -13,11 +11,7 @@ export interface ReviewDto {
 
 @Injectable()
 export class ReviewService {
-   constructor(
-      @InjectModel('Ride')
-      private readonly rideModel: Model<RideData, RideDataKey>,
-      private readonly prismaService: PrismaService,
-   ) {}
+   constructor(private readonly prismaService: PrismaService) {}
    async review(reviewDto: ReviewDto) {
       try {
          const clientProfileId = reviewDto.clientProfileId
@@ -28,21 +22,11 @@ export class ReviewService {
                where: { rideId },
             }),
          )
-         // const ride = await this.rideModel.get({ rideId })
 
          if (ride.clientProfileId !== clientProfileId) {
             throw new Error('Client is not the client of the ride')
          }
 
-         // await this.rideModel.update(
-         //    {
-         //       rideId,
-         //    },
-         //    {
-         //       note: reviewDto.note,
-         //       review: reviewDto.review,
-         //    },
-         // )
          await this.prismaService.ride.update({
             where: {
                rideId,

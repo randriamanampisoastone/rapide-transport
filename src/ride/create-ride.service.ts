@@ -5,9 +5,7 @@ import {
 } from '@nestjs/common'
 import { RedisService } from 'src/redis/redis.service'
 import { CreateItineraryService } from './create-itinerary.service'
-import { InjectModel, Model } from 'nestjs-dynamoose'
-import { DynamoDBError } from 'errors/dynamodb.error'
-import { RideData, RideDataKey } from 'interfaces/ride.interface'
+import { RideData } from 'interfaces/ride.interface'
 import { VehicleType } from 'enums/vehicle.enum'
 import { ItineraryData } from 'interfaces/itinerary.interface'
 import { EstimatedPrice } from 'interfaces/price.interface'
@@ -30,8 +28,6 @@ export interface CreateRideDto {
 @Injectable()
 export class CreateRideService {
    constructor(
-      @InjectModel('Ride')
-      private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly createItineraryService: CreateItineraryService,
       private readonly redisService: RedisService,
       private readonly FindDriverService: FindDriverService,
@@ -68,9 +64,8 @@ export class CreateRideService {
                ...parseRideDataForPostgres(data),
             },
          })
-         // return await this.rideModel.create(data)
       } catch (error) {
-         throw DynamoDBError(error)
+         throw error
       }
    }
 

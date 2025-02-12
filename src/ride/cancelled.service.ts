@@ -3,7 +3,6 @@ import { EVENT_CANCELLED_RIDE } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
 import { RideData } from 'interfaces/ride.interface'
-import { InjectModel } from 'nestjs-dynamoose'
 import { Gateway } from 'src/gateway/gateway'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
@@ -16,7 +15,6 @@ export interface CancelledDto {
 @Injectable()
 export class CancelledService {
    constructor(
-      @InjectModel('Ride')
       private redisService: RedisService,
       private readonly gateway: Gateway,
       private readonly prismaService: PrismaService,
@@ -27,7 +25,6 @@ export class CancelledService {
          const clientProfileId = cancelledDto.clientProfileId
 
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
-
 
          console.log('Ride Foundeeeee : ', ride)
 
