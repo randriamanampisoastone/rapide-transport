@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { EVENT_DRIVER_DESTINATION } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
-import { UserRole } from 'enums/profile.enum'
 import { RideStatus } from 'enums/ride.enum'
-import { RideData, RideDataKey } from 'interfaces/ride.interface'
-import { InjectModel, Model } from 'nestjs-dynamoose'
+import { RideData } from 'interfaces/ride.interface'
 import { Gateway } from 'src/gateway/gateway'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
@@ -17,11 +15,9 @@ export interface ArrivedDestinationDto {
 @Injectable()
 export class ArrivedDestinationService {
    constructor(
-      @InjectModel('Ride')
-      private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly gateway: Gateway,
       private redisService: RedisService,
-      private readonly prismaService: PrismaService
+      private readonly prismaService: PrismaService,
    ) {}
    async arrivedDestination(arrivedDestinationDto: ArrivedDestinationDto) {
       try {
@@ -63,31 +59,25 @@ export class ArrivedDestinationService {
             1800,
          )
 
-         // await this.rideModel.update(
-         //    {
-         //       rideId,
-         //    },
-         //    {
-         //       status: RideStatus.ARRIVED_DESTINATION,
-         //       endTime: Date.now(),
-         //    },
-         // )
-
          await this.prismaService.ride.update({
             where: {
-               rideId
+               rideId,
             },
             data: {
                status: RideStatus.ARRIVED_DESTINATION,
-               endTime: Date.now()
-            }
+               endTime: Date.now(),
+            },
          })
-         
+
          const clientProfileId = rideDataUpdated.clientProfileId
 
-         this.gateway.sendNotificationToClient(clientProfileId, EVENT_DRIVER_DESTINATION, {
-            ...rideDataUpdated,
-         })
+         this.gateway.sendNotificationToClient(
+            clientProfileId,
+            EVENT_DRIVER_DESTINATION,
+            {
+               ...rideDataUpdated,
+            },
+         )
 
          this.gateway.sendNotificationToAdmin(EVENT_DRIVER_DESTINATION, {
             ...rideDataUpdated,

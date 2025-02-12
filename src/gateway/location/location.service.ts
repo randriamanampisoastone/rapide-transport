@@ -1,23 +1,20 @@
 import { Injectable } from '@nestjs/common'
 import { Server } from 'socket.io'
-import { InjectModel, Model } from 'nestjs-dynamoose'
 import {
-   LocationData,
    UpdateDriverLocationInterface,
    UpdateClientLocationInterface,
 } from 'interfaces/location.interface'
 
 import { RedisService } from 'src/redis/redis.service'
 import { UserRole } from 'enums/profile.enum'
-import { EVENT_CLIENT_LOCATION, EVENT_DRIVER_LOCATION } from 'constants/event.constant'
+import {
+   EVENT_CLIENT_LOCATION,
+   EVENT_DRIVER_LOCATION,
+} from 'constants/event.constant'
 
 @Injectable()
 export class LocationService {
-   constructor(
-      @InjectModel('Location')
-      private locationModel: Model<LocationData, string>,
-      private readonly redisService: RedisService,
-   ) {}
+   constructor(private readonly redisService: RedisService) {}
 
    async handleUpdateClientLocation(
       server: Server,

@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { InjectModel, Model } from 'nestjs-dynamoose'
-
 import { Gateway } from 'src/gateway/gateway'
-import { RideData, RideDataKey } from 'interfaces/ride.interface'
+import { RideData } from 'interfaces/ride.interface'
 import { RideStatus } from 'enums/ride.enum'
 import { RedisService } from 'src/redis/redis.service'
 import { RIDE_PREFIX } from 'constants/redis.constant'
@@ -17,9 +15,6 @@ export interface DriverAcceptDto {
 @Injectable()
 export class DriverAcceptService {
    constructor(
-      @InjectModel('Ride')
-      private readonly rideModel: Model<RideData, RideDataKey>,
-
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
       private readonly postgresService: PrismaService,
@@ -62,15 +57,6 @@ export class DriverAcceptService {
             1800,
          )
 
-         // await this.rideModel.update(
-         //    {
-         //       rideId,
-         //    },
-         //    {
-         //       driverProfileId,
-         //       status: RideStatus.DRIVER_ACCEPTED,
-         //    },
-         // )
          const rideDataUpdatedOnDb = await this.postgresService.ride.update({
             where: {
                rideId,

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { RIDE_PREFIX } from 'constants/redis.constant'
-import { RideData, RideDataKey } from 'interfaces/ride.interface'
-import { InjectModel, Model } from 'nestjs-dynamoose'
+import { RideData } from 'interfaces/ride.interface'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
 import { parseRidePostgresDataForRideData } from 'utils/rideDataParser.util'
@@ -9,15 +8,14 @@ import { parseRidePostgresDataForRideData } from 'utils/rideDataParser.util'
 @Injectable()
 export class GetRideService {
    constructor(
-      @InjectModel('Ride')
-      private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly redisService: RedisService,
       private readonly prismaService: PrismaService,
    ) {}
 
    async getRideDataBase(rideId: string): Promise<RideData> {
-      // return await this.rideModel.get({ rideId })
-      const rideData = await this.prismaService.ride.findUnique({ where: { rideId } })
+      const rideData = await this.prismaService.ride.findUnique({
+         where: { rideId },
+      })
       return parseRidePostgresDataForRideData(rideData)
    }
    async getRideRedis(rideId: string): Promise<RideData> {

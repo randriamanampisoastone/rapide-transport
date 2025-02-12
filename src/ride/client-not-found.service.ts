@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { InjectModel, Model } from 'nestjs-dynamoose'
 import { Gateway } from 'src/gateway/gateway'
-import { RideData, RideDataKey } from 'interfaces/ride.interface'
+import { RideData } from 'interfaces/ride.interface'
 import { RideStatus } from 'enums/ride.enum'
 import { RedisService } from 'src/redis/redis.service'
 import { RIDE_PREFIX } from 'constants/redis.constant'
@@ -16,8 +15,6 @@ export interface ClientNotFoundDto {
 @Injectable()
 export class ClientNotFoundService {
    constructor(
-      @InjectModel('Ride')
-      private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
       private readonly prismaService: PrismaService,
@@ -61,15 +58,6 @@ export class ClientNotFoundService {
             rideDataUpdatedString,
             1800,
          )
-
-         // await this.rideModel.update(
-         //    {
-         //       rideId,
-         //    },
-         //    {
-         //       status: RideStatus.CLIENT_NOT_FOUND,
-         //    },
-         // )
          await this.prismaService.ride.update({
             where: {
                rideId,

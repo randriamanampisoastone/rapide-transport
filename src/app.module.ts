@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common'
 import { AppController } from './app.controller'
-import { ConfigModule, ConfigService } from '@nestjs/config'
+import { ConfigModule } from '@nestjs/config'
 import * as ValidationEnv from 'joi'
-import { DynamooseModule } from 'nestjs-dynamoose'
 import { RedisModule } from './redis/redis.module'
 import { PrismaModule } from './prisma/prisma.module'
 import { UserModule } from './user/user.module'
@@ -30,14 +29,6 @@ import { HistoricalModule } from './historical/historical.module'
             JWT_SECRET_ADMIN: ValidationEnv.string().required(),
             JWT_EXPIRES_IN: ValidationEnv.string().required(),
          }),
-      }),
-      DynamooseModule.forRootAsync({
-         useFactory: async (configService: ConfigService) => ({
-            aws: {
-               region: configService.get<string>('AWS_REGION'),
-            },
-         }),
-         inject: [ConfigService],
       }),
       RedisModule,
       PrismaModule,
