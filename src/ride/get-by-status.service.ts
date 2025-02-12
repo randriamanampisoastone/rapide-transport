@@ -14,10 +14,7 @@ export class GetByStatusService {
             },
          })
          return {
-            data: rides.reduce((result, ride) => {
-               result.push(parseRidePostgresDataForRideData(ride))
-               return result
-            }, []),
+            data: rides.map((item) => parseRidePostgresDataForRideData(item)),
             count: rides.length,
          }
       } catch (error) {

@@ -34,7 +34,7 @@ export class HistoricalService {
             await this.prismaService.ride.count({ where: condition }),
          ])
          return {
-            data: parseRidePostgresDataForRideData(rides),
+            data: rides.map((items) => parseRidePostgresDataForRideData(items)),
             hasMore: page * pageSize < totalCount,
             totalCount,
          }
@@ -79,7 +79,7 @@ export class HistoricalService {
             }),
          ])
          return {
-            data: parseRidePostgresDataForRideData(rides),
+            data: rides.map((items) => parseRidePostgresDataForRideData(items)),
             hasMore: page * pageSize < totalCount,
             totalCount,
          }
@@ -124,7 +124,7 @@ export class HistoricalService {
             }),
          ])
          return {
-            data: parseRidePostgresDataForRideData(rides),
+            data: rides.map((items) => parseRidePostgresDataForRideData(items)),
             hasMore: page * pageSize < totalCount,
             totalCount: totalCount,
          }
