@@ -12,7 +12,9 @@ export const parseRideDataForPostgres = (rideData: RideData) => {
    return data
 }
 
-export const parseRidePostgresDataForRideData = (rideDataFromPostgres) => {
+export const parseRidePostgresDataForRideData = (
+   rideDataFromPostgres,
+): RideData => {
    const { pickUpLocation, dropOffLocation, estimatedPrice, ...dataRest } =
       rideDataFromPostgres
    const data: RideData = {
