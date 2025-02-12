@@ -15,7 +15,10 @@ import { PaymentMethodType } from 'enums/payment.enum'
 import { LatLng } from 'interfaces/location.interface'
 import { FindDriverService } from './find-driver.service'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { parseRideDataForPostgres } from 'utils/rideDataParser.util'
+import {
+   parseRideDataForPostgres,
+   parseRidePostgresDataForRideData,
+} from 'utils/rideDataParser.util'
 
 export interface CreateRideDto {
    clientProfileId: string
@@ -59,11 +62,14 @@ export class CreateRideService {
 
    async sendRideDataBase(data: RideData) {
       try {
-         return await this.prismaService.ride.create({
+         const createdRide = await this.prismaService.ride.create({
             data: {
                ...parseRideDataForPostgres(data),
             },
          })
+
+         return parseRidePostgresDataForRideData(createdRide)
+
       } catch (error) {
          throw error
       }

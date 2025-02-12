@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { RideStatus } from 'enums/ride.enum'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { parseRidePostgresDataForRideData } from 'utils/rideDataParser.util'
 
 @Injectable()
 export class GetByStatusService {
@@ -13,7 +14,10 @@ export class GetByStatusService {
             },
          })
          return {
-            data: rides,
+            data: rides.reduce((result, ride) => {
+               result.push(parseRidePostgresDataForRideData(ride))
+               return result
+            }, []),
             count: rides.length,
          }
       } catch (error) {

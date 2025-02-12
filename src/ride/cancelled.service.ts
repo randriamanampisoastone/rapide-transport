@@ -6,6 +6,7 @@ import { RideData } from 'interfaces/ride.interface'
 import { Gateway } from 'src/gateway/gateway'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
+import { parseRidePostgresDataForRideData } from 'utils/rideDataParser.util'
 
 export interface CancelledDto {
    clientProfileId: string
@@ -73,9 +74,8 @@ export class CancelledService {
                status: RideStatus.CANCELLED,
             },
          })
-
          this.gateway.sendNotificationToAdmin(EVENT_CANCELLED_RIDE, {
-            ...rideUpdated,
+            ...parseRidePostgresDataForRideData(rideUpdated),
          })
       } catch (error) {
          throw new HttpException(

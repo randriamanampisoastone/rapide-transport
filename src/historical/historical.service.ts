@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { RideStatus } from 'enums/ride.enum'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { parseRidePostgresDataForRideData } from 'utils/rideDataParser.util'
 
 @Injectable()
 export class HistoricalService {
@@ -33,7 +34,7 @@ export class HistoricalService {
             await this.prismaService.ride.count({ where: condition }),
          ])
          return {
-            data: rides,
+            data: parseRidePostgresDataForRideData(rides),
             hasMore: page * pageSize < totalCount,
             totalCount,
          }
@@ -78,7 +79,7 @@ export class HistoricalService {
             }),
          ])
          return {
-            data: rides,
+            data: parseRidePostgresDataForRideData(rides),
             hasMore: page * pageSize < totalCount,
             totalCount,
          }
@@ -123,7 +124,7 @@ export class HistoricalService {
             }),
          ])
          return {
-            data: rides,
+            data: parseRidePostgresDataForRideData(rides),
             hasMore: page * pageSize < totalCount,
             totalCount: totalCount,
          }
