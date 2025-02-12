@@ -69,7 +69,6 @@ export class CreateRideService {
          })
 
          return parseRidePostgresDataForRideData(createdRide)
-
       } catch (error) {
          throw error
       }

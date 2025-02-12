@@ -85,7 +85,7 @@ export class DriverAcceptService {
             clientProfileId,
             EVENT_ACCEPTED_RIDE,
             {
-               ...rideDataUpdatedOnDb,
+               ...rideDataUpdated,
             },
          )
 
