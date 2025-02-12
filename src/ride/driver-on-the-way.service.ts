@@ -1,8 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
-import { InjectModel, Model } from 'nestjs-dynamoose'
 import { ConfigService } from '@nestjs/config'
 import { Gateway } from 'src/gateway/gateway'
-import { RideData, RideDataKey } from 'interfaces/ride.interface'
+import { RideData } from 'interfaces/ride.interface'
 import { RideStatus } from 'enums/ride.enum'
 import { RedisService } from 'src/redis/redis.service'
 import { RIDE_PREFIX } from 'constants/redis.constant'
@@ -22,8 +21,6 @@ export interface DriverOnTheWayDto {
 export class DriverOnTheWayService implements OnModuleInit {
    private GOOGLE_MAP_API_KEY = ''
    constructor(
-      @InjectModel('Ride')
-      private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly configService: ConfigService,
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
@@ -91,16 +88,6 @@ export class DriverOnTheWayService implements OnModuleInit {
             estimatedDuration + 7200, // Estimated Duration + 2 heures
          )
 
-         // await this.rideModel.update(
-         //    {
-         //       rideId,
-         //    },
-         //    {
-         //       startTime,
-         //       driverProfileId,
-         //       status: RideStatus.DRIVER_ON_THE_WAY,
-         //    },
-         // )
          await this.prismaService.ride.update({
             where: {
                rideId,

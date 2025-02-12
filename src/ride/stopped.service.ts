@@ -2,8 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { EVENT_CLIENT_STOPPED } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
-import { RideData, RideDataKey } from 'interfaces/ride.interface'
-import { InjectModel, Model } from 'nestjs-dynamoose'
+import { RideData } from 'interfaces/ride.interface'
 import { Gateway } from 'src/gateway/gateway'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
@@ -16,8 +15,6 @@ export interface StoppedDto {
 @Injectable()
 export class StoppedService {
    constructor(
-      @InjectModel('Ride')
-      private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly gateway: Gateway,
       private redisService: RedisService,
       private readonly prismaService: PrismaService,
@@ -67,14 +64,6 @@ export class StoppedService {
             3600, // 1 hour
          )
 
-         // await this.rideModel.update(
-         //    {
-         //       rideId,
-         //    },
-         //    {
-         //       status: RideStatus.STOPPED,
-         //    },
-         // )
          await this.prismaService.ride.update({
             where: {
                rideId,

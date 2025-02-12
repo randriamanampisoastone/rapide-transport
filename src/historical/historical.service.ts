@@ -1,17 +1,10 @@
 import { Injectable } from '@nestjs/common'
-import { profile } from 'console'
 import { RideStatus } from 'enums/ride.enum'
-import { RideData, RideDataKey } from 'interfaces/ride.interface'
-import { InjectModel, Model } from 'nestjs-dynamoose'
 import { PrismaService } from 'src/prisma/prisma.service'
 
 @Injectable()
 export class HistoricalService {
-   constructor(
-      @InjectModel('Ride')
-      private readonly rideModel: Model<RideData, RideDataKey>,
-      private readonly prismaService: PrismaService,
-   ) {}
+   constructor(private readonly prismaService: PrismaService) {}
 
    async getAllHistorical(status: RideStatus, page: number, pageSize: number) {
       try {

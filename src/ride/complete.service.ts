@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { EVENT_RIDE_COMPLETED } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
-import { RideData, RideDataKey } from 'interfaces/ride.interface'
-import { InjectModel, Model } from 'nestjs-dynamoose'
+import { RideData } from 'interfaces/ride.interface'
 import { DriverBalanceService } from 'src/accountBalance/driverBalance.service'
 import { Gateway } from 'src/gateway/gateway'
 import { PrismaService } from 'src/prisma/prisma.service'
@@ -17,8 +16,6 @@ export interface CompleteDto {
 @Injectable()
 export class CompleteService {
    constructor(
-      @InjectModel('Ride')
-      private readonly rideModel: Model<RideData, RideDataKey>,
       private readonly gateway: Gateway,
       private redisService: RedisService,
       private readonly driverBalanceService: DriverBalanceService,
@@ -46,15 +43,6 @@ export class CompleteService {
 
          await this.redisService.remove(`${RIDE_PREFIX + rideId}`)
 
-         // await this.rideModel.update(
-         //    {
-         //       rideId
-         //    },
-         //    {
-         //       status: RideStatus.COMPLETED,
-         //    },
-         // )
-        
          const updatedRideData = await this.prismaService.ride.update({
             where: {
                rideId,
