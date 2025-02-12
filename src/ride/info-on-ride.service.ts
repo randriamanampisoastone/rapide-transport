@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { EVENT_INFO_ON_RIDE_PULL } from 'constants/event.constant'
+import { EVENT_INFO_ON_RIDE } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
-import { UserRole } from 'enums/profile.enum'
 import { Server } from 'socket.io'
 import { RedisService } from 'src/redis/redis.service'
 import { calculateRealTimeCostByTime } from 'utils/price.util'
@@ -37,20 +36,15 @@ export class InfoOnRideService {
       }
       const rideDataUpdatedString = JSON.stringify(rideDataUpdated)
 
-      // await this.redisService.set(
-      //    `${RIDE_PREFIX + rideId}`,
-      //    rideDataUpdatedString,
-      // )
+      await this.redisService.set(
+         `${RIDE_PREFIX + rideId}`,
+         `${rideDataUpdatedString}`,
+      )
 
-      // server
-      //    .to(clientProfileId)
-      //    .emit(EVENT_INFO_ON_RIDE_PULL, { realDuration, realPrice })
-      // server
-      //    .to(driverProfileId)
-      //    .emit(EVENT_INFO_ON_RIDE_PULL, { realDuration, realPrice })
-      // server
-      //    .to(UserRole.ADMIN)
-      //    .emit(EVENT_INFO_ON_RIDE_PULL, { ...rideDataUpdated })
+      server.to(clientProfileId).emit(EVENT_INFO_ON_RIDE, rideDataUpdated)
+      server.to(driverProfileId).emit(EVENT_INFO_ON_RIDE, rideDataUpdated)
+
+      console.log(rideDataUpdated)
 
       return rideDataUpdated
    }

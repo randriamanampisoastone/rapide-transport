@@ -125,29 +125,16 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
 
          await Promise.all(
             rideAvailable.map(async (ride) => {
-               const rideUpdatedData = await this.infoOnRideService.infoOnRide(
+               await this.infoOnRideService.infoOnRide(
                   ride.rideId,
                   ride.clientProfileId,
                   ride.driverProfileId,
                   this.gateway.server,
                )
-
-               await this.gateway.sendNotificationToClient(
-                  ride.clientProfileId,
-                  EVENT_INFO_ON_RIDE,
-                  {
-                     ...rideUpdatedData,
-                  },
-               )
-               await this.gateway.sendNotificationToDriver(
-                  ride.driverProfileId,
-                  EVENT_INFO_ON_RIDE,
-                  {
-                     ...rideUpdatedData,
-                  },
-               )
             }),
          )
+
+         this.gateway.sendNotificationToAdmin(EVENT_INFO_ON_RIDE, rideAvailable)
       } catch (error) {
          throw error
       }

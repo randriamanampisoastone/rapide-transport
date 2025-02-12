@@ -52,7 +52,7 @@ export class CompleteService {
             },
          })
 
-         this.driverBalanceService.increaseBalance(
+         await this.driverBalanceService.increaseBalance(
             rideData.driverProfileId,
             rideData.realPrice,
          )
