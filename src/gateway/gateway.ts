@@ -167,6 +167,7 @@ export class Gateway
    async handleUpdateDriverLocation(
       @MessageBody() data: UpdateDriverLocationInterface,
    ) {
+      console.log('DRIVER : ', data)
       await this.locationService.handleUpdateDriverLocation(this.server, data)
    }
 
@@ -174,6 +175,8 @@ export class Gateway
    async handleUpdateClientLocation(
       @MessageBody() data: UpdateClientLocationInterface,
    ) {
+      console.log('CLIENT : ', data)
+
       await this.locationService.handleUpdateClientLocation(this.server, data)
    }
    @SubscribeMessage(EVENT_SEND_DATA)
