@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import {
    DAILY_RAPIDE_BALANCE,
+   DAILY_RAPIDE_RIDE_COMPLET,
    DRIVER_LOCATION_PREFIX,
    NEW_CLIENT,
    RIDE_PREFIX,
@@ -9,6 +10,7 @@ import {
 import { RideStatus } from 'enums/ride.enum'
 import { VehicleType } from 'enums/vehicle.enum'
 import { getDistance } from 'geolib'
+import { DailyRideCompletsInterface } from 'interfaces/daily.ride.complets.interface'
 import { DriverLocationRedis } from 'interfaces/driver.interface'
 import { LatLng } from 'interfaces/location.interface'
 import { RideData } from 'interfaces/ride.interface'
@@ -238,6 +240,29 @@ export class RedisService implements OnModuleInit {
          } else {
             await this.set(DAILY_RAPIDE_BALANCE, amount.toString(), 24 * 3600)
          }
+      } catch (error) {
+         throw error
+      }
+   }
+
+   async newDailyRideComplet(rideId: string) {
+      try {
+         const dailyRideComplets: DailyRideCompletsInterface = (await this.get(
+            DAILY_RAPIDE_RIDE_COMPLET,
+         ))
+            ? (JSON.parse(
+                 await this.get(DAILY_RAPIDE_RIDE_COMPLET),
+              ) as DailyRideCompletsInterface)
+            : { rideIds: [], count: 0 }
+         dailyRideComplets.rideIds.push(rideId)
+         dailyRideComplets.count = dailyRideComplets.rideIds.length
+         const dailyRideCompletsString = JSON.stringify(dailyRideComplets)
+         await this.set(
+            DAILY_RAPIDE_RIDE_COMPLET,
+            dailyRideCompletsString,
+            24 * 3600,
+         )
+         return dailyRideComplets
       } catch (error) {
          throw error
       }

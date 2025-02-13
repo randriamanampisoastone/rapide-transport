@@ -10,6 +10,7 @@ import { GatewayModule } from './gateway/gatway.module'
 import { VehicleModule } from './vehicle/vehicle.module'
 import { AccountBalanceModule } from './accountBalance/accountBalance.module'
 import { HistoricalModule } from './historical/historical.module'
+import { TaskPlanModule } from './taskPlan/task.plan.module'
 
 @Module({
    imports: [
@@ -38,6 +39,7 @@ import { HistoricalModule } from './historical/historical.module'
       VehicleModule,
       AccountBalanceModule,
       HistoricalModule,
+      TaskPlanModule
    ],
    controllers: [AppController],
    providers: [],

@@ -77,8 +77,13 @@ export class CompleteService {
             },
          })
 
+         const dailyRideComplet = await this.redisService.newDailyRideComplet(
+            rideData.rideId,
+         )
+         console.log('dailyRideComplet ====>', dailyRideComplet)
          this.gateway.sendNotificationToAdmin(EVENT_RIDE_COMPLETED, {
-            ...updatedRideData,
+            rideId: rideData.rideId,
+            ...dailyRideComplet,
          })
       } catch (error) {
          throw error

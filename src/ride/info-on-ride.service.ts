@@ -44,7 +44,7 @@ export class InfoOnRideService {
       server.to(clientProfileId).emit(EVENT_INFO_ON_RIDE, rideDataUpdated)
       server.to(driverProfileId).emit(EVENT_INFO_ON_RIDE, rideDataUpdated)
 
-      console.log(rideDataUpdated)
+      // console.log(rideDataUpdated)
 
       return rideDataUpdated
    }
