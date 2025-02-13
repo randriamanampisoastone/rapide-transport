@@ -160,7 +160,7 @@ export class Gateway
    }
 
    handleDisconnect(client: Socket) {
-      this.logger.log(`'Disconnected : ${client.id}`)
+      this.logger.log(`Disconnected : ${client.id}`)
    }
 
    @SubscribeMessage(EVENT_UPDATE_DRIVER_LOCATION)
