@@ -41,19 +41,11 @@ export class InfoOnRideService {
       }
       const rideDataUpdatedString = JSON.stringify(rideDataUpdated)
 
-      if (realPrice >= rideData.estimatedPrice.upper) {
-         await this.prismaService.ride.update({
-            where: { rideId: rideData.rideId },
-            data: {
-               realPrice,
-               realDuration,
-            },
-         })
-      }
-
+      const rideTTL = await this.redisService.ttl(`${RIDE_PREFIX + rideId}`)
       await this.redisService.set(
          `${RIDE_PREFIX + rideId}`,
          `${rideDataUpdatedString}`,
+         rideTTL + 2 * 60 * 60,
       )
 
       server.to(clientProfileId).emit(EVENT_INFO_ON_RIDE, rideDataUpdated)
