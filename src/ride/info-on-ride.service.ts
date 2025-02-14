@@ -1,13 +1,18 @@
 import { Injectable } from '@nestjs/common'
 import { EVENT_INFO_ON_RIDE } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
+import { RideData } from 'interfaces/ride.interface'
 import { Server } from 'socket.io'
+import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
 import { calculateRealTimeCostByTime } from 'utils/price.util'
 
 @Injectable()
 export class InfoOnRideService {
-   constructor(private readonly redisService: RedisService) {}
+   constructor(
+      private readonly redisService: RedisService,
+      private readonly prismaService: PrismaService,
+   ) {}
    async infoOnRide(
       rideId: string,
       clientProfileId: string,
@@ -15,7 +20,7 @@ export class InfoOnRideService {
       server: Server,
    ) {
       const ride = await this.redisService.get(RIDE_PREFIX + rideId)
-      const rideData = JSON.parse(ride)
+      const rideData: RideData = JSON.parse(ride)
 
       const startTime = rideData.startTime
       const estimatedPrice = rideData.estimatedPrice
@@ -35,6 +40,16 @@ export class InfoOnRideService {
          realPrice: Number(realPrice.toFixed(2)),
       }
       const rideDataUpdatedString = JSON.stringify(rideDataUpdated)
+
+      if (realPrice >= rideData.estimatedPrice.upper) {
+         await this.prismaService.ride.update({
+            where: { rideId: rideData.rideId },
+            data: {
+               realPrice,
+               realDuration,
+            },
+         })
+      }
 
       await this.redisService.set(
          `${RIDE_PREFIX + rideId}`,

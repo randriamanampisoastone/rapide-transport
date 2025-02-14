@@ -75,6 +75,7 @@ export class GetProfileService {
                            balance: true,
                         },
                      },
+                     completeRide: true,
                   },
                },
             },
