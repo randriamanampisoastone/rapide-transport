@@ -49,6 +49,8 @@ export class CompleteService {
             },
             data: {
                status: RideStatus.COMPLETED,
+               realDuration: rideData.realDuration,
+               realPrice: Number(rideData.realPrice.toFixed(2)),
             },
          })
 
@@ -64,8 +66,8 @@ export class CompleteService {
          })
 
          await this.driverBalanceService.increaseBalance(
-            updatedRideData.driverProfileId,
-            updatedRideData.realPrice,
+            rideData.driverProfileId,
+            Number(rideData.realPrice.toFixed(2)),
          )
 
          const {
