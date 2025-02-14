@@ -4,6 +4,7 @@ import { RedisService } from 'src/redis/redis.service'
 import { LocationService } from './location/location.service'
 import { InfoOnRideService } from 'src/ride/info-on-ride.service'
 import { CheckRideService } from 'src/ride/check-ride.service'
+import { PrismaService } from 'src/prisma/prisma.service'
 
 @Module({
    imports: [],
@@ -14,6 +15,7 @@ import { CheckRideService } from 'src/ride/check-ride.service'
       LocationService,
       InfoOnRideService,
       CheckRideService,
+      PrismaService,
    ],
    exports: [Gateway],
 })

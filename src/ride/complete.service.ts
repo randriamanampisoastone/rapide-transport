@@ -7,6 +7,7 @@ import { DriverBalanceService } from 'src/accountBalance/driverBalance.service'
 import { Gateway } from 'src/gateway/gateway'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
+import { UpdateProfileDto } from 'src/user/profile/dto/update.profile.dto'
 
 export interface CompleteDto {
    driverProfileId: string
@@ -52,9 +53,20 @@ export class CompleteService {
             },
          })
 
+         await this.prismaService.driverProfile.update({
+            where: {
+               driverProfileId,
+            },
+            data: {
+               completeRide: {
+                  increment: 1,
+               },
+            },
+         })
+
          await this.driverBalanceService.increaseBalance(
-            rideData.driverProfileId,
-            rideData.realPrice,
+            updatedRideData.driverProfileId,
+            updatedRideData.realPrice,
          )
 
          const {
