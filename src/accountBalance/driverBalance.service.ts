@@ -33,4 +33,25 @@ export class DriverBalanceService {
          throw error
       }
    }
+   async getSold(driverProfileId: string) {
+      try {
+         const driver = await this.prismaService.profile.findUnique({
+            where: { sub: driverProfileId },
+            select: {
+               driverProfile: {
+                  select: {
+                     accountBalance: {
+                        select: {
+                           balance: true,
+                        },
+                     },
+                  },
+               },
+            },
+         })
+         return driver.driverProfile.accountBalance.balance
+      } catch (error) {
+         throw error
+      }
+   }
 }
