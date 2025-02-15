@@ -22,21 +22,17 @@ export class LocationService {
    ) {
       const clientProfileId = data.clientProfileId
       const clientLocation = data.clientLocation
-      const isOnRide = data.isOnRide
 
-      if (isOnRide) {
-         const driverProfileId = data.driverProfileId
+      const driverProfileId = data.driverProfileId
 
-         server.to(driverProfileId).emit(EVENT_CLIENT_LOCATION, {
-            clientProfileId,
-            clientLocation,
-         })
-      }
+      server.to(driverProfileId).emit(EVENT_CLIENT_LOCATION, {
+         clientProfileId,
+         clientLocation,
+      })
 
       server.to(UserRole.ADMIN).emit(EVENT_CLIENT_LOCATION, {
          clientProfileId,
          clientLocation,
-         isOnRide,
       })
    }
 

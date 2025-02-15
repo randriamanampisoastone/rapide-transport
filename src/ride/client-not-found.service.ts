@@ -33,8 +33,8 @@ export class ClientNotFoundService {
 
          const rideData: RideData = JSON.parse(ride)
 
-         if (rideData.status !== RideStatus.DRIVER_ON_THE_WAY) {
-            throw new Error('Ride is not in DRIVER_ON_THE_WAY status')
+         if (rideData.status !== RideStatus.DRIVER_ARRIVED) {
+            throw new Error('Ride is not in DRIVER_ARRIVED status')
          }
          if (rideData.driverProfileId !== driverProfileId) {
             throw new Error('Driver is not the driver of the ride')
