@@ -120,6 +120,7 @@ export class DriverOnTheWayService implements OnModuleInit {
             {
                encodedPolyline,
                estimatedDuration,
+               driverProfileId,
             },
          )
          return {
