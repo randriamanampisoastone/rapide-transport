@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { AccountBalanceController } from './accountBalance.controller'
 import { GetRapideBalanceService } from './get-rapide-balance.service'
 import { RedisService } from 'src/redis/redis.service'
+import { DriverBalanceService } from './driverBalance.service'
 
 @Module({
    imports: [],
@@ -12,6 +13,7 @@ import { RedisService } from 'src/redis/redis.service'
       GetRapideBalanceService,
       PrismaService,
       RedisService,
+      DriverBalanceService
    ],
    controllers: [AccountBalanceController],
 })

@@ -9,12 +9,15 @@ import {
 import { ResetBalanceServce } from './reset-balance.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetRapideBalanceService } from './get-rapide-balance.service'
+import { GetUser } from 'src/jwt/get.user.decorator'
+import { DriverBalanceService } from './driverBalance.service'
 
 @Controller('accountBalance')
 export class AccountBalanceController {
    constructor(
       private readonly resetBalanceService: ResetBalanceServce,
       private readonly getRapideBalanceService: GetRapideBalanceService,
+      private readonly driverBalanceService: DriverBalanceService,
    ) {}
 
    @Patch('resetDriverBalance')
@@ -32,9 +35,16 @@ export class AccountBalanceController {
    }
 
    @Get('getRapideBalance')
-   // @SetMetadata('allowedRole', ['ADMIN'])
-   // @UseGuards(RolesGuard)
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
    async getRapideBalance() {
       return await this.getRapideBalanceService.getRapidebalance()
+   }
+
+   @Get('sold')
+   @SetMetadata('allowedRole', ['DRIVER'])
+   @UseGuards(RolesGuard)
+   async getSold(@GetUser('sub') driverProfileId: string) {
+      return await this.driverBalanceService.getSold(driverProfileId)
    }
 }
