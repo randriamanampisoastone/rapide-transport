@@ -42,10 +42,11 @@ export class InfoOnRideService {
       const rideDataUpdatedString = JSON.stringify(rideDataUpdated)
 
       const rideTTL = await this.redisService.ttl(`${RIDE_PREFIX + rideId}`)
+
       await this.redisService.set(
          `${RIDE_PREFIX + rideId}`,
          `${rideDataUpdatedString}`,
-         rideTTL + 2 * 60 * 60,
+         rideTTL,
       )
 
       server.to(clientProfileId).emit(EVENT_INFO_ON_RIDE, rideDataUpdated)

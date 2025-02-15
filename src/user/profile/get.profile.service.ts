@@ -92,6 +92,7 @@ export class GetProfileService {
             role: driverProfile.role,
             status: driverProfile.driverProfile.status,
             balance: driverProfile.driverProfile.accountBalance.balance,
+            completeRide: driverProfile.driverProfile.completeRide,
          }
       } catch (error) {
          throw error

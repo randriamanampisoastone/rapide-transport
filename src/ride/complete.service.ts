@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import { EVENT_RIDE_COMPLETED } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
@@ -34,23 +34,21 @@ export class CompleteService {
 
          const rideData: RideData = JSON.parse(ride)
 
-         // if (rideData.status !== RideStatus.ARRIVED_DESTINATION) {
-         //    throw new Error('Ride is not in ARRIVED_DESTINATION status')
-         // }
+         if (rideData.status !== RideStatus.ARRIVED_DESTINATION) {
+            throw new Error('Ride is not in ARRIVED_DESTINATION status')
+         }
          if (rideData.driverProfileId !== driverProfileId) {
             throw new Error('Driver is not the driver of the ride')
          }
 
-         await this.redisService.remove(`${RIDE_PREFIX + rideId}`)
-
-         const updatedRideData = await this.prismaService.ride.update({
+         await this.prismaService.ride.update({
             where: {
                rideId,
             },
             data: {
                status: RideStatus.COMPLETED,
                realDuration: rideData.realDuration,
-               realPrice: Number(rideData.realPrice.toFixed(2)),
+               realPrice: Math.round(rideData.realPrice),
             },
          })
 
@@ -67,7 +65,7 @@ export class CompleteService {
 
          await this.driverBalanceService.increaseBalance(
             rideData.driverProfileId,
-            Number(rideData.realPrice.toFixed(2)),
+            Math.round(rideData.realPrice),
          )
 
          const {
@@ -93,13 +91,18 @@ export class CompleteService {
          const dailyRideComplet = await this.redisService.newDailyRideComplet(
             rideData.rideId,
          )
-         console.log('dailyRideComplet ====>', dailyRideComplet)
          this.gateway.sendNotificationToAdmin(EVENT_RIDE_COMPLETED, {
             rideId: rideData.rideId,
             ...dailyRideComplet,
          })
+
+         await this.redisService.remove(`${RIDE_PREFIX + rideId}`)
+         console.log('Ride completed successfully')
+
+         return { ...rideData }
       } catch (error) {
-         throw error
+         console.log('Error completing ride:', error)
+         throw new InternalServerErrorException('Error completing ride')
       }
    }
 }

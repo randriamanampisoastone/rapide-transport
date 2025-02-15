@@ -164,12 +164,14 @@ export class RideController {
    }
 
    @Post('client-give-up')
-   @SetMetadata('allowedRole', ['DRIVER'])
+   @SetMetadata('allowedRole', ['CLIENT'])
    @UseGuards(RolesGuard)
    clientGiveUp(
       @Body() { rideId }: { rideId: string },
       @GetUser('sub') clientProfileId: string,
    ) {
+      console.log('IIIIIIIIII')
+
       return this.clientGiveUpService.clientGiveUp({ rideId, clientProfileId })
    }
 

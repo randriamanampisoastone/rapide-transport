@@ -9,7 +9,10 @@ import { LatLng } from 'interfaces/location.interface'
 import { getRouteGoogleMap } from 'api/route.googlemap.api'
 import { parseDuration } from 'utils/time.util'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { EVENT_DRIVER_ON_THE_WAY } from 'constants/event.constant'
+import {
+   EVENT_DRIVER_ON_THE_WAY,
+   EVENT_DRIVER_ON_THE_WAY_POLYLINE,
+} from 'constants/event.constant'
 
 export interface DriverOnTheWayDto {
    driverProfileId: string
@@ -107,9 +110,18 @@ export class DriverOnTheWayService implements OnModuleInit {
                estimatedDuration,
             },
          )
+
          this.gateway.sendNotificationToAdmin(EVENT_DRIVER_ON_THE_WAY, {
             ...rideDataUpdated,
          })
+
+         this.gateway.sendNotificationToAdmin(
+            EVENT_DRIVER_ON_THE_WAY_POLYLINE,
+            {
+               encodedPolyline,
+               estimatedDuration,
+            },
+         )
          return {
             encodedPolyline,
             estimatedDuration,
