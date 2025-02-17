@@ -27,6 +27,7 @@ import { PaymentMethodType } from 'enums/payment.enum'
 import { StoppedService } from './stopped.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
+import { CheckRideService } from './check-ride.service'
 
 @Controller('ride')
 export class RideController {
@@ -44,6 +45,7 @@ export class RideController {
       private readonly arrivedDestinationService: ArrivedDestinationService,
       private readonly completeService: CompleteService,
       private readonly reviewService: ReviewService,
+      private readonly checkRideService: CheckRideService,
 
       private readonly getRideService: GetRideService,
    ) {}
@@ -219,5 +221,19 @@ export class RideController {
    @UseGuards(RolesGuard)
    findRide(@Query('rideId') rideId: string) {
       return this.getRideService.getRideRedis(rideId)
+   }
+
+   @Get('check-client-ride')
+   @SetMetadata('allowedRole', ['CLIENT'])
+   @UseGuards(RolesGuard)
+   checkClientRide(@GetUser('sub') clientProfileId: string) {
+      return this.checkRideService.checkClientRide(clientProfileId)
+   }
+
+   @Get('check-driver-ride')
+   @SetMetadata('allowedRole', ['DRIVER'])
+   @UseGuards(RolesGuard)
+   checkDriverRide(@GetUser('sub') driverProfileId: string) {
+      return this.checkRideService.checkDriverRide(driverProfileId)
    }
 }
