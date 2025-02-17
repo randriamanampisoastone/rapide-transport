@@ -63,6 +63,17 @@ export class CompleteService {
             },
          })
 
+         await this.prismaService.clientProfile.update({
+            where: {
+               clientProfileId: rideData.clientProfileId,
+            },
+            data: {
+               completeRide: {
+                  increment: 1,
+               },
+            }
+         })
+
          await this.driverBalanceService.increaseBalance(
             rideData.driverProfileId,
             Math.round(rideData.realPrice),
@@ -85,6 +96,7 @@ export class CompleteService {
                dropOffLongitude: dropOffLocation.longitude,
                estimatedPriceLower: estimatedPrice.lower,
                estimatedPriceUpper: estimatedPrice.upper,
+               status: RideStatus.COMPLETED,
             },
          })
 

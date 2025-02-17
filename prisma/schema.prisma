@@ -110,7 +110,9 @@ model ClientProfile {
   ride           Ride[]          @relation("ClientRide")
   accountBalance AccountBalance? @relation("ClientAccountBalance")
 
-  status ProfileStatus @default(ACTIVE)
+  status         ProfileStatus   @default(ACTIVE)
+  completeRide   Int             @default(0)
+  cancelledRide  Int             @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -126,7 +128,7 @@ model DriverProfile {
   transaction    Transaction[]   @relation("DriverTransaction")
 
   status       ProfileStatus @default(UNDER_REVIEW)
-  completeRide Int?          @default(0)
+  completeRide Int           @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

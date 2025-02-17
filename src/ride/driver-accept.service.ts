@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { ForbiddenException, Injectable } from '@nestjs/common'
 import { Gateway } from 'src/gateway/gateway'
 import { RideData } from 'interfaces/ride.interface'
 import { RideStatus } from 'enums/ride.enum'
@@ -7,6 +7,7 @@ import { RIDE_PREFIX } from 'constants/redis.constant'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { EVENT_ACCEPTED_RIDE } from 'constants/event.constant'
 import { parseRidePostgresDataForRideData } from 'utils/rideDataParser.util'
+import { ProfileStatus } from '@prisma/client'
 
 export interface DriverAcceptDto {
    driverProfileId: string
@@ -23,6 +24,19 @@ export class DriverAcceptService {
 
    async driverAccept(driverAcceptDto: DriverAcceptDto) {
       try {
+         const driver = await this.postgresService.driverProfile.findUnique({
+            where: {
+               driverProfileId: driverAcceptDto.driverProfileId,
+            },
+            select: {
+               status: true,
+            },
+         })
+
+         if (driver.status !== ProfileStatus.ACTIVE) {
+            throw new ForbiddenException('The driver is not active')
+         }
+
          const rideId = driverAcceptDto.rideId
          const driverProfileId = driverAcceptDto.driverProfileId
 

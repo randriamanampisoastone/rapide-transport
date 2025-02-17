@@ -21,10 +21,13 @@ import { StoppedService } from './stopped.service'
 import { DriverBalanceService } from 'src/accountBalance/driverBalance.service'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { InfoOnRideService } from './info-on-ride.service'
+import { GetRideInvoiceService } from './get-ride-invoice.service'
+import { RideInvoiceController } from './ride-invoice.controller'
+import { CheckRideService } from './check-ride.service'
 
 @Module({
    imports: [GatewayModule],
-   controllers: [RideController],
+   controllers: [RideController, RideInvoiceController],
    providers: [
       RedisService,
       LocationService,
@@ -44,10 +47,13 @@ import { InfoOnRideService } from './info-on-ride.service'
       ArrivedDestinationService,
       CompleteService,
       ReviewService,
+      CheckRideService,
 
       DriverBalanceService,
       PrismaService,
       InfoOnRideService,
+
+      GetRideInvoiceService
    ],
 })
 export class RideModule {}

@@ -9,8 +9,8 @@ export class HistoricalController {
    constructor(private readonly historicalService: HistoricalService) {}
 
    @Get('getAllHistorical')
-   // @SetMetadata('allowedRole', ['ADMIN'])
-   // @UseGuards(RolesGuard)
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
    async getAllHistorical(
       @Query('status') status: RideStatus,
       @Query('page') page: number,

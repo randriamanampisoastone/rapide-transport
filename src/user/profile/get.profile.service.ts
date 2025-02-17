@@ -166,9 +166,12 @@ export class GetProfileService {
                   firstName: true,
                   lastName: true,
                   phoneNumber: true,
+                  profilePhoto: true,
                },
             },
             accountBalance: true,
+            completeRide: true,
+            cancelledRide: true,
          }
 
          const [clientProfiles, totalCount, newClients] = await Promise.all([
@@ -333,9 +336,11 @@ export class GetProfileService {
                   firstName: true,
                   lastName: true,
                   phoneNumber: true,
+                  profilePhoto: true,
                },
             },
             accountBalance: true,
+            completeRide: true,
          }
 
          const [driverProfiles, totalCount] = await Promise.all([

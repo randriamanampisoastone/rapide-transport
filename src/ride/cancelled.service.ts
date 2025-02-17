@@ -35,6 +35,17 @@ export class CancelledService {
 
          const rideData: RideData = JSON.parse(ride)
 
+         await this.prismaService.clientProfile.update({
+            where: {
+               clientProfileId: rideData.clientProfileId,
+            },
+            data: {
+               cancelledRide: {
+                  increment: 1,
+               },
+            },
+         })
+
          if (rideData.status !== RideStatus.FINDING_DRIVER) {
             throw new HttpException(
                'NotFindingDriverStatus',
