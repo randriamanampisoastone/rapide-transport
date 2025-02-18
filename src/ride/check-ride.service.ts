@@ -12,10 +12,7 @@ export class CheckRideService {
       clientProfileId: string,
    ): Promise<{ data: RideData | undefined; isHaveRide: boolean }> {
       try {
-         console.log('Checking client ride...')
-
          const ridesKey = await this.redisService.keys(`${RIDE_PREFIX}*`)
-
          if (!ridesKey.length) {
             return { data: undefined, isHaveRide: false }
          }
@@ -47,12 +44,14 @@ export class CheckRideService {
       }
    }
 
-   async checkDriverRide(driverProfileId: string) {
+   async checkDriverRide(
+      driverProfileId: string,
+   ): Promise<{ data: RideData | undefined; isHaveRide: boolean }> {
       try {
          const ridesKey = await this.redisService.keys(`${RIDE_PREFIX}*`)
 
          if (!ridesKey.length) {
-            return null
+            return { data: undefined, isHaveRide: false }
          }
 
          const rideDataList = await this.redisService.mget(ridesKey)
@@ -65,11 +64,11 @@ export class CheckRideService {
                   data.status !==
                      (RideStatus.COMPLETED || RideStatus.ADMIN_CHECK)
                ) {
-                  return data
+                  return { data, isHaveRide: true }
                }
             }
          }
-         return null
+         return { data: undefined, isHaveRide: false }
       } catch (error) {
          console.error('Error checking driver ride:', error)
          throw new Error(
