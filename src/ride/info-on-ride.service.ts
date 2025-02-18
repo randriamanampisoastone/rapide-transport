@@ -6,6 +6,7 @@ import { Server } from 'socket.io'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
 import { calculateRealTimeCostByTime } from 'utils/price.util'
+import { roundToNearestThousand } from 'utils/roundToNearestThousand.utils'
 
 @Injectable()
 export class InfoOnRideService {
@@ -37,7 +38,7 @@ export class InfoOnRideService {
       const rideDataUpdated = {
          ...rideData,
          realDuration: Math.floor(realDuration),
-         realPrice: Number(realPrice.toFixed(2)),
+         realPrice: roundToNearestThousand(Number(realPrice.toFixed(2)))
       }
       const rideDataUpdatedString = JSON.stringify(rideDataUpdated)
 
