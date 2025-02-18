@@ -18,14 +18,12 @@ import {
 } from 'interfaces/location.interface'
 import { InfoOnRideService } from 'src/ride/info-on-ride.service'
 import { CheckRideService } from 'src/ride/check-ride.service'
-import { RideData } from 'interfaces/ride.interface'
 import { UserRole } from 'enums/profile.enum'
 import * as jwt from 'jsonwebtoken'
 import { ConfigService } from '@nestjs/config'
 import {
    EVENT_INFO_ON_RIDE_PUSH,
    EVENT_NOTIFY_CLIENT,
-   EVENT_RIDE_CHECKED,
    EVENT_SEND_DATA,
    EVENT_UPDATE_CLIENT_LOCATION,
    EVENT_UPDATE_DRIVER_LOCATION,
@@ -130,33 +128,6 @@ export class Gateway
       this.logger.log(
          `Connected: ${client.id}, Role: ${role}, User: ${client.data.user}`,
       )
-      try {
-         let ride: RideData
-         if (role === UserRole.CLIENT) {
-            ride = await this.checkRideService.checkClientRide(
-               client.data.user.clientProfileId,
-            )
-         } else if (role === UserRole.DRIVER) {
-            ride = await this.checkRideService.checkDriverRide(
-               client.data.user.driverProfileId,
-            )
-         }
-
-         if (ride) {
-            client.emit(EVENT_RIDE_CHECKED, { success: true, ride })
-         } else {
-            client.emit(EVENT_RIDE_CHECKED, {
-               success: false,
-               message: 'No ride found',
-            })
-         }
-      } catch (error) {
-         console.log(error)
-         client.emit(EVENT_RIDE_CHECKED, {
-            success: false,
-            message: 'Error checking ride',
-         })
-      }
    }
 
    handleDisconnect(client: Socket) {
@@ -174,7 +145,6 @@ export class Gateway
    async handleUpdateClientLocation(
       @MessageBody() data: UpdateClientLocationInterface,
    ) {
-      console.log('Tonga : ', data)
       await this.locationService.handleUpdateClientLocation(this.server, data)
    }
    @SubscribeMessage(EVENT_SEND_DATA)

@@ -8,12 +8,16 @@ import { RedisService } from 'src/redis/redis.service'
 export class CheckRideService {
    constructor(private readonly redisService: RedisService) {}
 
-   async checkClientRide(clientProfileId: string): Promise<RideData> {
+   async checkClientRide(
+      clientProfileId: string,
+   ): Promise<{ data: RideData | undefined; isHaveRide: boolean }> {
       try {
+         console.log('Checking client ride...')
+
          const ridesKey = await this.redisService.keys(`${RIDE_PREFIX}*`)
 
          if (!ridesKey.length) {
-            return null
+            return { data: undefined, isHaveRide: false }
          }
 
          const rideDataList = await this.redisService.mget(ridesKey)
@@ -30,11 +34,11 @@ export class CheckRideService {
                         RideStatus.CANCELLED ||
                         RideStatus.ADMIN_CHECK)
                ) {
-                  return data
+                  return { data, isHaveRide: true }
                }
             }
          }
-         return null
+         return { data: undefined, isHaveRide: false }
       } catch (error) {
          console.error('Error checking client ride:', error)
          throw new Error(

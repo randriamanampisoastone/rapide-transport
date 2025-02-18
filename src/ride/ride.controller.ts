@@ -172,8 +172,6 @@ export class RideController {
       @Body() { rideId }: { rideId: string },
       @GetUser('sub') clientProfileId: string,
    ) {
-      console.log('IIIIIIIIII')
-
       return this.clientGiveUpService.clientGiveUp({ rideId, clientProfileId })
    }
 
