@@ -78,16 +78,6 @@ export class CreateRideService {
 
    async createRide(createRideDto: CreateRideDto) {
       try {
-         const rideKeys = await this.redisService.keys(`${RIDE_PREFIX}*`)
-         const rideDataList = await this.redisService.mget(rideKeys)
-         const rideDatas: RideData[] = rideDataList.map((ride) =>
-            JSON.parse(ride),
-         )
-
-         const ride_already_exist: RideData = rideDatas.filter(
-            (data) => data.clientProfileId === createRideDto.clientProfileId,
-         )[0]
-
          const user = await this.prismaService.clientProfile.findUnique({
             where: {
                clientProfileId: createRideDto.clientProfileId,
@@ -100,6 +90,20 @@ export class CreateRideService {
          if (user.status !== ProfileStatus.ACTIVE) {
             throw new ForbiddenException('The user is not active')
          }
+
+         const rideKeys = await this.redisService.keys(`${RIDE_PREFIX}*`)
+         const rideDataList = rideKeys.length
+            ? await this.redisService.mget(rideKeys)
+            : []
+         const rideDatas: RideData[] = rideDataList.map((ride) =>
+            JSON.parse(ride),
+         )
+
+         const ride_already_exist: RideData = rideDatas.filter(
+            (data) => data.clientProfileId === createRideDto.clientProfileId,
+         )[0]
+
+         console.log('eto eeeeeeee')
 
          if (
             ride_already_exist &&
