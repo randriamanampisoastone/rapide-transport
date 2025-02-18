@@ -88,6 +88,7 @@ export class RedisService implements OnModuleInit {
    ): Promise<DriverLocationRedis[]> {
       try {
          const drivers = await this.keys(`${DRIVER_LOCATION_PREFIX}*`)
+         console.log(`Found ${drivers.length} drivers in Redis`)
 
          if (drivers.length > 0) {
             const driversData = await this.mget(drivers)
