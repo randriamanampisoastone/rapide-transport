@@ -103,98 +103,100 @@ export class CreateRideService {
             (data) => data.clientProfileId === createRideDto.clientProfileId,
          )[0]
 
-         console.log('eto eeeeeeee')
+         if (ride_already_exist !== undefined) {
+            if (
+               ![
+                  RideStatus.COMPLETED,
+                  RideStatus.STOPPED,
+                  RideStatus.CLIENT_GIVE_UP,
+                  RideStatus.CANCELLED,
+               ].includes(ride_already_exist.status)
+            ) {
+               return ride_already_exist
+            }
+         }
 
-         if (
-            ride_already_exist &&
-            ![RideStatus.STOPPED, RideStatus.COMPLETED].includes(
-               ride_already_exist?.status,
-            )
-         ) {
-            const clientProfileId = createRideDto.clientProfileId
-            const pickUpLocation = createRideDto.pickUpLocation
-            const dropOffLocation = createRideDto.dropOffLocation
-            const vehicleType = createRideDto.vehicleType
-            const paymentMethodType = createRideDto.paymentMethodType
+         const clientProfileId = createRideDto.clientProfileId
+         const pickUpLocation = createRideDto.pickUpLocation
+         const dropOffLocation = createRideDto.dropOffLocation
+         const vehicleType = createRideDto.vehicleType
+         const paymentMethodType = createRideDto.paymentMethodType
 
-            const itinerary = await this.redisService.get(
+         const itinerary = await this.redisService.get(
+            `${ITINERARY_PREFIX + clientProfileId}`,
+         )
+
+         let estimatedPrice: EstimatedPrice
+         let rideData: RideData
+
+         if (itinerary) {
+            const itineraryData = JSON.parse(itinerary)
+            const { encodedPolyline, distanceMeters, estimatedDuration } =
+               itineraryData
+
+            estimatedPrice = this.getPrice(vehicleType, itineraryData, null)
+
+            rideData = {
+               rideId: crypto.randomUUID(),
+               clientProfileId,
+               vehicleType,
+               paymentMethodType,
+               pickUpLocation,
+               dropOffLocation,
+               encodedPolyline,
+               distanceMeters,
+               estimatedDuration,
+               estimatedPrice,
+               status: RideStatus.FINDING_DRIVER,
+            }
+            await this.redisService.remove(
                `${ITINERARY_PREFIX + clientProfileId}`,
             )
-
-            let estimatedPrice: EstimatedPrice
-            let rideData: RideData
-
-            if (itinerary) {
-               const itineraryData = JSON.parse(itinerary)
-               const { encodedPolyline, distanceMeters, estimatedDuration } =
-                  itineraryData
-
-               estimatedPrice = this.getPrice(vehicleType, itineraryData, null)
-
-               rideData = {
-                  rideId: crypto.randomUUID(),
-                  clientProfileId,
-                  vehicleType,
-                  paymentMethodType,
-                  pickUpLocation,
-                  dropOffLocation,
-                  encodedPolyline,
-                  distanceMeters,
-                  estimatedDuration,
-                  estimatedPrice,
-                  status: RideStatus.FINDING_DRIVER,
-               }
-               await this.redisService.remove(
-                  `${ITINERARY_PREFIX + clientProfileId}`,
-               )
-            } else {
-               const {
-                  pickUpLocation,
-                  dropOffLocation,
-                  vehicleType,
-                  paymentMethodType,
-               } = createRideDto
-
-               const newItinerary =
-                  await this.createItineraryService.createItinerary({
-                     clientProfileId,
-                     pickUpLocation,
-                     dropOffLocation,
-                  })
-
-               const { encodedPolyline, distanceMeters, estimatedDuration } =
-                  newItinerary
-
-               estimatedPrice = this.getPrice(vehicleType, null, newItinerary)
-
-               rideData = {
-                  rideId: crypto.randomUUID(),
-                  clientProfileId,
-                  vehicleType,
-                  paymentMethodType,
-                  pickUpLocation,
-                  dropOffLocation,
-                  encodedPolyline,
-                  distanceMeters,
-                  estimatedDuration,
-                  estimatedPrice,
-                  status: RideStatus.FINDING_DRIVER,
-               }
-            }
-
-            await this.FindDriverService.notifyDrivers(rideData)
-
-            await this.redisService.set(
-               `${RIDE_PREFIX + rideData.rideId}`,
-               JSON.stringify(rideData),
-               1800, // 30 minutes
-            )
-
-            const result = await this.sendRideDataBase(rideData)
-            return result
          } else {
-            return ride_already_exist
+            const {
+               pickUpLocation,
+               dropOffLocation,
+               vehicleType,
+               paymentMethodType,
+            } = createRideDto
+
+            const newItinerary =
+               await this.createItineraryService.createItinerary({
+                  clientProfileId,
+                  pickUpLocation,
+                  dropOffLocation,
+               })
+
+            const { encodedPolyline, distanceMeters, estimatedDuration } =
+               newItinerary
+
+            estimatedPrice = this.getPrice(vehicleType, null, newItinerary)
+
+            rideData = {
+               rideId: crypto.randomUUID(),
+               clientProfileId,
+               vehicleType,
+               paymentMethodType,
+               pickUpLocation,
+               dropOffLocation,
+               encodedPolyline,
+               distanceMeters,
+               estimatedDuration,
+               estimatedPrice,
+               status: RideStatus.FINDING_DRIVER,
+            }
          }
+
+         await this.FindDriverService.notifyDrivers(rideData)
+
+         await this.redisService.set(
+            `${RIDE_PREFIX + rideData.rideId}`,
+            JSON.stringify(rideData),
+            1800, // 30 minutes
+         )
+
+         const result = await this.sendRideDataBase(rideData)
+         return result
       } catch (error) {
          console.error('Error creating ride:', error)
          throw new InternalServerErrorException('Error creating ride')
