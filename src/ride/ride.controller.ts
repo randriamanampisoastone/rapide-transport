@@ -6,6 +6,7 @@ import {
    Query,
    SetMetadata,
    UseGuards,
+   Patch,
 } from '@nestjs/common'
 import { CreateItineraryService } from './create-itinerary.service'
 import { CreateRideService } from './create-ride.service'
@@ -28,6 +29,7 @@ import { StoppedService } from './stopped.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { CheckRideService } from './check-ride.service'
+import { AssignRideToDriverService } from './assign-ride-to-driver.service'
 
 @Controller('ride')
 export class RideController {
@@ -48,6 +50,8 @@ export class RideController {
       private readonly checkRideService: CheckRideService,
 
       private readonly getRideService: GetRideService,
+
+      private readonly assignRideToDriverService: AssignRideToDriverService,
    ) {}
 
    @Post('create-itinerary')
@@ -233,5 +237,18 @@ export class RideController {
    @UseGuards(RolesGuard)
    checkDriverRide(@GetUser('sub') driverProfileId: string) {
       return this.checkRideService.checkDriverRide(driverProfileId)
+   }
+
+   @Patch('assign-ride-to-driver')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   assignRideToDriver(
+      @Query('driverProfileId') driverProfileId: string,
+      @Query('rideId') rideId: string,
+   ) {
+      return this.assignRideToDriverService.assignRideToDriver(
+         driverProfileId,
+         rideId,
+      )
    }
 }
