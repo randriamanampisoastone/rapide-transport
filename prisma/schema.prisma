@@ -260,3 +260,12 @@ model Ride {
   createdAt DateTime @default(now())
   updateAt  DateTime @updatedAt
 }
+
+model Home {
+  homeId       String @id @default(uuid())
+  name         String @default("Home")
+  latitude     Float
+  longitude    Float
+  motoCount    Int    @default(0)
+  carCount     Int    @default(0)
+}
