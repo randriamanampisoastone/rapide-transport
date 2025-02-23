@@ -24,6 +24,7 @@ import { InfoOnRideService } from './info-on-ride.service'
 import { GetRideInvoiceService } from './get-ride-invoice.service'
 import { RideInvoiceController } from './ride-invoice.controller'
 import { CheckRideService } from './check-ride.service'
+import { AssignRideToDriverService } from './assign-ride-to-driver.service'
 
 @Module({
    imports: [GatewayModule],
@@ -53,7 +54,9 @@ import { CheckRideService } from './check-ride.service'
       PrismaService,
       InfoOnRideService,
 
-      GetRideInvoiceService
+      GetRideInvoiceService,
+
+      AssignRideToDriverService
    ],
 })
 export class RideModule {}

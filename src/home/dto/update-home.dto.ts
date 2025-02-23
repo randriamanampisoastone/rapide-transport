@@ -11,4 +11,16 @@ export class updateHomeDto {
    @IsNumber()
    @IsOptional()
    longitude?: number
+
+   @IsString()
+   @IsOptional()
+   phoneNumber?: string
+
+   @IsNumber()
+   @IsOptional()
+   carCount?: number
+
+   @IsNumber()
+   @IsOptional()
+   motoCount?: number
 }

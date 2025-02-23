@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator'
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
 
 export class CreateHomeDto {
    @IsString()
@@ -11,4 +11,8 @@ export class CreateHomeDto {
    @IsNumber()
    @IsNotEmpty()
    longitude: number
+
+   @IsString()
+   @IsOptional()
+   phoneNumber?: string
 }

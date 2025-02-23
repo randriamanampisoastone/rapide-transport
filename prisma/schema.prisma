@@ -264,6 +264,7 @@ model Ride {
 model Home {
   homeId       String @id @default(uuid())
   name         String @default("Home")
+  phoneNumber  String?
   latitude     Float
   longitude    Float
   motoCount    Int    @default(0)
