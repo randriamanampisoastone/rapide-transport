@@ -35,10 +35,10 @@ export class ResendConfirmSignUpService {
                'You have reached the maximum number of attempts',
             )
          }
-         await this.smsService.sendSMS(
-            [resendConfirmDto.phoneNumber],
-            `Your Rapide App OTP Code is : ${signUpDto.confirmationCode}`,
-         )
+         // await this.smsService.sendSMS(
+         //    [resendConfirmDto.phoneNumber],
+         //    `Your Rapide App OTP Code is : ${signUpDto.confirmationCode}`,
+         // )
          const ttl = await this.redisService.ttl(
             `${AUTH_SIGN_UP_PREFIX + resendConfirmDto.phoneNumber}`,
          )

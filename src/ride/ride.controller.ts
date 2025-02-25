@@ -30,7 +30,6 @@ import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { CheckRideService } from './check-ride.service'
 import { AssignRideToDriverService } from './assign-ride-to-driver.service'
-import { ReviewRideDto } from './dto/review-ride.dto'
 import { ReviewRideService } from './review-ride.service'
 
 @Controller('ride')
@@ -255,18 +254,25 @@ export class RideController {
       )
    }
 
-   @Patch('review-ride')
+   @Patch('send-review')
    @SetMetadata('allowedRole', ['CLIENT'])
    @UseGuards(RolesGuard)
    reviewRide(
-      @Query('rideId') rideId: string,
       @GetUser('sub') clientProfileId: string,
-      @Body() reviewRideDto: ReviewRideDto,
+      @Body()
+      {
+         rideId,
+         note,
+         review,
+      }: { rideId: string; note: number; review: string },
    ) {
+      console.log('clientProfileId')
+
       return this.reviewRideService.addRideReview(
          rideId,
          clientProfileId,
-         reviewRideDto,
+         note,
+         review,
       )
-   }  
+   }
 }

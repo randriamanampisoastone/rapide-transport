@@ -1,4 +1,0 @@
--- AlterTable
-ALTER TABLE "Ride" ALTER COLUMN "driverProfileId" DROP NOT NULL,
-ALTER COLUMN "vehicleId" DROP NOT NULL,
-ALTER COLUMN "realDuration" DROP NOT NULL;

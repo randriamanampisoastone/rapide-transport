@@ -82,21 +82,21 @@ export class ConfirmSignUpService {
             const token = jwt.sign(clientProfile, this.JWT_SECRET_CLIENT, {
                expiresIn: this.JWT_EXPIRES_IN,
             })
-            console.log('token client :', token)
+
             return { token }
          } else if (restSignUpDto.role === UserRole.DRIVER) {
             const driverProfile = await this.createDriverProfile(restSignUpDto)
             const token = jwt.sign(driverProfile, this.JWT_SECRET_DRIVER, {
                expiresIn: this.JWT_EXPIRES_IN,
             })
-            console.log('token driver :', token)
+
             return { token }
          } else if (restSignUpDto.role === UserRole.ADMIN) {
             const adminProfile = await this.createAdminProfile(restSignUpDto)
             const token = jwt.sign(adminProfile, this.JWT_SECRET_ADMIN, {
                expiresIn: this.JWT_EXPIRES_IN,
             })
-            console.log('token driver :', token)
+
             return { token }
          }
       } catch (error) {

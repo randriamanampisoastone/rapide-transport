@@ -228,7 +228,7 @@ model RideInvoice {
   endTime             Float?
 
   createdAt String?
-  updateAt  String?
+  updatedAt  String?
 }
 
 model Ride {
@@ -258,7 +258,7 @@ model Ride {
   endTime           Float?
 
   createdAt DateTime @default(now())
-  updateAt  DateTime @updatedAt
+  updatedAt  DateTime @updatedAt
 }
 
 model Home {
