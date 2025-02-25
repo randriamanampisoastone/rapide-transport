@@ -35,7 +35,6 @@ export class AuthController {
       @Body()
       confirmSignUpDto: ConfirmDto,
    ) {
-      console.log('eto')
       return await this.confirmSignUpService.confirmSignUp(confirmSignUpDto)
    }
    @Post('resendConfirmSignUp')
