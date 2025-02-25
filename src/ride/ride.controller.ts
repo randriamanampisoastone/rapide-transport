@@ -30,6 +30,8 @@ import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { CheckRideService } from './check-ride.service'
 import { AssignRideToDriverService } from './assign-ride-to-driver.service'
+import { ReviewRideDto } from './dto/review-ride.dto'
+import { ReviewRideService } from './review-ride.service'
 
 @Controller('ride')
 export class RideController {
@@ -52,6 +54,7 @@ export class RideController {
       private readonly getRideService: GetRideService,
 
       private readonly assignRideToDriverService: AssignRideToDriverService,
+      private readonly reviewRideService: ReviewRideService,
    ) {}
 
    @Post('create-itinerary')
@@ -251,4 +254,19 @@ export class RideController {
          rideId,
       )
    }
+
+   @Patch('review-ride')
+   @SetMetadata('allowedRole', ['CLIENT'])
+   @UseGuards(RolesGuard)
+   reviewRide(
+      @Query('rideId') rideId: string,
+      @GetUser('sub') clientProfileId: string,
+      @Body() reviewRideDto: ReviewRideDto,
+   ) {
+      return this.reviewRideService.addRideReview(
+         rideId,
+         clientProfileId,
+         reviewRideDto,
+      )
+   }  
 }

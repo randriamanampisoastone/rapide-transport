@@ -148,6 +148,7 @@ export class CreateRideService {
                estimatedDuration,
                estimatedPrice,
                status: RideStatus.FINDING_DRIVER,
+               createdAt: new Date().toISOString(),
             }
             await this.redisService.remove(
                `${ITINERARY_PREFIX + clientProfileId}`,
@@ -184,10 +185,13 @@ export class CreateRideService {
                estimatedDuration,
                estimatedPrice,
                status: RideStatus.FINDING_DRIVER,
+               createdAt: new Date().toISOString(),
             }
          }
 
          await this.FindDriverService.notifyDrivers(rideData)
+
+         console.log('rideData on create ride ============> ', rideData)
 
          await this.redisService.set(
             `${RIDE_PREFIX + rideData.rideId}`,
