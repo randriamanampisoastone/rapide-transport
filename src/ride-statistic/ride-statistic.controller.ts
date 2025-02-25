@@ -13,4 +13,11 @@ export class RideStatisticController {
    async getDriverStatistic(@GetUser('sub') driverProfileId: string) {
       return await this.rideStatisticService.getDriverStatistic(driverProfileId)
    }
+
+   @Get('get-global-statistic')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   async getGlobalRideStatistic() {
+      return await this.rideStatisticService.geGlobalRideStatistic()
+   }
 }
