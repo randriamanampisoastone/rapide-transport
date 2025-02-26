@@ -7,9 +7,13 @@ import * as jwt from 'jsonwebtoken'
 
 @Injectable()
 export class GoogleAuthService {
-   private WEB_CLIENT_ID =
+   private WEB_CLIENT_ID_CLIENT =
       '378200763630-4tevtt89ff6g7alvigl1r041ditle8j5.apps.googleusercontent.com'
-   private client = new OAuth2Client(this.WEB_CLIENT_ID)
+   private WEB_CLIENT_ID_DRIVER =
+      '378200763630-4pu3hmfanqqricmjrdroug85d4uud4ng.apps.googleusercontent.com'
+
+   private client_google_provider = new OAuth2Client(this.WEB_CLIENT_ID_CLIENT)
+   private driver_google_provider = new OAuth2Client(this.WEB_CLIENT_ID_DRIVER)
 
    private JWT_SECRET_CLIENT = ''
    private JWT_SECRET_DRIVER = ''
@@ -34,9 +38,16 @@ export class GoogleAuthService {
    ) {
       try {
          if (userRole === UserRole.CLIENT) {
-            const ticket = await this.client.verifyIdToken({
+            const ticket = await this.client_google_provider.verifyIdToken({
                idToken,
-               audience: this.WEB_CLIENT_ID,
+               audience: this.WEB_CLIENT_ID_CLIENT,
+            })
+            const payload = ticket.getPayload()
+            return payload
+         } else if (userRole === UserRole.DRIVER) {
+            const ticket = await this.driver_google_provider.verifyIdToken({
+               idToken,
+               audience: this.WEB_CLIENT_ID_DRIVER,
             })
             const payload = ticket.getPayload()
             return payload
@@ -46,9 +57,9 @@ export class GoogleAuthService {
       }
    }
 
-   async googleAuth(idToken: string) {
+   async googleAuth(idToken: string, userRole: UserRole) {
       try {
-         const payload = await this.verifyGoogleToken(idToken)
+         const payload = await this.verifyGoogleToken(idToken, userRole)
 
          const existingUser = await this.prismaService.profile.findUnique({
             where: { email: payload.email },
@@ -70,19 +81,12 @@ export class GoogleAuthService {
          }
 
          if (existingUser.role === UserRole.CLIENT) {
-            const updateClientProfile = {
-               clientProfileId: existingUser.clientProfile.clientProfileId,
-               firstName: existingUser.firstName,
-               lastName: existingUser.lastName,
-               birthday: existingUser.birthday,
-               gender: existingUser.gender,
-               phoneNumber: existingUser.phoneNumber,
-               profilePhoto: existingUser.profilePhoto,
-               role: existingUser.role,
-               status: existingUser.clientProfile.status,
-            }
             const token = jwt.sign(
-               updateClientProfile,
+               {
+                  role: existingUser.role,
+                  status: existingUser.clientProfile.status,
+                  sub: existingUser.sub,
+               },
                this.JWT_SECRET_CLIENT,
                {
                   expiresIn: this.JWT_EXPIRES_IN,
@@ -90,19 +94,12 @@ export class GoogleAuthService {
             )
             return { token, status: 'REGISTERED' }
          } else if (existingUser.role === UserRole.DRIVER) {
-            const updateDriverProfile = {
-               driverProfileId: existingUser.driverProfile.driverProfileId,
-               firstName: existingUser.firstName,
-               lastName: existingUser.lastName,
-               birthday: existingUser.birthday,
-               gender: existingUser.gender,
-               phoneNumber: existingUser.phoneNumber,
-               profilePhoto: existingUser.profilePhoto,
-               role: existingUser.role,
-               status: existingUser.driverProfile.status,
-            }
             const token = jwt.sign(
-               updateDriverProfile,
+               {
+                  role: existingUser.role,
+                  status: existingUser.driverProfile.status,
+                  sub: existingUser.sub,
+               },
                this.JWT_SECRET_DRIVER,
                {
                   expiresIn: this.JWT_EXPIRES_IN,
@@ -110,20 +107,17 @@ export class GoogleAuthService {
             )
             return { token, status: 'REGISTERED' }
          } else if (existingUser.role === UserRole.ADMIN) {
-            const updateAdminProfile = {
-               adminProfileId: existingUser.adminProfile.adminProfileId,
-               firstName: existingUser.firstName,
-               lastName: existingUser.lastName,
-               birthday: existingUser.birthday,
-               gender: existingUser.gender,
-               phoneNumber: existingUser.phoneNumber,
-               profilePhoto: existingUser.profilePhoto,
-               role: existingUser.role,
-               status: existingUser.adminProfile.status,
-            }
-            const token = jwt.sign(updateAdminProfile, this.JWT_SECRET_ADMIN, {
-               expiresIn: this.JWT_EXPIRES_IN,
-            })
+            const token = jwt.sign(
+               {
+                  role: existingUser.role,
+                  status: existingUser.adminProfile.status,
+                  sub: existingUser.sub,
+               },
+               this.JWT_SECRET_ADMIN,
+               {
+                  expiresIn: this.JWT_EXPIRES_IN,
+               },
+            )
             return { token, status: 'REGISTERED' }
          }
       } catch (error) {

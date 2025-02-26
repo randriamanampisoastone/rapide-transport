@@ -31,10 +31,12 @@ export class StoppedService {
          }
 
          const rideData: RideData = JSON.parse(ride)
+         console.log('ooooooo', rideData.status)
 
          if (
             rideData.status !== RideStatus.DRIVER_ACCEPTED &&
-            rideData.status !== RideStatus.DRIVER_ON_THE_WAY
+            rideData.status !== RideStatus.DRIVER_ON_THE_WAY &&
+            rideData.status !== RideStatus.DRIVER_ARRIVED
          ) {
             throw new HttpException(
                'NotDriverAcceptOrDriverOnTheWayStatus',
