@@ -35,6 +35,8 @@ export class ProfileController {
    @UseGuards(RolesGuard)
    @Get('getDriverProfile')
    async getDriverProfile(@GetUser('sub') sub: string) {
+      console.log('sub', sub)
+
       return await this.getProfileService.getDriverProfile(sub)
    }
 

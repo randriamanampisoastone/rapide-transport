@@ -10,6 +10,7 @@ import { ResendConfirmSignInService } from './resend.confirm.sign.in.service'
 import { ResendConfirmSignUpService } from './resend.confirm.sign.up.service'
 import { ResendConfirmDto } from './dto/resend.confirm.dto'
 import { GoogleAuthService } from './google.auth.service'
+import { UserRole } from 'enums/profile.enum'
 
 @Controller('auth')
 export class AuthController {
@@ -74,8 +75,12 @@ export class AuthController {
       @Body()
       data: {
          idToken: string
+         userRole: UserRole
       },
    ) {
-      return await this.googleAuthService.googleAuth(data.idToken)
+      return await this.googleAuthService.googleAuth(
+         data.idToken,
+         data.userRole,
+      )
    }
 }
