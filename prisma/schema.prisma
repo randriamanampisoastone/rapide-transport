@@ -79,6 +79,7 @@ enum RideStatus {
   ARRIVED_DESTINATION
   COMPLETED
   ADMIN_CHECK
+  ADMIN_CANCELLED
 }
 
 model Profile {
