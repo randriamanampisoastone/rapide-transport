@@ -28,6 +28,9 @@ export class RedisService implements OnModuleInit {
       this.client = new Redis({
          host: this.configService.get<string>('REDIS_HOST'),
          port: this.configService.get<number>('REDIS_PORT'),
+         tls: {
+            rejectUnauthorized: true,
+         },
       })
       this.REDIS_GEO_TTL_SECONDS = this.configService.get<number>(
          'REDIS_GEO_TTL_SECONDS',
