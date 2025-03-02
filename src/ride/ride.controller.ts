@@ -7,6 +7,7 @@ import {
    SetMetadata,
    UseGuards,
    Patch,
+   Delete,
 } from '@nestjs/common'
 import { CreateItineraryService } from './create-itinerary.service'
 import { CreateRideService } from './create-ride.service'
@@ -31,6 +32,7 @@ import { GetUser } from 'src/jwt/get.user.decorator'
 import { CheckRideService } from './check-ride.service'
 import { AssignRideToDriverService } from './assign-ride-to-driver.service'
 import { ReviewRideService } from './review-ride.service'
+import { DeleteRideService } from './delete-ride.service'
 
 @Controller('ride')
 export class RideController {
@@ -54,6 +56,8 @@ export class RideController {
 
       private readonly assignRideToDriverService: AssignRideToDriverService,
       private readonly reviewRideService: ReviewRideService,
+
+      private readonly deleteRideService: DeleteRideService
    ) {}
 
    @Post('create-itinerary')
@@ -274,5 +278,12 @@ export class RideController {
          note,
          review,
       )
+   }
+
+   @Delete('delete-ride')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   deleteRide(@Query('rideId') rideId: string) {
+      return this.deleteRideService.deleteRide(rideId)
    }
 }

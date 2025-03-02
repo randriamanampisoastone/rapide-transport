@@ -26,6 +26,7 @@ import { RideInvoiceController } from './ride-invoice.controller'
 import { CheckRideService } from './check-ride.service'
 import { AssignRideToDriverService } from './assign-ride-to-driver.service'
 import { ReviewRideService } from './review-ride.service'
+import { DeleteRideService } from './delete-ride.service'
 
 @Module({
    imports: [GatewayModule],
@@ -58,7 +59,9 @@ import { ReviewRideService } from './review-ride.service'
       GetRideInvoiceService,
 
       AssignRideToDriverService,
-      ReviewRideService
+      ReviewRideService,
+
+      DeleteRideService
    ],
 })
 export class RideModule {}
