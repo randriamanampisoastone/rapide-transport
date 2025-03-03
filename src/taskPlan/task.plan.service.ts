@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { Cron } from '@nestjs/schedule'
-import { DAILY_RAPIDE_BALANCE, DAILY_RAPIDE_RIDE_COMPLET } from 'constants/redis.constant'
+import {
+   DAILY_RAPIDE_BALANCE,
+   DAILY_RAPIDE_RIDE_COMPLET,
+} from 'constants/redis.constant'
 import { RedisService } from 'src/redis/redis.service'
 
 @Injectable()

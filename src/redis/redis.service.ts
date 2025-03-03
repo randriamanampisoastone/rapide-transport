@@ -28,9 +28,9 @@ export class RedisService implements OnModuleInit {
       this.client = new Redis({
          host: this.configService.get<string>('REDIS_HOST'),
          port: this.configService.get<number>('REDIS_PORT'),
-         tls: {
-            rejectUnauthorized: true,
-         },
+         // tls: {
+         //    rejectUnauthorized: true,
+         // },
       })
       this.REDIS_GEO_TTL_SECONDS = this.configService.get<number>(
          'REDIS_GEO_TTL_SECONDS',
@@ -40,13 +40,13 @@ export class RedisService implements OnModuleInit {
    }
 
    async ttl(key: string) {
-      return await this.client.ttl(key)
+      return this.client.ttl(key)
    }
    async expire(key: string, ttl: number) {
-      return await this.client.expire(key, ttl)
+      return this.client.expire(key, ttl)
    }
    async get(key: string) {
-      return await this.client.get(key)
+      return this.client.get(key)
    }
    async set(key: string, value: string, ttlSeconds?: number): Promise<void> {
       await this.client.set(
@@ -61,10 +61,10 @@ export class RedisService implements OnModuleInit {
    }
 
    async keys(pattern: string) {
-      return await this.client.keys(pattern)
+      return this.client.keys(pattern)
    }
    async mget(keys: string[]) {
-      return await this.client.mget(keys)
+      return this.client.mget(keys)
    }
 
    async addDriverLocationToRedis(
