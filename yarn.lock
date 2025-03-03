@@ -668,6 +668,11 @@
   resolved "https://registry.npmjs.org/@lukeed/csprng/-/csprng-1.1.0.tgz"
   integrity sha512-Z7C/xXCiGWsg0KuKsHTKJxbWhpI3Vs5GwLfOean7MGyVFGqdRgBbAjOCh6u4bbjPc/8MJ2pZmK/0DLdCbivLDA==
 
+"@msgpack/msgpack@~2.8.0":
+  version "2.8.0"
+  resolved "https://registry.yarnpkg.com/@msgpack/msgpack/-/msgpack-2.8.0.tgz#4210deb771ee3912964f14a15ddfb5ff877e70b9"
+  integrity sha512-h9u4u/jiIRKbq25PM+zymTyW6bhTzELvOoUd+AvYriWOAKpLGnIamaET3pnHYoI5iYphAHBI4ayx0MehR+VVPQ==
+
 "@nestjs/cli@^10.0.0":
   version "10.4.9"
   resolved "https://registry.npmjs.org/@nestjs/cli/-/cli-10.4.9.tgz"
@@ -945,14 +950,13 @@
   resolved "https://registry.npmjs.org/@socket.io/component-emitter/-/component-emitter-3.1.2.tgz"
   integrity sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==
 
-"@socket.io/redis-adapter@^8.3.0":
-  version "8.3.0"
-  resolved "https://registry.npmjs.org/@socket.io/redis-adapter/-/redis-adapter-8.3.0.tgz"
-  integrity sha512-ly0cra+48hDmChxmIpnESKrc94LjRL80TEmZVscuQ/WWkRP81nNj8W8cCGMqbI4L6NCuAaPRSzZF1a9GlAxxnA==
+"@socket.io/redis-streams-adapter@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@socket.io/redis-streams-adapter/-/redis-streams-adapter-0.2.2.tgz#149a46c546be0bd080b7a9dedb993ec75f0c1827"
+  integrity sha512-BMPa6oGC0wFgpMXoGksbJ75zMBwk+79pxjHc2YusdoK+X0BxN4fTsqEBuFV7yeXi9ekbi87rwlsT61+WZGVW9g==
   dependencies:
+    "@msgpack/msgpack" "~2.8.0"
     debug "~4.3.1"
-    notepack.io "~3.0.1"
-    uid2 "1.0.0"
 
 "@tsconfig/node10@^1.0.7":
   version "1.0.11"
@@ -4255,11 +4259,6 @@ normalize-path@^3.0.0, normalize-path@~3.0.0:
   resolved "https://registry.npmjs.org/normalize-path/-/normalize-path-3.0.0.tgz"
   integrity sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==
 
-notepack.io@~3.0.1:
-  version "3.0.1"
-  resolved "https://registry.npmjs.org/notepack.io/-/notepack.io-3.0.1.tgz"
-  integrity sha512-TKC/8zH5pXIAMVQio2TvVDTtPRX+DJPHDqjRbxogtFiByHyzKmy96RA0JtCQJ+WouyyL4A10xomQzgbUT+1jCg==
-
 npm-run-path@^4.0.1:
   version "4.0.1"
   resolved "https://registry.npmjs.org/npm-run-path/-/npm-run-path-4.0.1.tgz"
@@ -5321,11 +5320,6 @@ typescript@^5.1.3:
   version "5.7.3"
   resolved "https://registry.npmjs.org/typescript/-/typescript-5.7.3.tgz"
   integrity sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==
-
-uid2@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/uid2/-/uid2-1.0.0.tgz"
-  integrity sha512-+I6aJUv63YAcY9n4mQreLUt0d4lvwkkopDNmpomkAUz0fAkEMV9pRWxN0EjhW1YfRhcuyHg2v3mwddCDW1+LFQ==
 
 uid@2.0.2:
   version "2.0.2"
