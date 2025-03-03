@@ -43,7 +43,7 @@ import { RideStatisticModule } from './ride-statistic/ride-statistic.module'
       HistoricalModule,
       TaskPlanModule,
       HomeModule,
-      RideStatisticModule
+      RideStatisticModule,
    ],
    controllers: [AppController],
    providers: [],

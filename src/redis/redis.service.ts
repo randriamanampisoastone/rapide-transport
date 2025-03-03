@@ -59,9 +59,6 @@ export class RedisService implements OnModuleInit {
    }
 
    async keys(pattern: string) {
-<<<<<<< HEAD
-      return this.client.keys(pattern)
-=======
       let cursor = '0'
       const keys: string[] = []
       do {
@@ -76,7 +73,6 @@ export class RedisService implements OnModuleInit {
          keys.push(...result[1])
       } while (cursor !== '0')
       return keys
->>>>>>> aa62d1508f0e04e8932726740d2582af1ac1f98d
    }
    async mget(keys: string[]) {
       return this.client.mget(keys)
