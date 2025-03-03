@@ -28,9 +28,7 @@ export class RedisService implements OnModuleInit {
       this.client = new Redis({
          host: this.configService.get<string>('REDIS_HOST'),
          port: this.configService.get<number>('REDIS_PORT'),
-         // tls: {
-         //    rejectUnauthorized: true,
-         // },
+         //tls: {},
       })
       this.REDIS_GEO_TTL_SECONDS = this.configService.get<number>(
          'REDIS_GEO_TTL_SECONDS',
@@ -61,7 +59,24 @@ export class RedisService implements OnModuleInit {
    }
 
    async keys(pattern: string) {
+<<<<<<< HEAD
       return this.client.keys(pattern)
+=======
+      let cursor = '0'
+      const keys: string[] = []
+      do {
+         const result = await this.client.scan(
+            cursor,
+            'MATCH',
+            pattern,
+            'COUNT',
+            100,
+         )
+         cursor = result[0]
+         keys.push(...result[1])
+      } while (cursor !== '0')
+      return keys
+>>>>>>> aa62d1508f0e04e8932726740d2582af1ac1f98d
    }
    async mget(keys: string[]) {
       return this.client.mget(keys)
