@@ -13,6 +13,7 @@ import { HistoricalModule } from './historical/historical.module'
 import { TaskPlanModule } from './taskPlan/task.plan.module'
 import { HomeModule } from './home/home.module'
 import { RideStatisticModule } from './ride-statistic/ride-statistic.module'
+import { ClientRequestModule } from './clientRequest/client-request.module'
 
 @Module({
    imports: [
@@ -43,7 +44,8 @@ import { RideStatisticModule } from './ride-statistic/ride-statistic.module'
       HistoricalModule,
       TaskPlanModule,
       HomeModule,
-      RideStatisticModule
+      RideStatisticModule,
+      ClientRequestModule
    ],
    controllers: [AppController],
    providers: [],
