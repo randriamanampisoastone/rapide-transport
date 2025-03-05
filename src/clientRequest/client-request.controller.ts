@@ -54,23 +54,43 @@ export class ClientRequestController {
    @Get()
    @SetMetadata('allowedRole', ['ADMIN'])
    @UseGuards(RolesGuard)
-   async getAllCientRequest() {
-      return await this.findClientRequestService.getAllCientRequest()
+   async getAllCientRequest(
+      @Query('page') page: number,
+      @Query('pageSize') pageSize: number,
+   ) {
+      return await this.findClientRequestService.getAllCientRequest(
+         page || 1,
+         pageSize || 10,
+      )
    }
 
    @Get('get-requests')
    @SetMetadata('allowedRole', ['ADMIN', 'CLIENT'])
    @UseGuards(RolesGuard)
-   async getRequests(@Query('clientRequestId') clientRequestId: string) {
-      return await this.findClientRequestService.getRequests(clientRequestId)
+   async getRequests(
+      @Query('clientRequestId') clientRequestId: string,
+      @Query('page') page: number,
+      @Query('pageSize') pageSize: number,
+   ) {
+      return await this.findClientRequestService.getRequests(
+         clientRequestId,
+         page || 1,
+         pageSize || 10,
+      )
    }
 
    @Get('get-client-requests')
    @SetMetadata('allowedRole', ['CLIENT'])
    @UseGuards(RolesGuard)
-   async getClientRequests(@GetUser('sub') clientProfileId: string) {
+   async getClientRequests(
+      @GetUser('sub') clientProfileId: string,
+      @Query('page') page: number,
+      @Query('pageSize') pageSize: number,
+   ) {
       return await this.findClientRequestService.getClientRequests(
          clientProfileId,
+         page || 1,
+         pageSize || 10,
       )
    }
 
