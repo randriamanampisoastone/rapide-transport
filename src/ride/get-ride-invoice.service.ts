@@ -14,8 +14,16 @@ export class GetRideInvoiceService {
                   createdAt: 'desc',
                },
                include: {
-                  clientProfile: true,
-                  driverProfile: true,
+                  clientProfile: {
+                     include: {
+                        profile: true,
+                     },
+                  },
+                  driverProfile: {
+                     include: {
+                        profile: true,
+                     },
+                  },
                },
                skip: (page - 1) * pageSize,
                take: pageSize,
@@ -42,8 +50,16 @@ export class GetRideInvoiceService {
                   clientProfileId: clientProfileId,
                },
                include: {
-                  clientProfile: true,
-                  driverProfile: true,
+                  clientProfile: {
+                     include: {
+                        profile: true,
+                     },
+                  },
+                  driverProfile: {
+                     include: {
+                        profile: true
+                     }
+                  },
                },
                orderBy: {
                   createdAt: 'desc',
