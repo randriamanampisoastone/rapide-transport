@@ -77,6 +77,7 @@ export class SmsService {
                   (recipientNumber) => `tel:${recipientNumber}`,
                ),
                senderAddress: `tel:${this.SMS_SENDER_NUMBER}`,
+               senderName: 'RAPIDE APP',
                outboundSMSTextMessage: {
                   message: String(message),
                },
