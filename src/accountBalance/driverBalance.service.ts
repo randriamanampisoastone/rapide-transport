@@ -19,7 +19,7 @@ export class DriverBalanceService {
          const accountBalanceId: string =
             driver.driverProfile.accountBalance.accountBalanceId
 
-         const updatedDriver = this.prismaService.accountBalance.update({
+         return this.prismaService.accountBalance.update({
             where: {
                accountBalanceId,
             },
@@ -27,8 +27,6 @@ export class DriverBalanceService {
                balance: currentDriverBalance + toIncreaseAmount,
             },
          })
-
-         return updatedDriver
       } catch (error) {
          throw error
       }
