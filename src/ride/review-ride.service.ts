@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 @Injectable()
 export class ReviewRideService {
@@ -23,7 +23,8 @@ export class ReviewRideService {
          })
          return ride
       } catch (error) {
-         throw error
+         // throw error
+          throw new BadRequestException('Error adding review')
       }
    }
 }

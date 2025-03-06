@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common'
+import { Injectable, OnModuleInit, OnModuleDestroy, InternalServerErrorException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Gateway } from 'src/gateway/gateway'
 import { RideData } from 'interfaces/ride.interface'
@@ -63,11 +63,12 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
             ridesAvailable.map((ride) => this.notifyDrivers(ride)),
          )
       } catch (error) {
-         console.error(
-            'Error during scanAndNotifyDrivers:',
-            error.message,
-            error.stack,
-         )
+         // console.error(
+         //    'Error during scanAndNotifyDrivers:',
+         //    error.message,
+         //    error.stack,
+         // )
+         throw new InternalServerErrorException('An unexpected error occurred while sanning and/or notifying drivers')
       }
    }
 
@@ -105,10 +106,11 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
             ),
          )
       } catch (error) {
-         console.error(
-            `Error notifying drivers for ride ID ${ride.rideId}:`,
-            error.message,
-         )
+         // console.error(
+         //    `Error notifying drivers for ride ID ${ride.rideId}:`,
+         //    error.message,
+         // )
+         throw new InternalServerErrorException('An unexpected error occurred while notifying drivers')
       }
    }
 
@@ -136,7 +138,8 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
 
          this.gateway.sendNotificationToAdmin(EVENT_INFO_ON_RIDE, rideAvailable)
       } catch (error) {
-         throw error
+         // throw error
+         throw new InternalServerErrorException('An unexpected error occurred while calculating and sharing ride info')
       }
    }
 }

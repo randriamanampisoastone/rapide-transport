@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import { RideStatus } from '@prisma/client'
 import { EVENT_RIDE_CHECKED } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
@@ -41,7 +41,8 @@ export class DeleteRideService {
             )
          }
       } catch (error) {
-         throw error
+         // throw error
+         throw new InternalServerErrorException('An error occurred while deleting ride')
       }
    }
 }

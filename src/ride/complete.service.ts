@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
 import { EVENT_RIDE_COMPLETED } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
@@ -17,7 +17,7 @@ export interface CompleteDto {
 export class CompleteService {
    constructor(
       private readonly gateway: Gateway,
-      private redisService: RedisService,
+      private readonly redisService: RedisService,
       private readonly driverBalanceService: DriverBalanceService,
       private readonly prismaService: PrismaService,
    ) {}
@@ -29,16 +29,19 @@ export class CompleteService {
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
 
          if (!ride) {
-            throw new Error('Ride not found')
+            // throw new Error('Ride not found')
+            throw new NotFoundException('Ride not found')
          }
 
          const rideData: RideData = JSON.parse(ride)
 
          if (rideData.status !== RideStatus.ARRIVED_DESTINATION) {
-            throw new Error('Ride is not in ARRIVED_DESTINATION status')
+            // throw new Error('Ride is not in ARRIVED_DESTINATION status')
+            throw new BadRequestException('Ride is not in ARRIVED_DESTINATION status')
          }
          if (rideData.driverProfileId !== driverProfileId) {
-            throw new Error('Driver is not the driver of the ride')
+            // throw new Error('Driver is not the driver of the ride')
+            throw new ForbiddenException('Driver is not the driver of the ride')
          }
 
          const updatedRideData = await this.prismaService.ride.update({
@@ -114,7 +117,7 @@ export class CompleteService {
 
          return { ...rideData }
       } catch (error) {
-         console.log('Error completing ride:', error)
+         // console.log('Error completing ride:', error)
          throw new InternalServerErrorException('Error completing ride')
       }
    }
