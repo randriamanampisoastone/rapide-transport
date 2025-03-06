@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
 import { RideData } from 'interfaces/ride.interface'
@@ -37,10 +37,11 @@ export class CheckRideService {
          }
          return { data: undefined, isHaveRide: false }
       } catch (error) {
-         console.error('Error checking client ride:', error)
-         throw new Error(
-            'Une erreur est survenue lors de la vérification de la course.',
-         )
+         // console.error('Error checking client ride:', error)
+         // throw new Error(
+         //    'Une erreur est survenue lors de la vérification de la course.',
+         // )
+         throw new NotFoundException('An error occurred while checking the ride.')
       }
    }
 
@@ -70,10 +71,11 @@ export class CheckRideService {
          }
          return { data: undefined, isHaveRide: false }
       } catch (error) {
-         console.error('Error checking driver ride:', error)
-         throw new Error(
-            'Une erreur est survenue lors de la vérification de la course.',
-         )
+         // console.error('Error checking driver ride:', error)
+         // throw new Error(
+         //    'Une erreur est survenue lors de la vérification de la course.',
+         // )
+         throw new NotFoundException('An error occurred while checking the ride.')
       }
    }
 }

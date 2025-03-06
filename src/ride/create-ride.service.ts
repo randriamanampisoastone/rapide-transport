@@ -72,7 +72,8 @@ export class CreateRideService {
 
          return parseRidePostgresDataForRideData(createdRide)
       } catch (error) {
-         throw error
+         // throw error
+         throw new InternalServerErrorException('Error occurred on sending data')
       }
    }
 
@@ -110,6 +111,7 @@ export class CreateRideService {
                   RideStatus.STOPPED,
                   RideStatus.CLIENT_GIVE_UP,
                   RideStatus.CANCELLED,
+                  RideStatus.ADMIN_CANCELLED
                ].includes(ride_already_exist.status)
             ) {
                return ride_already_exist
@@ -202,7 +204,7 @@ export class CreateRideService {
          const result = await this.sendRideDataBase(rideData)
          return result
       } catch (error) {
-         console.error('Error creating ride:', error)
+         // console.error('Error creating ride:', error)
          throw new InternalServerErrorException('Error creating ride')
       }
    }

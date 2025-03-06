@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, HttpException, Injectable, NotFoundException } from '@nestjs/common'
 import { Gateway } from 'src/gateway/gateway'
 import { RideData } from 'interfaces/ride.interface'
 import { RideStatus } from 'enums/ride.enum'
@@ -28,16 +28,19 @@ export class ClientNotFoundService {
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
 
          if (!ride) {
-            throw new Error('Ride not found')
+            // throw new Error('Ride not found')
+            throw new NotFoundException('Ride not found')
          }
 
          const rideData: RideData = JSON.parse(ride)
 
          if (rideData.status !== RideStatus.DRIVER_ARRIVED) {
-            throw new Error('Ride is not in DRIVER_ARRIVED status')
+            // throw new Error('Ride is not in DRIVER_ARRIVED status')
+            throw new BadRequestException('Ride is not in DRIVER_ARRIVED status')
          }
          if (rideData.driverProfileId !== driverProfileId) {
-            throw new Error('Driver is not the driver of the ride')
+            // throw new Error('Driver is not the driver of the ride')
+            throw new ForbiddenException('Driver is not the driver of the ride')
          }
 
          const {
@@ -77,7 +80,8 @@ export class ClientNotFoundService {
             ...rideDataUpdated,
          })
       } catch (error) {
-         throw error
+         // throw error
+         throw new HttpException(error.message, error.status)
       }
    }
 }

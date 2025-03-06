@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { PrismaService } from 'src/prisma/prisma.service'
 
@@ -35,7 +35,9 @@ export class GetRideInvoiceService {
             hasMore: page * pageSize < totalCount,
             totalCount,
          }
-      } catch (error) {}
+      } catch (error) {
+         throw new NotFoundException('No rides found')
+      }
    }
 
    async getClientInvoices(
@@ -74,6 +76,8 @@ export class GetRideInvoiceService {
             hasMore: page * pageSize < totalCount,
             totalCount,
          }
-      } catch (error) {}
+      } catch (error) {
+         throw new NotFoundException('No rides found')
+      }
    }
 }
