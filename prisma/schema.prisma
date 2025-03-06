@@ -99,7 +99,7 @@ enum RideStatus {
 
 enum RequestFor {
   RIDE
-  FOOT
+  FOOD
   MART
   EXPRESS
 }
