@@ -27,9 +27,11 @@ import { CheckRideService } from './check-ride.service'
 import { AssignRideToDriverService } from './assign-ride-to-driver.service'
 import { ReviewRideService } from './review-ride.service'
 import { DeleteRideService } from './delete-ride.service'
+import { NotificationModule } from 'src/notification/notification.module'
+import { NotificationService } from 'src/notification/notification.service'
 
 @Module({
-   imports: [GatewayModule],
+   imports: [GatewayModule, NotificationModule],
    controllers: [RideController, RideInvoiceController],
    providers: [
       RedisService,
@@ -61,7 +63,9 @@ import { DeleteRideService } from './delete-ride.service'
       AssignRideToDriverService,
       ReviewRideService,
 
-      DeleteRideService
+      DeleteRideService,
+
+      NotificationService,
    ],
 })
 export class RideModule {}
