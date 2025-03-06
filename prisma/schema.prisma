@@ -57,6 +57,7 @@ enum UserRole {
   CLIENT
   DRIVER
   ADMIN
+  SELLER
 }
 
 enum PaymentMethodType {
@@ -100,6 +101,12 @@ model Profile {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  orders        Order[]
+  products      Product[] // for seller
+  review        Review[]
+  cart          Cart?
+  stripeAccount StripeAccount?
 }
 
 model ClientProfile {
@@ -111,9 +118,9 @@ model ClientProfile {
   ride           Ride[]          @relation("ClientRide")
   accountBalance AccountBalance? @relation("ClientAccountBalance")
 
-  status         ProfileStatus   @default(ACTIVE)
-  completeRide   Int             @default(0)
-  cancelledRide  Int             @default(0)
+  status        ProfileStatus @default(ACTIVE)
+  completeRide  Int           @default(0)
+  cancelledRide Int           @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -229,7 +236,7 @@ model RideInvoice {
   endTime             Float?
 
   createdAt String?
-  updatedAt  String?
+  updatedAt String?
 }
 
 model Ride {
@@ -259,15 +266,176 @@ model Ride {
   endTime           Float?
 
   createdAt DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 }
 
 model Home {
-  homeId       String @id @default(uuid())
-  name         String @default("Home")
-  phoneNumber  String?
-  latitude     Float
-  longitude    Float
-  motoCount    Int    @default(0)
-  carCount     Int    @default(0)
+  homeId      String  @id @default(uuid())
+  name        String  @default("Home")
+  phoneNumber String?
+  latitude    Float
+  longitude   Float
+  motoCount   Int     @default(0)
+  carCount    Int     @default(0)
+}
+
+// MART && FOOD SECTION
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  description String
+  price       Decimal
+  inventory   Int         @default(0)
+  images      Image[]
+  reviews     Review[]
+  orderItems  OrderItem[]
+  cartItems   CartItem[]
+  categoryId  String
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  sellerId    String
+  seller      Profile     @relation(fields: [sellerId], references: [sub])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Image {
+  id        String   @id @default(uuid())
+  url       String
+  alt       String?
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  isMain    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id         String      @id @default(uuid())
+  userId     String
+  user       Profile     @relation(fields: [userId], references: [sub])
+  status     OrderStatus @default(PENDING)
+  totalPrice Decimal
+  items      OrderItem[]
+  payment    Payment?
+  shipping   Shipping?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model OrderItem {
+  id              String   @id @default(uuid())
+  quantity        Int
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id])
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id])
+  priceAtPurchase Decimal
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  status          PaymentStatus @default(PENDING)
+  orderId         String        @unique
+  order           Order         @relation(fields: [orderId], references: [id])
+  paymentIntentId String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Shipping {
+  id                String    @id @default(uuid())
+  orderId           String    @unique
+  order             Order     @relation(fields: [orderId], references: [id])
+  trackingNumber    String?
+  carrier           String?
+  estimatedDelivery DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  user      Profile  @relation(fields: [userId], references: [sub])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  user      Profile    @relation(fields: [userId], references: [sub])
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String  @id @default(uuid())
+  quantity  Int
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  cartId    String
+  cart      Cart    @relation(fields: [cartId], references: [id])
+
+  @@unique([productId, cartId])
+}
+
+model StripeAccount {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            Profile  @relation(fields: [userId], references: [sub])
+  stripeAccountId String   @unique
+  payoutEnabled   Boolean  @default(false)
+  payouts         Payout[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Payout {
+  id              String        @id @default(uuid())
+  stripeAccountId String
+  stripeAccount   StripeAccount @relation(fields: [stripeAccountId], references: [id])
+  amount          Decimal
+  status          PaymentStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  entityType  String // "Order", "Payment", etc.
+  entityId    String // ID of the affected entity
+  action      String // "STATUS_CHANGE", "CREATE", "UPDATE", etc.
+  oldValue    String? // JSON stringified old state
+  newValue    String? // JSON stringified new state
+  performedBy String? // User ID who performed the action
+  createdAt   DateTime @default(now())
 }
