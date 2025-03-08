@@ -44,6 +44,17 @@ async function bootstrap() {
         .build();
 
     const document = SwaggerModule.createDocument(app, config);
+
+    // Add this: Create endpoint for downloading API docs
+    app.getHttpAdapter().get('/api/docs', (req, res) => {
+        res.header('Content-Type', 'application/json');
+        res.header('Content-Disposition', 'attachment; filename=api-docs.json');
+        res.send(JSON.stringify(document, null, 2));
+    });
+
+    // Optional: Save to file during startup
+    // fs.writeFileSync('./api-docs.json', JSON.stringify(document, null, 2));
+
     SwaggerModule.setup('api', app, document);
 
     await app.listen(process.env.PORT ?? 3000)
