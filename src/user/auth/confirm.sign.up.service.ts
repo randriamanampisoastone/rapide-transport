@@ -85,20 +85,20 @@ export class ConfirmSignUpService {
             let profile, token
             switch (signUpDto.role) {
                case UserRole.CLIENT:
-                  profile = await this.createClientProfile(signUpDto)
+                  profile = await this.createProfile(signUpDto, UserRole.CLIENT)
                   await this.redisService.setClientToNew(profile.sub)
                   token = this.generateToken(profile, this.JWT_SECRET_CLIENT)
                   break
                case UserRole.DRIVER:
-                  profile = await this.createDriverProfile(signUpDto)
+                  profile = await this.createProfile(signUpDto, UserRole.DRIVER)
                   token = this.generateToken(profile, this.JWT_SECRET_DRIVER)
                   break
                case UserRole.ADMIN:
-                  profile = await this.createAdminProfile(signUpDto)
+                  profile = await this.createProfile(signUpDto, UserRole.ADMIN)
                   token = this.generateToken(profile, this.JWT_SECRET_ADMIN)
                   break
                case UserRole.SELLER:
-                  profile = await this.createAdminProfile(signUpDto)
+                  profile = await this.createProfile(signUpDto, UserRole.SELLER)
                   token = this.generateToken(profile, this.JWT_SECRET_SELLER)
                   break
                default:
@@ -121,9 +121,9 @@ export class ConfirmSignUpService {
             )
          }
 
-   async createClientProfile(signUpDto: SignUpDto) {
-      return await this.prismaService.$transaction(async (prisma) => {
-         const authProfile = await this.prismaService.profile.create({
+   private async createProfile(signUpDto: SignUpDto, role: UserRole) {
+      return this.prismaService.$transaction(async (prisma) => {
+         const authProfile = await prisma.profile.create({
             data: {
                phoneNumber: signUpDto.phoneNumber,
                email: signUpDto.email,
@@ -131,88 +131,46 @@ export class ConfirmSignUpService {
                lastName: signUpDto.lastName,
                gender: signUpDto.gender,
                birthday: signUpDto.birthday,
-               role: UserRole.CLIENT,
+               role: role,
                profilePhoto: signUpDto.profilePhoto,
             },
          })
 
-         const clientProfile = await prisma.clientProfile.create({
-            data: {
-               clientProfileId: authProfile.sub,
-            },
-         })
-         await prisma.accountBalance.create({
-            data: {
-               clientProfileId: clientProfile.clientProfileId,
-            },
-         })
+         let profileData;
+         switch (role) {
+            case UserRole.CLIENT:
+               const clientProfile = await prisma.clientProfile.create({
+                  data: {clientProfileId: authProfile.sub},
+               })
+               await prisma.accountBalance.create({
+                  data: {clientProfileId: clientProfile.clientProfileId},
+               })
+               profileData = clientProfile;
+               break;
+
+            case UserRole.DRIVER:
+               const driverProfile = await prisma.driverProfile.create({
+                  data: {driverProfileId: authProfile.sub},
+               })
+               await prisma.accountBalance.create({
+                  data: {driverProfileId: driverProfile.driverProfileId},
+               })
+               profileData = driverProfile;
+               break;
+
+            case UserRole.ADMIN:
+               const adminProfile = await prisma.adminProfile.create({
+                  data: {adminProfileId: authProfile.sub},
+               })
+               profileData = adminProfile;
+               break;
+         }
 
          return {
-            sub: clientProfile.clientProfileId,
+            sub: profileData[`${role.toLowerCase()}ProfileId`],
             role: authProfile.role,
-            status: clientProfile.status,
+            status: profileData.status,
          }
-      })
-   }
-   async createDriverProfile(signUpDto: SignUpDto) {
-      return await this.prismaService.$transaction(async (prisma) => {
-         const authProfile = await this.prismaService.profile.create({
-            data: {
-               phoneNumber: signUpDto.phoneNumber,
-               email: signUpDto.email,
-               firstName: signUpDto.firstName,
-               lastName: signUpDto.lastName,
-               gender: signUpDto.gender,
-               birthday: signUpDto.birthday,
-               role: UserRole.DRIVER,
-               profilePhoto: signUpDto.profilePhoto,
-            },
-         })
-
-         const driverProfile = await prisma.driverProfile.create({
-            data: {
-               driverProfileId: authProfile.sub,
-            },
-         })
-         await prisma.accountBalance.create({
-            data: {
-               driverProfileId: driverProfile.driverProfileId,
-            },
-         })
-
-         return {
-            sub: driverProfile.driverProfileId,
-            role: authProfile.role,
-            status: driverProfile.status,
-         }
-      })
-   }
-   async createAdminProfile(signUpDto: SignUpDto) {
-      return await this.prismaService.$transaction(async (prisma) => {
-         const authProfile = await this.prismaService.profile.create({
-            data: {
-               phoneNumber: signUpDto.phoneNumber,
-               email: signUpDto.email,
-               firstName: signUpDto.firstName,
-               lastName: signUpDto.lastName,
-               gender: signUpDto.gender,
-               birthday: signUpDto.birthday,
-               role: UserRole.ADMIN,
-               profilePhoto: signUpDto.profilePhoto,
-            },
-         })
-
-         const adminProfile = await prisma.adminProfile.create({
-            data: {
-               adminProfileId: authProfile.sub,
-            },
-         })
-
-         return {
-            sub: adminProfile.adminProfileId,
-            role: authProfile.role,
-            status: adminProfile.status,
-         }
-      })
+      });
    }
 }
