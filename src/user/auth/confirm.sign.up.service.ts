@@ -15,46 +15,58 @@ import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export class ConfirmSignUpService {
-   private JWT_SECRET_CLIENT = ''
-   private JWT_SECRET_DRIVER = ''
-   private JWT_SECRET_ADMIN = ''
-   private JWT_EXPIRES_IN = ''
+   private readonly JWT_SECRET_CLIENT = this.configService.get<string>('JWT_SECRET_CLIENT')
+   private readonly JWT_SECRET_DRIVER = this.configService.get<string>('JWT_SECRET_DRIVER')
+   private readonly JWT_SECRET_ADMIN = this.configService.get<string>('JWT_SECRET_ADMIN')
+   private readonly JWT_SECRET_SELLER = this.configService.get<string>('JWT_SECRET_SELLER')
+   private readonly JWT_EXPIRES_IN = this.configService.get<string>('JWT_EXPIRES_IN')
 
    constructor(
       private readonly redisService: RedisService,
       private readonly prismaService: PrismaService,
       private readonly configService: ConfigService,
    ) {
-      this.JWT_SECRET_CLIENT =
-         this.configService.get<string>('JWT_SECRET_CLIENT')
-      this.JWT_SECRET_DRIVER =
-         this.configService.get<string>('JWT_SECRET_DRIVER')
-      this.JWT_SECRET_ADMIN = this.configService.get<string>('JWT_SECRET_ADMIN')
-      this.JWT_EXPIRES_IN = this.configService.get<string>('JWT_EXPIRES_IN')
    }
 
    async confirmSignUp(confirmSignUpDto: ConfirmDto) {
-      try {
-         const signUpDtoString = await this.redisService.get(
-            `${AUTH_SIGN_UP_PREFIX + confirmSignUpDto.phoneNumber}`,
-         )
+            try {
+               const signUpDtoString = await this.redisService.get(
+                  `${AUTH_SIGN_UP_PREFIX + confirmSignUpDto.phoneNumber}`,
+               )
 
-         if (!signUpDtoString) {
-            throw new NotFoundException('Timeout expired')
+               if (!signUpDtoString) {
+                  throw new NotFoundException('Timeout expired')
+               }
+
+               const signUpDto = JSON.parse(signUpDtoString)
+               if (signUpDto.attempt >= 5) {
+                  await this.redisService.remove(
+                     `${AUTH_SIGN_UP_PREFIX + confirmSignUpDto.phoneNumber}`,
+                  )
+                  throw new RequestTimeoutException(
+                     'You have reached the maximum number of attempts',
+                  )
+               }
+               if (signUpDto.confirmationCode !== confirmSignUpDto.confirmationCode) {
+                  await this.incrementAttempt(signUpDto, confirmSignUpDto.phoneNumber)
+                  throw new BadRequestException('Confirmation code is incorrect')
+               }
+               await this.redisService.remove(
+                  `${AUTH_SIGN_UP_PREFIX + confirmSignUpDto.phoneNumber}`,
+               )
+
+               const { confirmationCode, attempt, ...restSignUpDto } = signUpDto
+
+               const token = await this.createProfileAndGenerateToken(restSignUpDto)
+               return { token }
+            } catch (error) {
+               throw error
+            }
          }
 
-         const signUpDto = JSON.parse(signUpDtoString)
-         if (signUpDto.attempt >= 5) {
-            await this.redisService.remove(
-               `${AUTH_SIGN_UP_PREFIX + confirmSignUpDto.phoneNumber}`,
-            )
-            throw new RequestTimeoutException(
-               'You have reached the maximum number of attempts',
-            )
-         }
-         if (signUpDto.confirmationCode !== confirmSignUpDto.confirmationCode) {
+         private async incrementAttempt(signUpDto: any, phoneNumber: string) {
             const ttl = await this.redisService.ttl(
-               `${AUTH_SIGN_UP_PREFIX + confirmSignUpDto.phoneNumber}`,
+               `${AUTH_SIGN_UP_PREFIX + phoneNumber}`,
             )
             const updateSignUpDto = {
                ...signUpDto,
@@ -62,72 +74,52 @@ export class ConfirmSignUpService {
             }
             if (ttl > 0) {
                await this.redisService.set(
-                  `${AUTH_SIGN_UP_PREFIX + confirmSignUpDto.phoneNumber}`,
+                  `${AUTH_SIGN_UP_PREFIX + phoneNumber}`,
                   JSON.stringify(updateSignUpDto),
                   ttl,
                )
             }
-            throw new BadRequestException('Confirmation code is incorrect')
          }
-         await this.redisService.remove(
-            `${AUTH_SIGN_UP_PREFIX + confirmSignUpDto.phoneNumber}`,
-         )
 
-         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-         const { confirmationCode, attempt, ...restSignUpDto } = signUpDto
-
-         if (restSignUpDto.role === UserRole.CLIENT) {
-            const clientProfile = await this.createClientProfile(restSignUpDto)
-
-            await this.redisService.setClientToNew(clientProfile.sub)
-            const token = jwt.sign(
-               {
-                  role: clientProfile.role,
-                  status: clientProfile.status,
-                  sub: clientProfile.sub,
-               },
-               this.JWT_SECRET_CLIENT,
-               {
-                  expiresIn: this.JWT_EXPIRES_IN,
-               },
-            )
-
-            return { token }
-         } else if (restSignUpDto.role === UserRole.DRIVER) {
-            const driverProfile = await this.createDriverProfile(restSignUpDto)
-            const token = jwt.sign(
-               {
-                  role: driverProfile.role,
-                  status: driverProfile.status,
-                  sub: driverProfile.sub,
-               },
-               this.JWT_SECRET_DRIVER,
-               {
-                  expiresIn: this.JWT_EXPIRES_IN,
-               },
-            )
-
-            return { token }
-         } else if (restSignUpDto.role === UserRole.ADMIN) {
-            const adminProfile = await this.createAdminProfile(restSignUpDto)
-            const token = jwt.sign(
-               {
-                  role: adminProfile.role,
-                  status: adminProfile.status,
-                  sub: adminProfile.sub,
-               },
-               this.JWT_SECRET_ADMIN,
-               {
-                  expiresIn: this.JWT_EXPIRES_IN,
-               },
-            )
-
-            return { token }
+         private async createProfileAndGenerateToken(signUpDto: SignUpDto) {
+            let profile, token
+            switch (signUpDto.role) {
+               case UserRole.CLIENT:
+                  profile = await this.createClientProfile(signUpDto)
+                  await this.redisService.setClientToNew(profile.sub)
+                  token = this.generateToken(profile, this.JWT_SECRET_CLIENT)
+                  break
+               case UserRole.DRIVER:
+                  profile = await this.createDriverProfile(signUpDto)
+                  token = this.generateToken(profile, this.JWT_SECRET_DRIVER)
+                  break
+               case UserRole.ADMIN:
+                  profile = await this.createAdminProfile(signUpDto)
+                  token = this.generateToken(profile, this.JWT_SECRET_ADMIN)
+                  break
+               case UserRole.SELLER:
+                  profile = await this.createAdminProfile(signUpDto)
+                  token = this.generateToken(profile, this.JWT_SECRET_SELLER)
+                  break
+               default:
+                  throw new BadRequestException('Invalid user role')
+            }
+            return token
          }
-      } catch (error) {
-         throw error
-      }
-   }
+
+         private generateToken(profile: any, secret: string) {
+            return jwt.sign(
+               {
+                  role: profile.role,
+                  status: profile.status,
+                  sub: profile.sub,
+               },
+               secret,
+               {
+                  expiresIn: this.JWT_EXPIRES_IN,
+               },
+            )
+         }
 
    async createClientProfile(signUpDto: SignUpDto) {
       return await this.prismaService.$transaction(async (prisma) => {
