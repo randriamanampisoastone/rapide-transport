@@ -45,6 +45,16 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Mirgation
+
+```bash
+# generate migration
+$ npx prisma migrate dev 
+
+# migrate the generated mirgation
+$ npx prisma migrate deploy 
+```
+
 ## Run tests
 
 ```bash
