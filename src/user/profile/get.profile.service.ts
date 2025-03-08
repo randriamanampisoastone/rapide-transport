@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common'
-import { PrismaService } from 'src/prisma/prisma.service'
-import { RedisService } from 'src/redis/redis.service'
+import {Injectable} from '@nestjs/common'
+import {PrismaService} from 'src/prisma/prisma.service'
+import {RedisService} from 'src/redis/redis.service'
 
 @Injectable()
 export class GetProfileService {
@@ -138,8 +138,8 @@ export class GetProfileService {
 
    async getFullClientProfile(clientProfileId: string) {
       try {
-         const clientProfile = await this.prismaService.profile.findUnique({
-            where: { sub: clientProfileId },
+         return await this.prismaService.profile.findUnique({
+            where: {sub: clientProfileId},
             include: {
                clientProfile: {
                   include: {
@@ -151,7 +151,6 @@ export class GetProfileService {
                },
             },
          })
-         return clientProfile
       } catch (error) {
          throw error
       }
@@ -311,16 +310,14 @@ export class GetProfileService {
          const condition = driverProfileIds.length
             ? { driverProfileId: { in: driverProfileIds } }
             : {}
-         const driverProfiles = await this.prismaService.driverProfile.findMany(
-            {
-               where: condition,
-               include: {
-                  profile: true,
-               },
-            },
+         return await this.prismaService.driverProfile.findMany(
+             {
+                where: condition,
+                include: {
+                   profile: true,
+                },
+             },
          )
-
-         return driverProfiles
       } catch (error) {
          throw error
       }
@@ -451,8 +448,8 @@ export class GetProfileService {
    }
    async getFullDriverProfile(driverProfileId: string) {
       try {
-         const clientProfile = await this.prismaService.profile.findUnique({
-            where: { sub: driverProfileId },
+         return await this.prismaService.profile.findUnique({
+            where: {sub: driverProfileId},
             include: {
                driverProfile: {
                   include: {
@@ -464,7 +461,6 @@ export class GetProfileService {
                },
             },
          })
-         return clientProfile
       } catch (error) {
          throw error
       }

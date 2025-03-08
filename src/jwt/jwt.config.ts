@@ -30,3 +30,13 @@ export const jwtAdminConfig: JwtModuleAsyncOptions = {
    }),
    inject: [ConfigService],
 }
+
+export const jwtSellerConfig: JwtModuleAsyncOptions = {
+   useFactory: async (configService: ConfigService) => ({
+      secret: configService.get<string>('JWT_SECRET_SELLER'),
+      signOptions: {
+         expiresIn: configService.get<string>('JWT_EXPIRES_IN'),
+      },
+   }),
+   inject: [ConfigService],
+}

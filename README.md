@@ -32,6 +32,10 @@
 $ npm install
 ```
 
+## Env management
+- Copy the `.env.example` file and rename it to `.env`
+- Update the `.env` file with your own environment variables
+
 ## Compile and run the project
 
 ```bash

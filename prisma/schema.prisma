@@ -294,31 +294,47 @@ enum PaymentStatus {
   FAILED
 }
 
+enum CategoryFor {
+  MART
+  FOOD
+}
+
 model Category {
-  id          String    @id @default(uuid())
-  name        String    @unique
+  id          String            @id @default(uuid())
+  name        String            @unique
   description String?
-  products    Product[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  for         CategoryFor
+  icon        String
+  products    ProductCategory[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 }
 
 model Product {
-  id          String      @id @default(uuid())
+  id          String            @id @default(uuid())
   name        String
   description String
   price       Decimal
-  inventory   Int         @default(0)
+  inventory   Int               @default(0)
   images      Image[]
   reviews     Review[]
   orderItems  OrderItem[]
   cartItems   CartItem[]
-  categoryId  String
-  category    Category?   @relation(fields: [categoryId], references: [id])
+  categories  ProductCategory[]
   sellerId    String
-  seller      Profile     @relation(fields: [sellerId], references: [sub])
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  seller      Profile           @relation(fields: [sellerId], references: [sub])
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+// Join table for many-to-many relationship
+model ProductCategory {
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  String
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+
+  @@id([productId, categoryId])
 }
 
 model Image {
