@@ -21,6 +21,8 @@ import { ShippingModule } from './shop/shipping/shipping.module';
 import { ReviewsModule } from './shop/reviews/reviews.module';
 import { CartModule } from './shop/cart/cart.module';
 import { StripeModule } from './shop/stripe/stripe.module';
+import {APP_GUARD} from "@nestjs/core";
+import {JwtAuthGuard} from "./auth/jwt-auth.guard";
 
 @Module({
    imports: [
@@ -62,6 +64,11 @@ import { StripeModule } from './shop/stripe/stripe.module';
       StripeModule
    ],
    controllers: [AppController],
-   providers: [],
+   providers: [
+      {
+         provide: APP_GUARD,
+         useClass: JwtAuthGuard,
+      }
+   ],
 })
 export class AppModule {}
