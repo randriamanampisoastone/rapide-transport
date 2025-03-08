@@ -13,6 +13,14 @@ import { HistoricalModule } from './historical/historical.module'
 import { TaskPlanModule } from './taskPlan/task.plan.module'
 import { HomeModule } from './home/home.module'
 import { RideStatisticModule } from './ride-statistic/ride-statistic.module'
+import { ProductsModule } from './shop/products/products.module';
+import { CategoriesModule } from './shop/categories/categories.module';
+import { OrdersModule } from './shop/orders/orders.module';
+import { PaymentsModule } from './shop/payments/payments.module';
+import { ShippingModule } from './shop/shipping/shipping.module';
+import { ReviewsModule } from './shop/reviews/reviews.module';
+import { CartModule } from './shop/cart/cart.module';
+import { StripeModule } from './shop/stripe/stripe.module';
 
 @Module({
    imports: [
@@ -44,6 +52,14 @@ import { RideStatisticModule } from './ride-statistic/ride-statistic.module'
       TaskPlanModule,
       HomeModule,
       RideStatisticModule,
+      ProductsModule,
+      CategoriesModule,
+      OrdersModule,
+      PaymentsModule,
+      ShippingModule,
+      ReviewsModule,
+      CartModule,
+      StripeModule
    ],
    controllers: [AppController],
    providers: [],
