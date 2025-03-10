@@ -14,6 +14,7 @@ import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { AnswerClientRequestDto } from './dto/answer-client-request.dto'
 import { FindClientRequestService } from './find-client-request.service'
+import { RequestFor } from '@prisma/client'
 
 @Controller('/client-request')
 export class ClientRequestController {
@@ -55,10 +56,12 @@ export class ClientRequestController {
    @SetMetadata('allowedRole', ['ADMIN'])
    @UseGuards(RolesGuard)
    async getAllCientRequest(
+      @Query('requestFor') requestFor: RequestFor,
       @Query('page') page: number,
       @Query('pageSize') pageSize: number,
    ) {
       return await this.findClientRequestService.getAllCientRequest(
+         requestFor,
          page || 1,
          pageSize || 10,
       )

@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common'
+import { RequestFor } from '@prisma/client'
 import { PrismaService } from 'src/prisma/prisma.service'
 
 @Injectable()
 export class FindClientRequestService {
    constructor(private readonly prismaService: PrismaService) {}
 
-   async getAllCientRequest(page: number, pageSize: number) {
+   async getAllCientRequest(requestFor: RequestFor, page: number, pageSize: number) {
       try {
          const [clientRequests, totalCount] = await Promise.all([
             await this.prismaService.clientRequest.findMany({
-               where: { responseFor: null },
+               where: { responseFor: null, requestFor },
                include: { clientProfile: { include: { profile: true } } },
                orderBy: { createdAt: 'desc' },
                skip: (page - 1) * pageSize,
