@@ -1,17 +1,12 @@
-import {
-   BadRequestException,
-   Injectable,
-   NotFoundException,
-   RequestTimeoutException,
-} from '@nestjs/common'
-import { RedisService } from 'src/redis/redis.service'
-import { AUTH_SIGN_UP_PREFIX } from 'constants/redis.constant'
+import {BadRequestException, Injectable, NotFoundException, RequestTimeoutException,} from '@nestjs/common'
+import {RedisService} from 'src/redis/redis.service'
+import {AUTH_SIGN_UP_PREFIX} from 'constants/redis.constant'
 import * as jwt from 'jsonwebtoken'
-import { PrismaService } from 'src/prisma/prisma.service'
-import { SignUpDto } from './dto/sign.up.dto'
-import { UserRole } from 'enums/profile.enum'
-import { ConfirmDto } from './dto/confirm.dto'
-import { ConfigService } from '@nestjs/config'
+import {PrismaService} from 'src/prisma/prisma.service'
+import {SignUpDto} from './dto/sign.up.dto'
+import {UserRole} from 'enums/profile.enum'
+import {ConfirmDto} from './dto/confirm.dto'
+import {ConfigService} from '@nestjs/config'
 
 @Injectable()
 export class ConfirmSignUpService {
@@ -111,7 +106,7 @@ export class ConfirmSignUpService {
             return jwt.sign(
                {
                   role: profile.role,
-                  status: profile.status,
+                  status: profile.status ?? 'ACTIVE',
                   sub: profile.sub,
                },
                secret,
@@ -135,6 +130,10 @@ export class ConfirmSignUpService {
                profilePhoto: signUpDto.profilePhoto,
             },
          })
+
+         if(role === UserRole.SELLER){
+            return authProfile;
+         }
 
          let profileData;
          switch (role) {
@@ -164,6 +163,7 @@ export class ConfirmSignUpService {
                })
                profileData = adminProfile;
                break;
+
          }
 
          return {

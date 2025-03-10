@@ -11,7 +11,7 @@ export class SignInDto {
 
    @IsEnum(UserRole, {
       message:
-         'User Role must be one of the following values: CLIENT, DRIVER, ADMIN, MANAGER',
+         'User Role must be one of the following values: CLIENT, DRIVER, ADMIN, SELLER',
    })
    role: string
 }
