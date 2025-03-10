@@ -87,6 +87,7 @@ export class ConfirmSignInService {
       const profileMap = {
          [UserRole.CLIENT]: { secret: this.JWT_SECRET_CLIENT, profile: profile.clientProfile },
          [UserRole.DRIVER]: { secret: this.JWT_SECRET_DRIVER, profile: profile.driverProfile },
+         [UserRole.SELLER]: { secret: this.JWT_SECRET_SELLER, profile: profile },
          [UserRole.ADMIN]: { secret: this.JWT_SECRET_ADMIN, profile: profile.adminProfile }
       }
 
@@ -98,7 +99,7 @@ export class ConfirmSignInService {
       const updateProfile = {
          sub: profile.sub,
          role: profile.role,
-         status: roleConfig.profile.status
+         status: roleConfig.profile.status ?? 'ACTIVE'
       }
 
       const token = jwt.sign(updateProfile, roleConfig.secret, {
