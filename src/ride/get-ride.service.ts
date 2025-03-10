@@ -26,7 +26,7 @@ export class GetRideService {
       try {
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
          if (!ride) {
-            throw new Error('Ride not found')
+            throw new Error('RideNotFound')
          }
          const rideData: RideData = JSON.parse(ride)
          return rideData

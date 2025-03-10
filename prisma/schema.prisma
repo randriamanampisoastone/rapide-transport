@@ -251,6 +251,8 @@ model RideInvoice {
   review              String?
   startTime           Float?
   endTime             Float?
+  clientExpoToken   String?
+  driverExpoToken   String?
 
   createdAt String?
   updatedAt  String?
@@ -281,6 +283,8 @@ model Ride {
   review            String?
   startTime         Float?
   endTime           Float?
+  clientExpoToken   String?
+  driverExpoToken   String?
 
   createdAt DateTime @default(now())
   updatedAt  DateTime @updatedAt

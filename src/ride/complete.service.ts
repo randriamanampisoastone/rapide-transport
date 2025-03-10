@@ -1,4 +1,10 @@
-import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
+import {
+   BadRequestException,
+   ForbiddenException,
+   Injectable,
+   InternalServerErrorException,
+   NotFoundException,
+} from '@nestjs/common'
 import { EVENT_RIDE_COMPLETED } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
@@ -29,15 +35,16 @@ export class CompleteService {
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
 
          if (!ride) {
-            // throw new Error('Ride not found')
-            throw new NotFoundException('Ride not found')
+            throw new NotFoundException('RideNotFound')
          }
 
          const rideData: RideData = JSON.parse(ride)
 
          if (rideData.status !== RideStatus.ARRIVED_DESTINATION) {
             // throw new Error('Ride is not in ARRIVED_DESTINATION status')
-            throw new BadRequestException('Ride is not in ARRIVED_DESTINATION status')
+            throw new BadRequestException(
+               'Ride is not in ARRIVED_DESTINATION status',
+            )
          }
          if (rideData.driverProfileId !== driverProfileId) {
             // throw new Error('Driver is not the driver of the ride')
@@ -74,7 +81,7 @@ export class CompleteService {
                completeRide: {
                   increment: 1,
                },
-            }
+            },
          })
 
          await this.driverBalanceService.increaseBalance(
@@ -100,7 +107,7 @@ export class CompleteService {
                estimatedPriceLower: estimatedPrice.lower,
                estimatedPriceUpper: estimatedPrice.upper,
                status: RideStatus.COMPLETED,
-               endTime: updatedRideData.endTime
+               endTime: updatedRideData.endTime,
             },
          })
 

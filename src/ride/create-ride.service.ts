@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
    Injectable,
    InternalServerErrorException,
@@ -28,6 +29,7 @@ export interface CreateRideDto {
    dropOffLocation: LatLng
    vehicleType: VehicleType
    paymentMethodType: PaymentMethodType
+   clientExpoToken: string
 }
 
 @Injectable()
@@ -72,8 +74,9 @@ export class CreateRideService {
 
          return parseRidePostgresDataForRideData(createdRide)
       } catch (error) {
-         // throw error
-         throw new InternalServerErrorException('Error occurred on sending data')
+         throw new InternalServerErrorException(
+            'Error occurred on sending data',
+         )
       }
    }
 
@@ -89,7 +92,7 @@ export class CreateRideService {
          })
 
          if (user.status !== ProfileStatus.ACTIVE) {
-            throw new ForbiddenException('The user is not active')
+            throw new ForbiddenException('UserNotActive')
          }
 
          const rideKeys = await this.redisService.keys(`${RIDE_PREFIX}*`)
@@ -111,7 +114,7 @@ export class CreateRideService {
                   RideStatus.STOPPED,
                   RideStatus.CLIENT_GIVE_UP,
                   RideStatus.CANCELLED,
-                  RideStatus.ADMIN_CANCELLED
+                  RideStatus.ADMIN_CANCELLED,
                ].includes(ride_already_exist.status)
             ) {
                return ride_already_exist
@@ -123,6 +126,7 @@ export class CreateRideService {
          const dropOffLocation = createRideDto.dropOffLocation
          const vehicleType = createRideDto.vehicleType
          const paymentMethodType = createRideDto.paymentMethodType
+         const clientExpoToken = createRideDto.clientExpoToken
 
          const itinerary = await this.redisService.get(
             `${ITINERARY_PREFIX + clientProfileId}`,
@@ -151,6 +155,7 @@ export class CreateRideService {
                estimatedPrice,
                status: RideStatus.FINDING_DRIVER,
                createdAt: new Date().toISOString(),
+               clientExpoToken,
             }
             await this.redisService.remove(
                `${ITINERARY_PREFIX + clientProfileId}`,
@@ -188,12 +193,11 @@ export class CreateRideService {
                estimatedPrice,
                status: RideStatus.FINDING_DRIVER,
                createdAt: new Date().toISOString(),
+               clientExpoToken,
             }
          }
 
          await this.FindDriverService.notifyDrivers(rideData)
-
-         console.log('rideData on create ride ============> ', rideData)
 
          await this.redisService.set(
             `${RIDE_PREFIX + rideData.rideId}`,
@@ -204,7 +208,6 @@ export class CreateRideService {
          const result = await this.sendRideDataBase(rideData)
          return result
       } catch (error) {
-         // console.error('Error creating ride:', error)
          throw new InternalServerErrorException('Error creating ride')
       }
    }

@@ -32,4 +32,6 @@ export interface RideData {
    endTime?: number
    createdAt?: string
    updateAt?: string
+   clientExpoToken?: string
+   driverExpoToken?: string
 }

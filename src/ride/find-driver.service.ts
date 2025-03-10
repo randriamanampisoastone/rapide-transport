@@ -1,4 +1,10 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, InternalServerErrorException } from '@nestjs/common'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import {
+   Injectable,
+   OnModuleInit,
+   OnModuleDestroy,
+   InternalServerErrorException,
+} from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Gateway } from 'src/gateway/gateway'
 import { RideData } from 'interfaces/ride.interface'
@@ -9,6 +15,7 @@ import {
    EVENT_DRIVER_AVAILABLE,
    EVENT_INFO_ON_RIDE,
 } from 'constants/event.constant'
+import { NotificationService } from 'src/notification/notification.service'
 
 @Injectable()
 export class FindDriverService implements OnModuleInit, OnModuleDestroy {
@@ -19,6 +26,7 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
       private readonly infoOnRideService: InfoOnRideService,
+      private readonly notificationService: NotificationService,
    ) {}
 
    onModuleInit() {
@@ -63,12 +71,9 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
             ridesAvailable.map((ride) => this.notifyDrivers(ride)),
          )
       } catch (error) {
-         // console.error(
-         //    'Error during scanAndNotifyDrivers:',
-         //    error.message,
-         //    error.stack,
-         // )
-         throw new InternalServerErrorException('An unexpected error occurred while sanning and/or notifying drivers')
+         throw new InternalServerErrorException(
+            'An unexpected error occurred while sanning and/or notifying drivers',
+         )
       }
    }
 
@@ -97,20 +102,23 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
          }
 
          await Promise.all(
-            drivers.map((driver) =>
+            drivers.map(async (driver) => {
                this.gateway.sendNotificationToDriver(
                   driver.driverProfileId,
                   'rideAvailable',
                   ride,
-               ),
-            ),
+               )
+               // await this.notificationService.sendPushNotification(
+               //    driver.driverExpoPushToken,
+               //    'Client waiting a ride !',
+               //    'Ride ID: ' + rideId,
+               // )
+            }),
          )
       } catch (error) {
-         // console.error(
-         //    `Error notifying drivers for ride ID ${ride.rideId}:`,
-         //    error.message,
-         // )
-         throw new InternalServerErrorException('An unexpected error occurred while notifying drivers')
+         throw new InternalServerErrorException(
+            'An unexpected error occurred while notifying drivers',
+         )
       }
    }
 
@@ -139,7 +147,9 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
          this.gateway.sendNotificationToAdmin(EVENT_INFO_ON_RIDE, rideAvailable)
       } catch (error) {
          // throw error
-         throw new InternalServerErrorException('An unexpected error occurred while calculating and sharing ride info')
+         throw new InternalServerErrorException(
+            'An unexpected error occurred while calculating and sharing ride info',
+         )
       }
    }
 }

@@ -57,7 +57,7 @@ export class RideController {
       private readonly assignRideToDriverService: AssignRideToDriverService,
       private readonly reviewRideService: ReviewRideService,
 
-      private readonly deleteRideService: DeleteRideService
+      private readonly deleteRideService: DeleteRideService,
    ) {}
 
    @Post('create-itinerary')
@@ -84,6 +84,7 @@ export class RideController {
          dropOffLocation: LatLng
          vehicleType: VehicleType
          paymentMethodType: PaymentMethodType
+         clientExpoToken: string
       },
       @GetUser('sub') clientProfileId: string,
    ) {

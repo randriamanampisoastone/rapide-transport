@@ -12,17 +12,17 @@ export class NotificationService {
    }
 
    async sendPushNotification(
-      pushToken: string,
+      expoPushToken: string,
       title: string,
       body: string,
       icon?: string,
    ): Promise<any> {
-      if (!pushToken.startsWith('ExponentPushToken')) {
+      if (!expoPushToken.startsWith('ExponentPushToken')) {
          throw new BadRequestException('InvalidExpoPushToken')
       }
 
       const payload = {
-         to: pushToken,
+         to: expoPushToken,
          sound: 'default',
          title,
          body,
