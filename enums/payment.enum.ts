@@ -3,4 +3,5 @@ export enum PaymentMethodType {
    MVOLA = 'MVOLA',
    ORANGE_MONEY = 'ORANGE_MONEY',
    PROMO = 'PROMO',
+   RAPIDE_WALLET = "RAPIDE_WALLET"
 }

@@ -17,13 +17,22 @@ CREATE TYPE "InvoiceStatus" AS ENUM ('PENDING', 'SUCCESS', 'FAILED');
 CREATE TYPE "BalanceStatus" AS ENUM ('ACTIVE', 'PENDING', 'FROZEN', 'INSUFFICIENT', 'CLOSED');
 
 -- CreateEnum
-CREATE TYPE "UserRole" AS ENUM ('CLIENT', 'DRIVER', 'ADMIN');
+CREATE TYPE "UserRole" AS ENUM ('CLIENT', 'DRIVER', 'ADMIN', 'SUPER_ADMIN', 'RIDE_MANAGER', 'FOOD_MANAGER', 'MART_MANAGER', 'EXPRESS_MANAGER', 'DRIVER_MANAGER', 'CUSTOMER_SUPPORT', 'FINANCE_MANAGER', 'PROMOTION_MANAGER', 'FLEET_MANAGER', 'DISPUTE_MANAGER', 'OPERATIONS_MANAGER', 'PARTNER_MANAGER', 'COMPLIANCE_MANAGER', 'TECH_SUPPORT');
 
 -- CreateEnum
-CREATE TYPE "PaymentMethodType" AS ENUM ('CASH', 'MVOLA', 'ORANGE_MONEY', 'PROMO');
+CREATE TYPE "PaymentMethodType" AS ENUM ('CASH', 'MVOLA', 'ORANGE_MONEY', 'PROMO', 'BALANCE');
 
 -- CreateEnum
 CREATE TYPE "RideStatus" AS ENUM ('FINDING_DRIVER', 'CANCELLED', 'DRIVER_ACCEPTED', 'DRIVER_ON_THE_WAY', 'STOPPED', 'DRIVER_ARRIVED', 'CLIENT_NOT_FOUND', 'ON_RIDE', 'CLIENT_GIVE_UP', 'ARRIVED_DESTINATION', 'COMPLETED', 'ADMIN_CHECK', 'ADMIN_CANCELLED');
+
+-- CreateEnum
+CREATE TYPE "RequestFor" AS ENUM ('RIDE', 'FOOD', 'MART', 'EXPRESS');
+
+-- CreateEnum
+CREATE TYPE "PaymentTransactionStatus" AS ENUM ('PENDING', 'SUCCESS', 'FAILED', 'CANCELLED');
+
+-- CreateEnum
+CREATE TYPE "PaymentTransactionType" AS ENUM ('DEPOSIT', 'TRANSFERT', 'RETRAIT', 'PAYMENT');
 
 -- CreateTable
 CREATE TABLE "Profile" (
@@ -87,17 +96,6 @@ CREATE TABLE "Address" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Address_pkey" PRIMARY KEY ("addressId")
-);
-
--- CreateTable
-CREATE TABLE "Transaction" (
-    "transactionId" TEXT NOT NULL,
-    "amount" DOUBLE PRECISION NOT NULL,
-    "transactionType" "TransactionType" NOT NULL DEFAULT 'TRANSFERT',
-    "driverProfileId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "Transaction_pkey" PRIMARY KEY ("transactionId")
 );
 
 -- CreateTable
@@ -197,6 +195,41 @@ CREATE TABLE "Home" (
     CONSTRAINT "Home_pkey" PRIMARY KEY ("homeId")
 );
 
+-- CreateTable
+CREATE TABLE "ClientRequest" (
+    "clientRequestId" TEXT NOT NULL,
+    "clientProfileId" TEXT NOT NULL,
+    "requestFor" "RequestFor" NOT NULL,
+    "responseFor" TEXT,
+    "senderId" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ClientRequest_pkey" PRIMARY KEY ("clientRequestId")
+);
+
+-- CreateTable
+CREATE TABLE "PaymentTransaction" (
+    "paymentTransactionId" TEXT NOT NULL,
+    "reference" SERIAL NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "fees" DOUBLE PRECISION NOT NULL,
+    "return" DOUBLE PRECISION NOT NULL,
+    "paymentMethod" "PaymentMethodType" NOT NULL,
+    "description" TEXT,
+    "paymentTransactionStatus" "PaymentTransactionStatus" NOT NULL,
+    "paymentTransactionType" "PaymentTransactionType" NOT NULL,
+    "from" TEXT NOT NULL,
+    "to" TEXT NOT NULL,
+    "clientProfileId" TEXT,
+    "driverProfileId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PaymentTransaction_pkey" PRIMARY KEY ("paymentTransactionId")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Profile_phoneNumber_key" ON "Profile"("phoneNumber");
 
@@ -209,6 +242,9 @@ CREATE UNIQUE INDEX "AccountBalance_clientProfileId_key" ON "AccountBalance"("cl
 -- CreateIndex
 CREATE UNIQUE INDEX "AccountBalance_driverProfileId_key" ON "AccountBalance"("driverProfileId");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "PaymentTransaction_reference_key" ON "PaymentTransaction"("reference");
+
 -- AddForeignKey
 ALTER TABLE "ClientProfile" ADD CONSTRAINT "ClientProfile_clientProfileId_fkey" FOREIGN KEY ("clientProfileId") REFERENCES "Profile"("sub") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -220,9 +256,6 @@ ALTER TABLE "AdminProfile" ADD CONSTRAINT "AdminProfile_adminProfileId_fkey" FOR
 
 -- AddForeignKey
 ALTER TABLE "Address" ADD CONSTRAINT "Address_clientProfileId_fkey" FOREIGN KEY ("clientProfileId") REFERENCES "ClientProfile"("clientProfileId") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_driverProfileId_fkey" FOREIGN KEY ("driverProfileId") REFERENCES "DriverProfile"("driverProfileId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AccountBalance" ADD CONSTRAINT "AccountBalance_clientProfileId_fkey" FOREIGN KEY ("clientProfileId") REFERENCES "ClientProfile"("clientProfileId") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -241,3 +274,12 @@ ALTER TABLE "Ride" ADD CONSTRAINT "Ride_clientProfileId_fkey" FOREIGN KEY ("clie
 
 -- AddForeignKey
 ALTER TABLE "Ride" ADD CONSTRAINT "Ride_driverProfileId_fkey" FOREIGN KEY ("driverProfileId") REFERENCES "DriverProfile"("driverProfileId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ClientRequest" ADD CONSTRAINT "ClientRequest_clientProfileId_fkey" FOREIGN KEY ("clientProfileId") REFERENCES "ClientProfile"("clientProfileId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PaymentTransaction" ADD CONSTRAINT "PaymentTransaction_clientProfileId_fkey" FOREIGN KEY ("clientProfileId") REFERENCES "ClientProfile"("clientProfileId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PaymentTransaction" ADD CONSTRAINT "PaymentTransaction_driverProfileId_fkey" FOREIGN KEY ("driverProfileId") REFERENCES "DriverProfile"("driverProfileId") ON DELETE SET NULL ON UPDATE CASCADE;

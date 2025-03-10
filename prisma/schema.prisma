@@ -79,6 +79,7 @@ enum PaymentMethodType {
   MVOLA
   ORANGE_MONEY
   PROMO
+  RAPIDE_WALLET
 }
 
 enum RideStatus {
@@ -99,9 +100,23 @@ enum RideStatus {
 
 enum RequestFor {
   RIDE
-  FOOT
+  FOOD
   MART
   EXPRESS
+}
+
+enum PaymentTransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum PaymentTransactionType {
+  DEPOSIT
+  TRANSFERT
+  RETRAIT
+  PAYMENT
 }
 
 model Profile {
@@ -137,7 +152,8 @@ model ClientProfile {
   completeRide   Int             @default(0)
   cancelledRide  Int             @default(0)
 
-  clientRequest  ClientRequest[] @relation("ClientRequest")
+  clientRequest       ClientRequest[] @relation("ClientRequest")
+  paymentTransaction  PaymentTransaction[] @relation("ClientPaymentTransaction")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -150,10 +166,11 @@ model DriverProfile {
   rideInvoice    RideInvoice[]   @relation("DriverRideInvoice")
   ride           Ride[]          @relation("DriverRide")
   accountBalance AccountBalance? @relation("DriverAccountBalance")
-  transaction    Transaction[]   @relation("DriverTransaction")
 
   status       ProfileStatus @default(UNDER_REVIEW)
   completeRide Int           @default(0)
+
+  paymentTransaction PaymentTransaction[] @relation("DriverPaymentTransaction")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -182,16 +199,6 @@ model Address {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-model Transaction {
-  transactionId   String          @id @default(uuid())
-  amount          Float
-  transactionType TransactionType @default(TRANSFERT)
-
-  driverProfileId String
-  driverProfile   DriverProfile @relation("DriverTransaction", fields: [driverProfileId], references: [driverProfileId])
-  createdAt       DateTime      @default(now())
 }
 
 model AccountBalance {
@@ -309,4 +316,28 @@ model ClientRequest {
 
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+}
+
+model PaymentTransaction {
+  paymentTransactionId  String            @id       @default(uuid())
+  reference             Int               @unique   @default(autoincrement())
+  amount                Float
+  fees                  Float // frais
+  return                Float // Famerim-bola
+  paymentMethod         PaymentMethodType
+  description           String?
+
+  paymentTransactionStatus  PaymentTransactionStatus
+  paymentTransactionType    PaymentTransactionType
+
+  from                  String
+  to                    String
+
+  clientProfileId       String?
+  clientProfile         ClientProfile?     @relation("ClientPaymentTransaction", fields: [clientProfileId], references: [clientProfileId])
+  driverProfileId       String?
+  driverProfile         DriverProfile?     @relation("DriverPaymentTransaction", fields: [driverProfileId], references: [driverProfileId])
+
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
 }
