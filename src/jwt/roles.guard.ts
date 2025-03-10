@@ -50,6 +50,9 @@ export class RolesGuard implements CanActivate {
             case UserRole.ADMIN:
                secretKey = this.configService.get<string>('JWT_SECRET_ADMIN')
                break
+            case UserRole.SELLER:
+               secretKey = this.configService.get<string>('JWT_SECRET_SELLER')
+               break
             default:
                throw new UnauthorizedException(
                   `Rôle invalide: ${decodedHeader.role}`,
