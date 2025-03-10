@@ -1,4 +1,5 @@
 import {
+   Body,
    Controller,
    Get,
    Patch,
@@ -11,6 +12,12 @@ import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetRapideBalanceService } from './get-rapide-balance.service'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { DriverBalanceService } from './driverBalance.service'
+import { ClientBalanceService } from './client-balance.service'
+import { AmountDto } from './dto/amount.dto'
+import {
+   DecrementClientBalance,
+   IncrementClientAccountBalanceDto,
+} from './dto/client-account-balance.dto'
 
 @Controller('accountBalance')
 export class AccountBalanceController {
@@ -18,6 +25,7 @@ export class AccountBalanceController {
       private readonly resetBalanceService: ResetBalanceServce,
       private readonly getRapideBalanceService: GetRapideBalanceService,
       private readonly driverBalanceService: DriverBalanceService,
+      private readonly clientBalanceService: ClientBalanceService,
    ) {}
 
    @Patch('resetDriverBalance')
@@ -46,5 +54,33 @@ export class AccountBalanceController {
    @UseGuards(RolesGuard)
    async getSold(@GetUser('sub') driverProfileId: string) {
       return await this.driverBalanceService.getSold(driverProfileId)
+   }
+
+   @Patch('incrementClientBalance')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   async incrementClientBalance(
+      @Query('clientProfileId') clientProfileId: string,
+      @Body()
+      incrementClientAccountBalanceDto: IncrementClientAccountBalanceDto,
+   ) {
+      return await this.clientBalanceService.incrementClientBalanceByAdmin(
+         clientProfileId,
+         incrementClientAccountBalanceDto,
+      )
+   }
+
+   @Patch('decrementClientBalance')
+   @SetMetadata('allowedRole', ['ADMIN'])
+   @UseGuards(RolesGuard)
+   async decrementClientBalance(
+      @Query('clientProfileId') clientProfileId: string,
+      @Body()
+      decrementClientAccountBalanceDto: IncrementClientAccountBalanceDto,
+   ) {
+      return await this.clientBalanceService.decrementClientBalanceByAdmin(
+         clientProfileId,
+         decrementClientAccountBalanceDto,
+      )
    }
 }

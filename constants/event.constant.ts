@@ -23,3 +23,5 @@ export const EVENT_CANCELLED_RIDE = 'cancelledRide'
 export const EVENT_RIDE_COMPLETED = 'rideCompleted'
 export const EVENT_ASSIGN_RIDE_TO_DRIVER = 'assignRideToDriver'
 export const EVENT_RIDE_DELETED = 'rideDeleted'
+export const EVENT_SET_CLIENT_BALANCE = "setClientBalance"
+export const EVENT_PAYMENT = "payment"

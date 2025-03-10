@@ -457,7 +457,6 @@ export class GetProfileService {
                driverProfile: {
                   include: {
                      accountBalance: true,
-                     transaction: true,
                      profile: true,
                      rideInvoice: true,
                   },
