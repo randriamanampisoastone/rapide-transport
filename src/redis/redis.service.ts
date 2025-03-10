@@ -82,12 +82,18 @@ export class RedisService implements OnModuleInit {
       driverProfileId: string,
       driverLocation: LatLng,
       vehicleType: VehicleType,
+      driverExpoPushToken: string,
       ttl: number = this.REDIS_GEO_TTL_SECONDS,
    ) {
       try {
          await this.set(
             `${DRIVER_LOCATION_PREFIX + driverProfileId}`,
-            JSON.stringify({ driverProfileId, driverLocation, vehicleType }),
+            JSON.stringify({
+               driverProfileId,
+               driverLocation,
+               vehicleType,
+               driverExpoPushToken,
+            }),
             ttl,
          )
       } catch (error) {
@@ -135,6 +141,7 @@ export class RedisService implements OnModuleInit {
                               distance,
                               driverLocation: data.driverLocation,
                               vehicleType: data.vehicleType,
+                              driverExpoPushToken: data.driverExpoPushToken,
                            })
                         }
                      }
@@ -169,6 +176,7 @@ export class RedisService implements OnModuleInit {
          if (!rides.length) {
             return []
          }
+
          const allRides = await this.mget(rides)
 
          const ridesAvailable: RideData[] = allRides.reduce(

@@ -145,8 +145,6 @@ export class Gateway
    async handleUpdateClientLocation(
       @MessageBody() data: UpdateClientLocationInterface,
    ) {
-      console.log('ICI', data)
-
       await this.locationService.handleUpdateClientLocation(this.server, data)
    }
    @SubscribeMessage(EVENT_SEND_DATA)

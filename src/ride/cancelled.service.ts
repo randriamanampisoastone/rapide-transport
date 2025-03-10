@@ -1,4 +1,10 @@
-import { ForbiddenException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common'
+import {
+   ForbiddenException,
+   HttpException,
+   HttpStatus,
+   Injectable,
+   NotFoundException,
+} from '@nestjs/common'
 import { EVENT_CANCELLED_RIDE } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
@@ -28,8 +34,7 @@ export class CancelledService {
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
 
          if (!ride) {
-            // throw new Error('Ride not found')
-            throw new NotFoundException('Ride not found')
+            throw new NotFoundException('RideNotFound')
          }
 
          const rideData: RideData = JSON.parse(ride)

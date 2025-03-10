@@ -34,8 +34,7 @@ export class StartService {
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
 
          if (!ride) {
-            // throw new Error('Ride not found')
-            throw new NotFoundException('Ride not found')
+            throw new NotFoundException('RideNotFound')
          }
 
          const rideData: RideData = JSON.parse(ride)

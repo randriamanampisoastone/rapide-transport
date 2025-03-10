@@ -6,4 +6,5 @@ export interface DriverLocationRedis {
    driverLocation: LatLng
    distance: number
    vehicleType: VehicleType
+   driverExpoPushToken: string
 }

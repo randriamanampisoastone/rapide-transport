@@ -23,4 +23,5 @@ export interface UpdateDriverLocationInterface {
    vehicleType: VehicleType
    isOnRide: boolean
    clientProfileId?: string
+   driverExpoPushToken?: string
 }

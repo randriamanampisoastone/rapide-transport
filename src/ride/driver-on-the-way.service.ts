@@ -1,4 +1,11 @@
-import { BadRequestException, ForbiddenException, HttpException, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common'
+import {
+   BadRequestException,
+   ForbiddenException,
+   HttpException,
+   Injectable,
+   NotFoundException,
+   OnModuleInit,
+} from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Gateway } from 'src/gateway/gateway'
 import { RideData } from 'interfaces/ride.interface'
@@ -45,15 +52,16 @@ export class DriverOnTheWayService implements OnModuleInit {
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
 
          if (!ride) {
-            // throw new Error('Ride not found')
-            throw new NotFoundException('Ride not found')
+            throw new NotFoundException('RideNotFound')
          }
 
          const rideData: RideData = JSON.parse(ride)
 
          if (rideData.status !== RideStatus.DRIVER_ACCEPTED) {
             // throw new Error('Ride is not in DRIVER_ACCEPTED status')
-            throw new BadRequestException('Ride is not in DRIVER_ACCEPTED status')
+            throw new BadRequestException(
+               'Ride is not in DRIVER_ACCEPTED status',
+            )
          }
          if (rideData.driverProfileId !== driverProfileId) {
             // throw new Error('Driver is not the driver of the ride')

@@ -1,4 +1,10 @@
-import { BadRequestException, ForbiddenException, HttpException, Injectable, NotFoundException } from '@nestjs/common'
+import {
+   BadRequestException,
+   ForbiddenException,
+   HttpException,
+   Injectable,
+   NotFoundException,
+} from '@nestjs/common'
 import { Gateway } from 'src/gateway/gateway'
 import { RideData } from 'interfaces/ride.interface'
 import { RideStatus } from 'enums/ride.enum'
@@ -6,6 +12,7 @@ import { RedisService } from 'src/redis/redis.service'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { EVENT_DRIVER_ARREIVED } from 'constants/event.constant'
+import { NotificationService } from 'src/notification/notification.service'
 
 export interface DriverArrivedDto {
    driverProfileId: string
@@ -18,6 +25,7 @@ export class DriverArrivedService {
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
       private readonly prismaService: PrismaService,
+      private readonly notificationService: NotificationService,
    ) {}
 
    async drivertArrived(driverArrivedDto: DriverArrivedDto) {
@@ -28,15 +36,16 @@ export class DriverArrivedService {
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
 
          if (!ride) {
-            // throw new Error('Ride not found')
-            throw new NotFoundException('Ride not found')
+            throw new NotFoundException('RideNotFound')
          }
 
          const rideData: RideData = JSON.parse(ride)
 
          if (rideData.status !== RideStatus.DRIVER_ON_THE_WAY) {
             // throw new Error('Ride is not in DRIVER_ON_THE_WAY status')
-            throw new BadRequestException('Ride is not in DRIVER_ON_THE_WAY status')
+            throw new BadRequestException(
+               'Ride is not in DRIVER_ON_THE_WAY status',
+            )
          }
          if (rideData.driverProfileId !== driverProfileId) {
             // throw new Error('Driver is not the driver of the ride')
@@ -71,6 +80,12 @@ export class DriverArrivedService {
             },
          })
          const clientProfileId = rideDataUpdated.clientProfileId
+
+         await this.notificationService.sendPushNotification(
+            rideDataUpdated.clientExpoToken,
+            'Driver arrived !',
+            'Your driver has arrived',
+         )
 
          this.gateway.sendNotificationToClient(
             clientProfileId,

@@ -10,7 +10,7 @@ export class UpdateProfileService {
 
    async updateProfile(sub: string, updateProfileDto: UpdateProfileDto) {
       try {
-         await this.prismaService.profile.update({
+         return await this.prismaService.profile.update({
             where: {
                sub: sub,
                role: { in: [UserRole.CLIENT, UserRole.DRIVER] },
@@ -26,7 +26,7 @@ export class UpdateProfileService {
 
    async updateClientStatus(clientProfileId: string, status: ProfileStatus) {
       try {
-         await this.prismaService.clientProfile.update({
+         return await this.prismaService.clientProfile.update({
             where: {
                clientProfileId,
             },
@@ -41,7 +41,7 @@ export class UpdateProfileService {
 
    async updateDriverStatus(driverProfileId: string, status: ProfileStatus) {
       try {
-         await this.prismaService.driverProfile.update({
+         return await this.prismaService.driverProfile.update({
             where: {
                driverProfileId,
             },
