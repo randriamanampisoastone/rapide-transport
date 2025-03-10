@@ -14,29 +14,23 @@ import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export class ConfirmSignInService {
-   private JWT_SECRET_CLIENT = ''
-   private JWT_SECRET_DRIVER = ''
-   private JWT_SECRET_ADMIN = ''
-   private JWT_EXPIRES_IN = ''
+   private readonly JWT_SECRET_CLIENT = this.configService.get<string>('JWT_SECRET_CLIENT')
+   private readonly JWT_SECRET_DRIVER = this.configService.get<string>('JWT_SECRET_DRIVER')
+   private readonly JWT_SECRET_ADMIN = this.configService.get<string>('JWT_SECRET_ADMIN')
+   private readonly JWT_SECRET_SELLER = this.configService.get<string>('JWT_SECRET_SELLER')
+   private readonly JWT_EXPIRES_IN = this.configService.get<string>('JWT_EXPIRES_IN')
 
    constructor(
       private readonly redisService: RedisService,
       private readonly prismaService: PrismaService,
-      private readonly configService: ConfigService,
+      private readonly configService: ConfigService
    ) {
-      this.JWT_SECRET_CLIENT =
-         this.configService.get<string>('JWT_SECRET_CLIENT')
-      this.JWT_SECRET_DRIVER =
-         this.configService.get<string>('JWT_SECRET_DRIVER')
-      this.JWT_SECRET_ADMIN = this.configService.get<string>('JWT_SECRET_ADMIN')
-      this.JWT_EXPIRES_IN = this.configService.get<string>('JWT_EXPIRES_IN')
    }
 
    async confirmSignIn(confirmSignInDto: ConfirmDto) {
       try {
-         const signInDtoString = await this.redisService.get(
-            `${AUTH_SIGN_IN_PREFIX + confirmSignInDto.phoneNumber}`,
-         )
+         const redisKey = `${AUTH_SIGN_IN_PREFIX + confirmSignInDto.phoneNumber}`
+         const signInDtoString = await this.redisService.get(redisKey)
 
          if (!signInDtoString) {
             throw new NotFoundException('Timeout expired')
@@ -44,117 +38,73 @@ export class ConfirmSignInService {
 
          const signInDto = JSON.parse(signInDtoString)
 
-         if (signInDto.attempt >= 5) {
-            await this.redisService.remove(
-               `${AUTH_SIGN_IN_PREFIX + confirmSignInDto.phoneNumber}`,
-            )
-            throw new RequestTimeoutException(
-               'You have reached the maximum number of attempts',
-            )
-         }
-         if (signInDto.confirmationCode !== confirmSignInDto.confirmationCode) {
-            const ttl = await this.redisService.ttl(
-               `${AUTH_SIGN_IN_PREFIX + confirmSignInDto.phoneNumber}`,
-            )
-            const updateSignUpDto = {
-               ...signInDto,
-               attempt: signInDto.attempt + 1,
-            }
-            if (ttl > 0) {
-               await this.redisService.set(
-                  `${AUTH_SIGN_IN_PREFIX + confirmSignInDto.phoneNumber}`,
-                  JSON.stringify(updateSignUpDto),
-                  ttl,
-               )
-            }
-            throw new BadRequestException('Confirmation code is incorrect')
-         }
-
-         await this.redisService.remove(
-            `${AUTH_SIGN_IN_PREFIX + confirmSignInDto.phoneNumber}`,
-         )
+         await this.validateConfirmationAttempts(signInDto, confirmSignInDto, redisKey)
+         await this.redisService.remove(redisKey)
 
          // eslint-disable-next-line @typescript-eslint/no-unused-vars
          const { confirmationCode, attempt, ...restSignInDto } = signInDto
 
-         if (restSignInDto.role === UserRole.CLIENT) {
-            const clientProfile = await this.prismaService.profile.findUnique({
-               where: { phoneNumber: signInDto.phoneNumber },
-               select: {
-                  sub: true,
-                  role: true,
-                  clientProfile: {
-                     select: {
-                        status: true,
-                     },
-                  },
-               },
-            })
-            const updateClientProfile = {
-               sub: clientProfile.sub,
-               role: clientProfile.role,
-               status: clientProfile.clientProfile.status,
-            }
-            const token = jwt.sign(
-               updateClientProfile,
-               this.JWT_SECRET_CLIENT,
-               {
-                  expiresIn: this.JWT_EXPIRES_IN,
-               },
-            )
-            return { token }
-         } else if (restSignInDto.role === UserRole.DRIVER) {
-            const driverProfile = await this.prismaService.profile.findUnique({
-               where: { phoneNumber: signInDto.phoneNumber },
-               select: {
-                  sub: true,
-                  role: true,
-                  driverProfile: {
-                     select: {
-                        status: true,
-                     },
-                  },
-               },
-            })
-            const updateDriverProfile = {
-               sub: driverProfile.sub,
-               role: driverProfile.role,
-               status: driverProfile.driverProfile.status,
-            }
-            const token = jwt.sign(
-               updateDriverProfile,
-               this.JWT_SECRET_DRIVER,
-               {
-                  expiresIn: this.JWT_EXPIRES_IN,
-               },
-            )
-            return { token }
-         } else if (restSignInDto.role === UserRole.ADMIN) {
-            const adminProfile = await this.prismaService.profile.findUnique({
-               where: { phoneNumber: signInDto.phoneNumber },
-               select: {
-                  sub: true,
-                  role: true,
-                  adminProfile: {
-                     select: {
-                        status: true,
-                     },
-                  },
-               },
-            })
-            const updateAdminProfile = {
-               sub: adminProfile.sub,
-               role: adminProfile.role,
-               status: adminProfile.adminProfile.status,
-            }
-            const token = jwt.sign(updateAdminProfile, this.JWT_SECRET_ADMIN, {
-               expiresIn: this.JWT_EXPIRES_IN,
-            })
-            return { token }
-         }
+         return await this.generateToken(restSignInDto, signInDto.phoneNumber)
       } catch (error) {
          console.error(error)
          throw error
       }
+   }
+
+   private async validateConfirmationAttempts(signInDto: any, confirmSignInDto: ConfirmDto, redisKey: string) {
+      if (signInDto.attempt >= 5) {
+         await this.redisService.remove(redisKey)
+         throw new RequestTimeoutException('You have reached the maximum number of attempts')
+      }
+
+      if (signInDto.confirmationCode !== confirmSignInDto.confirmationCode) {
+         const ttl = await this.redisService.ttl(redisKey)
+         if (ttl > 0) {
+            await this.redisService.set(
+               redisKey,
+               JSON.stringify({ ...signInDto, attempt: signInDto.attempt + 1 }),
+               ttl
+            )
+         }
+         throw new BadRequestException('Confirmation code is incorrect')
+      }
+   }
+
+   private async generateToken(restSignInDto: any, phoneNumber: string) {
+      const profileData = {
+         where: { phoneNumber },
+         select: {
+            sub: true,
+            role: true,
+            clientProfile: { select: { status: true } },
+            driverProfile: { select: { status: true } },
+            adminProfile: { select: { status: true } }
+         }
+      }
+
+      const profile = await this.prismaService.profile.findUnique(profileData)
+
+      const profileMap = {
+         [UserRole.CLIENT]: { secret: this.JWT_SECRET_CLIENT, profile: profile.clientProfile },
+         [UserRole.DRIVER]: { secret: this.JWT_SECRET_DRIVER, profile: profile.driverProfile },
+         [UserRole.ADMIN]: { secret: this.JWT_SECRET_ADMIN, profile: profile.adminProfile }
+      }
+
+      const roleConfig = profileMap[restSignInDto.role]
+      if (!roleConfig) {
+         throw new BadRequestException('Invalid user role')
+      }
+
+      const updateProfile = {
+         sub: profile.sub,
+         role: profile.role,
+         status: roleConfig.profile.status
+      }
+
+      const token = jwt.sign(updateProfile, roleConfig.secret, {
+         expiresIn: this.JWT_EXPIRES_IN
+      })
+
+      return { token }
    }
 }
