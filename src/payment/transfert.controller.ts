@@ -1,6 +1,7 @@
 import {
    Body,
    Controller,
+   ForbiddenException,
    Post,
    Query,
    SetMetadata,
@@ -10,25 +11,36 @@ import { TransfertService } from './transfert.service'
 import { InitTransfertDto } from './dto/initTransfert.dto'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
+import { ProfileStatus } from '@prisma/client'
 
 @Controller('transfert')
 export class TransfertController {
    constructor(private readonly transfertService: TransfertService) {}
 
    @Post('init')
-   //    @SetMetadata('allowedRole', ['CLIENT'])
-   //    @UseGuards(RolesGuard)
-   async initTransfert(@Body() initTransfertDto: InitTransfertDto) {
+   @SetMetadata('allowedRole', ['CLIENT'])
+   @UseGuards(RolesGuard)
+   async initTransfert(
+      @Body() initTransfertDto: InitTransfertDto,
+      @GetUser('status') status: ProfileStatus,
+   ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return await this.transfertService.initTransfert(initTransfertDto)
    }
 
    @Post('validate')
-   //    @SetMetadata('allowedRole', ['CLIENT'])
-   //    @UseGuards(RolesGuard)
+   @SetMetadata('allowedRole', ['CLIENT'])
+   @UseGuards(RolesGuard)
    async validationTransfert(
-      @Query('sub') clientProfileId: string,
+      @GetUser('sub') clientProfileId: string,
       @Body('code') code: string,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return await this.transfertService.validationTransfert(
          clientProfileId,
          code,
@@ -36,9 +48,15 @@ export class TransfertController {
    }
 
    @Post('resend-code')
-   //    @SetMetadata('allowedRole', ['CLIENT'])
-   //    @UseGuards(RolesGuard)
-   async resendCode(@Query('sub') clientProfileId: string) {
+   @SetMetadata('allowedRole', ['CLIENT'])
+   @UseGuards(RolesGuard)
+   async resendCode(
+      @GetUser('sub') clientProfileId: string,
+      @GetUser('status') status: ProfileStatus,
+   ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return await this.transfertService.resendCode(clientProfileId)
    }
 }
