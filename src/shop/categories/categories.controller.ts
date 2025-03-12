@@ -1,16 +1,4 @@
-import {
-    Body,
-    Controller,
-    HttpCode,
-    HttpStatus,
-    Patch,
-    Post,
-    Param,
-    SetMetadata,
-    UseGuards,
-    Get,
-    Query
-} from '@nestjs/common';
+import {Body, Controller, Get, HttpStatus, Param, Patch, Post, Query, SetMetadata, UseGuards} from '@nestjs/common';
 import {CategoriesService} from "./categories.service";
 import {AddCategoryDto} from "./dto/add.category.dto";
 import {RolesGuard} from "../../jwt/roles.guard";
@@ -21,7 +9,8 @@ import {
     ERROR_CREATING_CATEGORY,
     ERROR_FETCHING_CATEGORY,
     ERROR_UPDATING_CATEGORY,
-    INVALID_CATEGORY_TYPE_FOR, INVALID_PARAMS
+    INVALID_CATEGORY_TYPE_FOR,
+    INVALID_PARAMS
 } from "../../../constants/response.constant";
 
 
