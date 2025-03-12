@@ -1,14 +1,22 @@
-import { Controller, Get, Query, SetMetadata, UseGuards } from '@nestjs/common'
+import {
+   Controller,
+   ForbiddenException,
+   Get,
+   Query,
+   SetMetadata,
+   UseGuards,
+} from '@nestjs/common'
 import { GetRideInvoiceService } from './get-ride-invoice.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
+import { ProfileStatus } from '@prisma/client'
 
 @Controller('ride-invoice')
 export class RideInvoiceController {
    constructor(private readonly getRideInvoiceService: GetRideInvoiceService) {}
 
    @Get()
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FINANCE_MANAGER'])
    @UseGuards(RolesGuard)
    async getInvoices(
       @Query('page') page: number,
@@ -27,7 +35,11 @@ export class RideInvoiceController {
       @GetUser('sub') clientProfileId: string,
       @Query('page') page: number,
       @Query('pageSize') pageSize: number,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return await this.getRideInvoiceService.getClientInvoices(
          clientProfileId,
          page || 1,

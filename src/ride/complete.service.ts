@@ -5,6 +5,7 @@ import {
    InternalServerErrorException,
    NotFoundException,
 } from '@nestjs/common'
+import { PaymentMethodType } from '@prisma/client'
 import { EVENT_RIDE_COMPLETED } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
@@ -25,7 +26,7 @@ export class CompleteService {
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
       private readonly driverBalanceService: DriverBalanceService,
-      private readonly prismaService: PrismaService,
+      private readonly prismaService: PrismaService
    ) {}
    async complete(completeDto: CompleteDto) {
       try {
@@ -84,10 +85,10 @@ export class CompleteService {
             },
          })
 
-         await this.driverBalanceService.increaseBalance(
-            rideData.driverProfileId,
-            Math.round(rideData.realPrice),
-         )
+         // await this.driverBalanceService.increaseBalance(
+         //    rideData.driverProfileId,
+         //    Math.round(rideData.realPrice),
+         // )
 
          const {
             pickUpLocation,

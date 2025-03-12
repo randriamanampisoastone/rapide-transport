@@ -7,6 +7,7 @@ import {
    UseGuards,
    Delete,
    Patch,
+   ForbiddenException,
 } from '@nestjs/common'
 import { GetProfileService } from './get.profile.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
@@ -15,6 +16,7 @@ import { UpdateProfileService } from './update.profile.service'
 import { DeleteProfileService } from './delete.profile.service'
 import { ProfileStatus } from '@prisma/client'
 import { UpdateProfileDto } from './dto/update.profile.dto'
+import { UserRole } from 'enums/profile.enum'
 
 @Controller('profile')
 export class ProfileController {
@@ -27,27 +29,45 @@ export class ProfileController {
    @SetMetadata('allowedRole', ['CLIENT'])
    @UseGuards(RolesGuard)
    @Get('getClientProfile')
-   async getClientProfile(@GetUser('sub') sub: string) {
+   async getClientProfile(
+      @GetUser('sub') sub: string,
+      @GetUser('status') status: ProfileStatus,
+   ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return await this.getProfileService.getClientProfile(sub)
    }
 
    @SetMetadata('allowedRole', ['DRIVER'])
    @UseGuards(RolesGuard)
    @Get('getDriverProfile')
-   async getDriverProfile(@GetUser('sub') sub: string) {
+   async getDriverProfile(
+      @GetUser('sub') sub: string,
+      @GetUser('status') status: ProfileStatus,
+   ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       console.log('sub', sub)
 
       return await this.getProfileService.getDriverProfile(sub)
    }
 
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
    @UseGuards(RolesGuard)
    @Get('getAdminProfile')
-   async getAdminProfile(@GetUser('sub') sub: string) {
+   async getAdminProfile(
+      @GetUser('sub') sub: string,
+      @GetUser('status') status: ProfileStatus,
+   ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return await this.getProfileService.getAdminProfile(sub)
    }
 
-   @SetMetadata('allowedRole', ['DRIVER', 'ADMIN'])
+   @SetMetadata('allowedRole', ['DRIVER', 'ADMIN', 'SUPER_ADMIN'])
    @UseGuards(RolesGuard)
    @Get('findClientProfile')
    async findClientProfile(
@@ -57,7 +77,12 @@ export class ProfileController {
       return await this.getProfileService.getClientProfile(clientProfileId)
    }
 
-   @SetMetadata('allowedRole', ['CLIENT', 'ADMIN'])
+   @SetMetadata('allowedRole', [
+      'CLIENT',
+      'ADMIN',
+      'SUPER_ADMIN',
+      'DRIVER_MANAGER',
+   ])
    @UseGuards(RolesGuard)
    @Get('findDriverProfile')
    async findDriverProfile(
@@ -68,7 +93,7 @@ export class ProfileController {
    }
 
    @Get('getFullClientProfile')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'CUSTOMER_SUPPORT'])
    @UseGuards(RolesGuard)
    async getFullClientProfile(
       @Query('clientProfileId')
@@ -78,7 +103,7 @@ export class ProfileController {
    }
 
    @Get('getClients')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'CUSTOMER_SUPPORT'])
    @UseGuards(RolesGuard)
    async getClients(
       @Query('page') page: number,
@@ -88,7 +113,7 @@ export class ProfileController {
    }
 
    @Get('searchClientByTerm')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'CUSTOMER_SUPPORT'])
    @UseGuards(RolesGuard)
    async searchClientByTerm(
       @Query('term') term: string,
@@ -103,7 +128,7 @@ export class ProfileController {
    }
 
    @Get('getFullDriverProfile')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'DRIVER_MANAGER'])
    @UseGuards(RolesGuard)
    async getFullDriverProfile(
       @Query('driverProfileId')
@@ -113,7 +138,7 @@ export class ProfileController {
    }
 
    @Get('getDrivers')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'DRIVER_MANAGER'])
    @UseGuards(RolesGuard)
    async getDrivers(
       @Query('page') page: number,
@@ -123,7 +148,7 @@ export class ProfileController {
    }
 
    @Get('searchDriverByTerm')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'DRIVER_MANAGER'])
    @UseGuards(RolesGuard)
    async searchDriverByTerm(
       @Query('term') term: string,
@@ -138,21 +163,21 @@ export class ProfileController {
    }
 
    @Get('getClientByIds')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'CUSTOMER_SUPPORT'])
    @UseGuards(RolesGuard)
    async getClientByIds(@Query('clientProfileIds') clientProfileIds: string[]) {
       return await this.getProfileService.getClientByIds(clientProfileIds)
    }
 
    @Get('getDriverByIds')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'DRIVER_MANAGER'])
    @UseGuards(RolesGuard)
    async getDriverByIds(@Query('driverProfileIds') driverProfileIds: string[]) {
       return await this.getProfileService.getDriverByIds(driverProfileIds)
    }
 
    @Delete('deleteProfile')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
    @UseGuards(RolesGuard)
    async deleteProfile(@Query('sub') sub: string) {
       return await this.deleteProfileService.deleteClientProfile(sub)
@@ -164,7 +189,11 @@ export class ProfileController {
    async updateProfile(
       @GetUser('sub') sub: string,
       @Body() updateProfileDto: UpdateProfileDto,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return await this.updateProfileService.updateProfile(
          sub,
          updateProfileDto,
@@ -172,7 +201,7 @@ export class ProfileController {
    }
 
    @Patch('updateProfileByAdmin')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
    @UseGuards(RolesGuard)
    async updateProfileByAdmin(
       @Query('sub') sub: string,
@@ -185,7 +214,7 @@ export class ProfileController {
    }
 
    @Patch('udpateClientStatus')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
    @UseGuards(RolesGuard)
    async updateClientProfile(
       @Query('clientProfileId') clientProfileId: string,
@@ -198,7 +227,7 @@ export class ProfileController {
    }
 
    @Patch('udpateDriverStatus')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'DRIVER_MANAGER'])
    @UseGuards(RolesGuard)
    async updateDriverProfile(
       @Query('driverProfileId') driverProfileId: string,
@@ -207,6 +236,42 @@ export class ProfileController {
       return await this.updateProfileService.updateDriverStatus(
          driverProfileId,
          status,
+      )
+   }
+
+   @Get('GetAdmins')
+   // @SetMetadata('allowedRole', ['SUPER_ADMIN'])
+   // @UseGuards(RolesGuard)
+   async getAdmins(
+      @Query('page') page: number,
+      @Query('pageSize') pageSize: number,
+   ) {
+      return await this.getProfileService.getAdmins(page || 1, pageSize || 10)
+   }
+
+   @Patch('updateAdminStatus')
+   // @SetMetadata('allowedRole', ['SUPER_ADMIN'])
+   // @UseGuards(RolesGuard)
+   async updateAdminStatus(
+      @Query('adminProfileId') adminProfileId: string,
+      @Query('status') status: ProfileStatus,
+   ) {
+      return await this.updateProfileService.updateAdminStatus(
+         adminProfileId,
+         status,
+      )
+   }
+
+   @Patch('updateAdminRole')
+   // @SetMetadata('allowedRole', ['SUPER_ADMIN'])
+   // @UseGuards(RolesGuard)
+   async updateAdminRole(
+      @Query('adminProfileId') adminProfileId: string,
+      @Query('role') role: UserRole,
+   ) {
+      return await this.updateProfileService.updateAdminRole(
+         adminProfileId,
+         role,
       )
    }
 }

@@ -32,19 +32,6 @@ export class DriverAcceptService {
 
    async driverAccept(driverAcceptDto: DriverAcceptDto) {
       try {
-         const driver = await this.postgresService.driverProfile.findUnique({
-            where: {
-               driverProfileId: driverAcceptDto.driverProfileId,
-            },
-            select: {
-               status: true,
-            },
-         })
-
-         if (driver.status !== ProfileStatus.ACTIVE) {
-            throw new ForbiddenException('DriverNotActive')
-         }
-
          const rideId = driverAcceptDto.rideId
          const driverProfileId = driverAcceptDto.driverProfileId
 

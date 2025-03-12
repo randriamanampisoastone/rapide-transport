@@ -8,6 +8,7 @@ import {
    UseGuards,
    Patch,
    Delete,
+   ForbiddenException,
 } from '@nestjs/common'
 import { CreateItineraryService } from './create-itinerary.service'
 import { CreateRideService } from './create-ride.service'
@@ -33,6 +34,7 @@ import { CheckRideService } from './check-ride.service'
 import { AssignRideToDriverService } from './assign-ride-to-driver.service'
 import { ReviewRideService } from './review-ride.service'
 import { DeleteRideService } from './delete-ride.service'
+import { ProfileStatus } from '@prisma/client'
 
 @Controller('ride')
 export class RideController {
@@ -67,7 +69,11 @@ export class RideController {
       @Body()
       data: { pickUpLocation: LatLng; dropOffLocation: LatLng },
       @GetUser('sub') clientProfileId: string,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return this.createItineraryService.createItinerary({
          ...data,
          clientProfileId,
@@ -87,7 +93,11 @@ export class RideController {
          clientExpoToken: string
       },
       @GetUser('sub') clientProfileId: string,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return this.createRideService.createRide({
          ...data,
          clientProfileId,
@@ -100,7 +110,11 @@ export class RideController {
    cancelled(
       @Body() { rideId }: { rideId: string },
       @GetUser('sub') clientProfileId: string,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return this.cancelledService.cancelled({ rideId, clientProfileId })
    }
 
@@ -110,7 +124,11 @@ export class RideController {
    driverAccept(
       @Body() { rideId }: { rideId: string },
       @GetUser('sub') driverProfileId: string,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return this.driverAcceptService.driverAccept({ driverProfileId, rideId })
    }
 
@@ -120,7 +138,11 @@ export class RideController {
    driverOnTheWay(
       @Body() data: { rideId: string; driverLocation: LatLng },
       @GetUser('sub') driverProfileId: string,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return this.driverOnTheWayService.driverOnTheWay({
          driverProfileId,
          ...data,
@@ -133,7 +155,11 @@ export class RideController {
    stopped(
       @Body() { rideId }: { rideId: string },
       @GetUser('sub') clientProfileId: string,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return this.stoppedService.clientStopped({ rideId, clientProfileId })
    }
 
@@ -143,7 +169,11 @@ export class RideController {
    drivertArrived(
       @Body() { rideId }: { rideId: string },
       @GetUser('sub') driverProfileId: string,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return this.driverArrivedService.drivertArrived({
          driverProfileId,
          rideId,
@@ -156,7 +186,11 @@ export class RideController {
    clientNotFound(
       @Body() { rideId }: { rideId: string },
       @GetUser('sub') driverProfileId: string,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return this.clientNotFoundService.clientNotFound({
          driverProfileId,
          rideId,
@@ -169,7 +203,11 @@ export class RideController {
    start(
       @Body() { rideId }: { rideId: string },
       @GetUser('sub') driverProfileId: string,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return this.startService.start({
          driverProfileId,
          rideId,
@@ -182,7 +220,11 @@ export class RideController {
    clientGiveUp(
       @Body() { rideId }: { rideId: string },
       @GetUser('sub') clientProfileId: string,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return this.clientGiveUpService.clientGiveUp({ rideId, clientProfileId })
    }
 
@@ -192,7 +234,11 @@ export class RideController {
    arrivedDestination(
       @Body() { rideId }: { rideId: string },
       @GetUser('sub') driverProfileId: string,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return this.arrivedDestinationService.arrivedDestination({
          driverProfileId,
          rideId,
@@ -205,7 +251,11 @@ export class RideController {
    complete(
       @Body() { rideId }: { rideId: string },
       @GetUser('sub') driverProfileId: string,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return this.completeService.complete({
          driverProfileId,
          rideId,
@@ -223,7 +273,11 @@ export class RideController {
          rideId: string
       },
       @GetUser('sub') clientProfileId: string,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return this.reviewService.review({ clientProfileId, ...data })
    }
    @Get('find-ride-by-id-redis')
@@ -235,19 +289,31 @@ export class RideController {
    @Get('check-client-ride')
    @SetMetadata('allowedRole', ['CLIENT'])
    @UseGuards(RolesGuard)
-   checkClientRide(@GetUser('sub') clientProfileId: string) {
+   checkClientRide(
+      @GetUser('sub') clientProfileId: string,
+      @GetUser('status') status: ProfileStatus,
+   ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return this.checkRideService.checkClientRide(clientProfileId)
    }
 
    @Get('check-driver-ride')
    @SetMetadata('allowedRole', ['DRIVER'])
    @UseGuards(RolesGuard)
-   checkDriverRide(@GetUser('sub') driverProfileId: string) {
+   checkDriverRide(
+      @GetUser('sub') driverProfileId: string,
+      @GetUser('status') status: ProfileStatus,
+   ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return this.checkRideService.checkDriverRide(driverProfileId)
    }
 
    @Patch('assign-ride-to-driver')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'RIDE_MANAGER'])
    @UseGuards(RolesGuard)
    assignRideToDriver(
       @Query('driverProfileId') driverProfileId: string,
@@ -270,8 +336,11 @@ export class RideController {
          note,
          review,
       }: { rideId: string; note: number; review: string },
+      @GetUser('status') status: ProfileStatus,
    ) {
-      console.log('clientProfileId')
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
 
       return this.reviewRideService.addRideReview(
          rideId,
@@ -282,7 +351,7 @@ export class RideController {
    }
 
    @Delete('delete-ride')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'RIDE_MANAGER'])
    @UseGuards(RolesGuard)
    deleteRide(@Query('rideId') rideId: string) {
       return this.deleteRideService.deleteRide(rideId)

@@ -177,6 +177,14 @@ export class Gateway
       this.server.to(UserRole.ADMIN).emit(topic, payload)
    }
 
+   sendNotificationToSpecificAdmin(
+      adminProfileId: string,
+      topic: string,
+      payload: any,
+   ) {
+      this.server.to(adminProfileId).emit(topic, payload)
+   }
+
    @SubscribeMessage(EVENT_INFO_ON_RIDE_PUSH)
    async calculePrice(
       @MessageBody()
