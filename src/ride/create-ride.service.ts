@@ -82,19 +82,6 @@ export class CreateRideService {
 
    async createRide(createRideDto: CreateRideDto) {
       try {
-         const user = await this.prismaService.clientProfile.findUnique({
-            where: {
-               clientProfileId: createRideDto.clientProfileId,
-            },
-            select: {
-               status: true,
-            },
-         })
-
-         if (user.status !== ProfileStatus.ACTIVE) {
-            throw new ForbiddenException('UserNotActive')
-         }
-
          const rideKeys = await this.redisService.keys(`${RIDE_PREFIX}*`)
          const rideDataList = rideKeys.length
             ? await this.redisService.mget(rideKeys)

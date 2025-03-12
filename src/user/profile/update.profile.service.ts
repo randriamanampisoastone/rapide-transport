@@ -53,4 +53,26 @@ export class UpdateProfileService {
          throw error
       }
    }
+
+   async updateAdminStatus(adminProfileId: string, status: ProfileStatus) {
+      try {
+         return await this.prismaService.adminProfile.update({
+            where: { adminProfileId },
+            data: { status },
+         })
+      } catch (error) {
+         throw error
+      }
+   }
+
+   async updateAdminRole(adminProfileId: string, role: UserRole) {
+      try {
+         return await this.prismaService.profile.update({
+            where: { sub: adminProfileId },
+            data: { role },
+         })
+      } catch (error) {
+         throw error
+      }
+   }
 }

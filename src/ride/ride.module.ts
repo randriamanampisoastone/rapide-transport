@@ -65,7 +65,7 @@ import { NotificationService } from 'src/notification/notification.service'
 
       DeleteRideService,
 
-      NotificationService,
+      NotificationService
    ],
 })
 export class RideModule {}

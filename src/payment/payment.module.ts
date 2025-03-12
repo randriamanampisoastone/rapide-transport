@@ -1,25 +1,31 @@
 import { Module } from '@nestjs/common'
-import { PaymentController } from './payment.controller'
-import { PaymentWithRapideWalletService } from './payment-with-rapide-wallet.service'
+import { PasswordController } from './password.controller'
+import { PasswordService } from './password.service'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { PaymentController } from './payment.controller'
+import { DepositeService } from './deposite.service'
+import { SmsService } from 'src/sms/sms.service'
+import { RedisService } from 'src/redis/redis.service'
 import { Gateway } from 'src/gateway/gateway'
 import { LocationService } from 'src/gateway/location/location.service'
 import { InfoOnRideService } from 'src/ride/info-on-ride.service'
 import { CheckRideService } from 'src/ride/check-ride.service'
-import { RedisService } from 'src/redis/redis.service'
-import { TransactionService } from './transaction.service'
+import { TransfertController } from './transfert.controller'
+import { TransfertService } from './transfert.service'
 
 @Module({
-   controllers: [PaymentController],
+   controllers: [PasswordController, PaymentController, TransfertController],
    providers: [
-      PaymentWithRapideWalletService,
+      PasswordService,
+      DepositeService,
       PrismaService,
+      SmsService,
+      RedisService,
       Gateway,
       LocationService,
       InfoOnRideService,
       CheckRideService,
-      RedisService,
-      TransactionService,
+      TransfertService
    ],
 })
 export class PaymentModule {}

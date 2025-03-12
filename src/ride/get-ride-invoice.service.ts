@@ -24,6 +24,7 @@ export class GetRideInvoiceService {
                         profile: true,
                      },
                   },
+                  paymentTransactions: true,
                },
                skip: (page - 1) * pageSize,
                take: pageSize,
@@ -59,8 +60,8 @@ export class GetRideInvoiceService {
                   },
                   driverProfile: {
                      include: {
-                        profile: true
-                     }
+                        profile: true,
+                     },
                   },
                },
                orderBy: {

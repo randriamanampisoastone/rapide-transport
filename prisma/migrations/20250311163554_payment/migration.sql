@@ -20,7 +20,7 @@ CREATE TYPE "BalanceStatus" AS ENUM ('ACTIVE', 'PENDING', 'FROZEN', 'INSUFFICIEN
 CREATE TYPE "UserRole" AS ENUM ('CLIENT', 'DRIVER', 'ADMIN', 'SUPER_ADMIN', 'RIDE_MANAGER', 'FOOD_MANAGER', 'MART_MANAGER', 'EXPRESS_MANAGER', 'DRIVER_MANAGER', 'CUSTOMER_SUPPORT', 'FINANCE_MANAGER', 'PROMOTION_MANAGER', 'FLEET_MANAGER', 'DISPUTE_MANAGER', 'OPERATIONS_MANAGER', 'PARTNER_MANAGER', 'COMPLIANCE_MANAGER', 'TECH_SUPPORT');
 
 -- CreateEnum
-CREATE TYPE "PaymentMethodType" AS ENUM ('CASH', 'MVOLA', 'ORANGE_MONEY', 'PROMO', 'BALANCE');
+CREATE TYPE "PaymentMethodType" AS ENUM ('CASH', 'MVOLA', 'ORANGE_MONEY', 'PROMO', 'RAPIDE_WALLET');
 
 -- CreateEnum
 CREATE TYPE "RideStatus" AS ENUM ('FINDING_DRIVER', 'CANCELLED', 'DRIVER_ACCEPTED', 'DRIVER_ON_THE_WAY', 'STOPPED', 'DRIVER_ARRIVED', 'CLIENT_NOT_FOUND', 'ON_RIDE', 'CLIENT_GIVE_UP', 'ARRIVED_DESTINATION', 'COMPLETED', 'ADMIN_CHECK', 'ADMIN_CANCELLED');
@@ -149,6 +149,8 @@ CREATE TABLE "RideInvoice" (
     "review" TEXT,
     "startTime" DOUBLE PRECISION,
     "endTime" DOUBLE PRECISION,
+    "clientExpoToken" TEXT,
+    "driverExpoToken" TEXT,
     "createdAt" TEXT,
     "updatedAt" TEXT,
 
@@ -176,6 +178,8 @@ CREATE TABLE "Ride" (
     "review" TEXT,
     "startTime" DOUBLE PRECISION,
     "endTime" DOUBLE PRECISION,
+    "clientExpoToken" TEXT,
+    "driverExpoToken" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -224,6 +228,7 @@ CREATE TABLE "PaymentTransaction" (
     "to" TEXT NOT NULL,
     "clientProfileId" TEXT,
     "driverProfileId" TEXT,
+    "rideInvoiceId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -283,3 +288,6 @@ ALTER TABLE "PaymentTransaction" ADD CONSTRAINT "PaymentTransaction_clientProfil
 
 -- AddForeignKey
 ALTER TABLE "PaymentTransaction" ADD CONSTRAINT "PaymentTransaction_driverProfileId_fkey" FOREIGN KEY ("driverProfileId") REFERENCES "DriverProfile"("driverProfileId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PaymentTransaction" ADD CONSTRAINT "PaymentTransaction_rideInvoiceId_fkey" FOREIGN KEY ("rideInvoiceId") REFERENCES "RideInvoice"("rideInvoiceId") ON DELETE SET NULL ON UPDATE CASCADE;
