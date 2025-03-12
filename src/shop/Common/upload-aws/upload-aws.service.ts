@@ -5,7 +5,7 @@ import { PrismaService } from '../../../prisma/prisma.service'
 
 
 @Injectable()
-export class ProductImagesService {
+export class UploadAwsService {
    private readonly s3: AWS.S3
 
    constructor(
@@ -19,8 +19,8 @@ export class ProductImagesService {
       })
    }
 
-   async uploadImage(file: Express.Multer.File, productId: string) {
-      const fileName = `products/${productId}/${Date.now()}-${file.originalname}`
+   async uploadImage(file: Express.Multer.File) {
+      const fileName = `rapid-${file.originalname}-${Date.now()}`
 
       const params = {
          Bucket: this.configService.get('AWS_S3_BUCKET_NAME'),
@@ -31,27 +31,8 @@ export class ProductImagesService {
       }
 
       const uploadResult = await this.s3.upload(params).promise()
-      // Create database record
-      return this.prisma.image.create({
-         data: {
-            url: uploadResult.Location,
-            productId,
-            isMain: false, // Default to not main
-         },
-      })
+      return uploadResult.Location;
    }
 
-   async setMainImage(imageId: string, productId: string) {
-      // First unset all main images for this product
-      await this.prisma.image.updateMany({
-         where: { productId },
-         data: { isMain: false },
-      });
 
-      // Then set the selected image as main
-      return this.prisma.image.update({
-         where: { id: imageId },
-         data: { isMain: true },
-      });
-   }
 }
