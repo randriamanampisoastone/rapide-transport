@@ -2,6 +2,7 @@ import {
    Body,
    Controller,
    Delete,
+   ForbiddenException,
    Get,
    Post,
    Query,
@@ -14,7 +15,7 @@ import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { AnswerClientRequestDto } from './dto/answer-client-request.dto'
 import { FindClientRequestService } from './find-client-request.service'
-import { RequestFor } from '@prisma/client'
+import { ProfileStatus, RequestFor } from '@prisma/client'
 
 @Controller('/client-request')
 export class ClientRequestController {
@@ -29,7 +30,11 @@ export class ClientRequestController {
    async sendRequest(
       @GetUser('sub') clientProfileId: string,
       @Body() sendClientRequestDto: SendClientRequestDto,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return await this.clientRequestSerivice.sendRequest(
          clientProfileId,
          clientProfileId,
@@ -38,13 +43,22 @@ export class ClientRequestController {
    }
 
    @Post('answer')
-   @SetMetadata('allowedRole', ['CLIENT', 'ADMIN'])
+   @SetMetadata('allowedRole', [
+      'CLIENT',
+      'ADMIN',
+      'SUPER_ADMIN',
+      'CUSTOMER_SUPPORT',
+   ])
    @UseGuards(RolesGuard)
    async answerRequest(
       @Query('clientRequestId') clientRequestId: string,
       @GetUser('sub') senderId: string,
       @Body() answerClientRequestDto: AnswerClientRequestDto,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return await this.clientRequestSerivice.answerRequest(
          clientRequestId,
          senderId,
@@ -53,7 +67,7 @@ export class ClientRequestController {
    }
 
    @Get()
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'CUSTOMER_SUPPORT'])
    @UseGuards(RolesGuard)
    async getAllCientRequest(
       @Query('requestFor') requestFor: RequestFor,
@@ -68,7 +82,12 @@ export class ClientRequestController {
    }
 
    @Get('get-requests')
-   @SetMetadata('allowedRole', ['ADMIN', 'CLIENT'])
+   @SetMetadata('allowedRole', [
+      'ADMIN',
+      'SUPER_ADMIN',
+      'CUSTOMER_SUPPORT',
+      'CLIENT',
+   ])
    @UseGuards(RolesGuard)
    async getRequests(
       @Query('clientRequestId') clientRequestId: string,
@@ -89,7 +108,11 @@ export class ClientRequestController {
       @GetUser('sub') clientProfileId: string,
       @Query('page') page: number,
       @Query('pageSize') pageSize: number,
+      @GetUser('status') status: ProfileStatus,
    ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return await this.findClientRequestService.getClientRequests(
          clientProfileId,
          page || 1,
@@ -98,7 +121,12 @@ export class ClientRequestController {
    }
 
    @Delete('remove-client-request')
-   @SetMetadata('allowedRole', ['ADMIN', 'CLIENT'])
+   @SetMetadata('allowedRole', [
+      'ADMIN',
+      'SUPER_ADMIN',
+      'CUSTOMER_SUPPORT',
+      'CLIENT',
+   ])
    @UseGuards(RolesGuard)
    async removeRequest(@Query('clientRequestId') clientRequestId: string) {
       return await this.clientRequestSerivice.removeRequest(clientRequestId)

@@ -1,49 +1,32 @@
 import {
    Body,
    Controller,
-   Patch,
    Post,
    Query,
    SetMetadata,
    UseGuards,
 } from '@nestjs/common'
-import { PaymentWithRapideWalletService } from './payment-with-rapide-wallet.service'
-import { amountDto } from './dto/amount.dto'
+import { DepositeService } from './deposite.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
-import { UpdateTransactionDto } from './dto/update-transaction.dto'
-import { TransactionService } from './transaction.service'
+import { DepositeDto } from './dto/deposite.dto'
 
 @Controller('payment')
 export class PaymentController {
-   constructor(
-      private readonly paymentWithRapideWalletService: PaymentWithRapideWalletService,
-      private readonly transactionService: TransactionService,
-   ) {}
+   constructor(private readonly depositeService: DepositeService) {}
 
-   @Post('with-rapide-wallet')
-   @SetMetadata('allowedRole', ['CLIENT'])
+   @Post('deposite')
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
    @UseGuards(RolesGuard)
-   async PaymentWithRapideBalance(
-      @GetUser('sub') clientProfileId: string,
-      @Query('to') to: string,
-      @Body() amount: amountDto,
+   async deposite(
+      @GetUser('sub') adminProfileId: string,
+      @Query('clientProfileId') clientProfileId: string,
+      @Body() depositeDto: DepositeDto,
    ) {
-      return await this.paymentWithRapideWalletService.payment(
+      return this.depositeService.deposite(
+         adminProfileId,
          clientProfileId,
-         to,
-         amount.amount,
-      )
-   }
-
-   @Patch('update-transaction')
-   async updateTransaction(
-      @Query('paymentTransactionId') paymentTransactionId: string,
-      @Body() updateTransactionDto: UpdateTransactionDto,
-   ) {
-      return await this.transactionService.update(
-         paymentTransactionId,
-         updateTransactionDto,
+         depositeDto,
       )
    }
 }

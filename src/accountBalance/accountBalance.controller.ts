@@ -1,6 +1,7 @@
 import {
    Body,
    Controller,
+   ForbiddenException,
    Get,
    Patch,
    Query,
@@ -13,11 +14,8 @@ import { GetRapideBalanceService } from './get-rapide-balance.service'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { DriverBalanceService } from './driverBalance.service'
 import { ClientBalanceService } from './client-balance.service'
-import { AmountDto } from './dto/amount.dto'
-import {
-   DecrementClientBalance,
-   IncrementClientAccountBalanceDto,
-} from './dto/client-account-balance.dto'
+import { IncrementClientAccountBalanceDto } from './dto/client-account-balance.dto'
+import { ProfileStatus } from '@prisma/client'
 
 @Controller('accountBalance')
 export class AccountBalanceController {
@@ -29,21 +27,21 @@ export class AccountBalanceController {
    ) {}
 
    @Patch('resetDriverBalance')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FINANCE_MANAGER'])
    @UseGuards(RolesGuard)
    async resetRideBalance(@Query('accountBalanceId') accountBalanceId: string) {
       await this.resetBalanceService.resetRideBalance(accountBalanceId)
    }
 
    @Patch('resetAllDriverBalance')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FINANCE_MANAGER'])
    @UseGuards(RolesGuard)
    async reseAllRideBalance() {
       await this.resetBalanceService.resetAllRideBalance()
    }
 
    @Get('getRapideBalance')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FINANCE_MANAGER'])
    @UseGuards(RolesGuard)
    async getRapideBalance() {
       return await this.getRapideBalanceService.getRapidebalance()
@@ -52,12 +50,18 @@ export class AccountBalanceController {
    @Get('sold')
    @SetMetadata('allowedRole', ['DRIVER'])
    @UseGuards(RolesGuard)
-   async getSold(@GetUser('sub') driverProfileId: string) {
+   async getSold(
+      @GetUser('sub') driverProfileId: string,
+      @GetUser('status') status: ProfileStatus,
+   ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return await this.driverBalanceService.getSold(driverProfileId)
    }
 
    @Patch('incrementClientBalance')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FINANCE_MANAGER'])
    @UseGuards(RolesGuard)
    async incrementClientBalance(
       @Query('clientProfileId') clientProfileId: string,
@@ -71,7 +75,7 @@ export class AccountBalanceController {
    }
 
    @Patch('decrementClientBalance')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FINANCE_MANAGER'])
    @UseGuards(RolesGuard)
    async decrementClientBalance(
       @Query('clientProfileId') clientProfileId: string,

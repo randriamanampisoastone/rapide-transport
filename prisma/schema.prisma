@@ -154,6 +154,7 @@ model ClientProfile {
 
   clientRequest       ClientRequest[] @relation("ClientRequest")
   paymentTransaction  PaymentTransaction[] @relation("ClientPaymentTransaction")
+  walletPassword      String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -181,6 +182,8 @@ model AdminProfile {
   profile        Profile @relation("AuthAdminProfile", fields: [adminProfileId], references: [sub], onDelete: Cascade)
 
   status    ProfileStatus @default(UNDER_REVIEW)
+
+  transactionPassword String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -261,6 +264,8 @@ model RideInvoice {
   clientExpoToken   String?
   driverExpoToken   String?
 
+  paymentTransactions PaymentTransaction? @relation("RidePaymentTransaction")
+
   createdAt String?
   updatedAt  String?
 }
@@ -325,6 +330,7 @@ model ClientRequest {
 model PaymentTransaction {
   paymentTransactionId  String            @id       @default(uuid())
   reference             Int               @unique   @default(autoincrement())
+  otherReference        String?
   amount                Float
   fees                  Float // frais
   return                Float // Famerim-bola
@@ -341,6 +347,9 @@ model PaymentTransaction {
   clientProfile         ClientProfile?     @relation("ClientPaymentTransaction", fields: [clientProfileId], references: [clientProfileId])
   driverProfileId       String?
   driverProfile         DriverProfile?     @relation("DriverPaymentTransaction", fields: [driverProfileId], references: [driverProfileId])
+
+  rideInvoiceId         String? @unique
+  rideInvoice           RideInvoice?       @relation("RidePaymentTransaction", fields: [rideInvoiceId], references: [rideInvoiceId])
 
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt

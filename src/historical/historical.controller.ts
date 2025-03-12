@@ -1,15 +1,23 @@
-import { Controller, Get, Query, SetMetadata, UseGuards } from '@nestjs/common'
+import {
+   Controller,
+   ForbiddenException,
+   Get,
+   Query,
+   SetMetadata,
+   UseGuards,
+} from '@nestjs/common'
 import { HistoricalService } from './historical.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { RideStatus } from 'enums/ride.enum'
+import { ProfileStatus } from '@prisma/client'
 
 @Controller('historical')
 export class HistoricalController {
    constructor(private readonly historicalService: HistoricalService) {}
 
    @Get('getAllHistorical')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
    @UseGuards(RolesGuard)
    async getAllHistorical(
       @Query('status') status: RideStatus,
@@ -31,7 +39,11 @@ export class HistoricalController {
       @Query('status') status: RideStatus,
       @Query('page') page: number,
       @Query('pageSize') pageSize: number,
+      @GetUser('status') profileStatus: ProfileStatus,
    ) {
+      if (profileStatus !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return await this.historicalService.getClientHistorical(
          clientProfileId,
          status,
@@ -41,7 +53,7 @@ export class HistoricalController {
    }
 
    @Get('getClientHistoricalByAdmin')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
    @UseGuards(RolesGuard)
    async getClientHistoricalByAdmin(
       @Query('clientProfileId') clientProfileId: string,
@@ -65,7 +77,11 @@ export class HistoricalController {
       @Query('status') status: RideStatus,
       @Query('page') page: number,
       @Query('pageSize') pageSize: number,
+      @GetUser('status') profileStatus: ProfileStatus,
    ) {
+      if (profileStatus !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
       return await this.historicalService.getDriverHistorical(
          driverProfileId,
          status,
@@ -75,7 +91,7 @@ export class HistoricalController {
    }
 
    @Get('getDriverHistoricalByAdmin')
-   @SetMetadata('allowedRole', ['ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
    @UseGuards(RolesGuard)
    async getDriverHistoricalByAdmin(
       @Query('driverProfileId') driverProfileId: string,
