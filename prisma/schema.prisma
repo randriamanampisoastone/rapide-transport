@@ -316,6 +316,9 @@ model Product {
   description String
   price       Decimal
   inventory   Int               @default(0)
+  isClothes   Boolean           @default(false)
+  colors      String?
+  sizes       String?
   images      Image[]
   reviews     Review[]
   orderItems  OrderItem[]
