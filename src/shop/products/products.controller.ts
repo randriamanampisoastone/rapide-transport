@@ -1,6 +1,6 @@
 import {
     Body,
-    Controller,
+    Controller, Delete,
     Param,
     Patch,
     Post,
@@ -18,13 +18,15 @@ import {GetUser} from "../../jwt/get.user.decorator";
 import {createDynamicFileInterceptor} from "../Common/Interceptor/dynamic.interptor";
 import {EditProductService} from "./edit.product.service";
 import {UpdateProductDto} from "./dto/update-product.dto";
+import {ProductsService} from "./products.service";
 
 
 @Controller('products')
 export class ProductsController {
     constructor(
         private readonly addProductService: AddProductService,
-        private readonly editProductService: EditProductService
+        private readonly editProductService: EditProductService,
+        private readonly productService: ProductsService
     ) {}
 
    private transformData(rawData: any, files: any) {
@@ -105,5 +107,16 @@ export class ProductsController {
     ){
         const transformedData = this.transformData(rawData, files);
         return await this.editProductService.editProduct(id, transformedData);
+    }
+
+    @SetMetadata('allowedRole', [UserRole.SELLER])
+    @UseGuards(RolesGuard)
+    @ApiOperation({summary: 'Remove a product image'})
+    @Delete('image/:id')
+    async deleteImageFromProduct(
+        @Param('id') id: string,
+        @GetUser('sub') user: string
+    ){
+        return this.productService.deleteImageFromProduct(id, user);
     }
 }

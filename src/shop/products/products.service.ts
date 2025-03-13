@@ -1,7 +1,7 @@
 import {HttpStatus, Injectable} from "@nestjs/common";
 import {UploadAwsService} from "../Common/upload-aws/upload-aws.service";
 import {PrismaService} from "../../prisma/prisma.service";
-import {SAME_PRODUCT_ON_A_CUSTOMER} from "../../../constants/response.constant";
+import {NOT_OWNER_OF_THE_PRODUCT, SAME_PRODUCT_ON_A_CUSTOMER} from "../../../constants/response.constant";
 import {Product} from "@prisma/client";
 
 @Injectable()
@@ -76,11 +76,30 @@ export class ProductsService {
         };
     }
 
-    public async deleteImageFromProduct(imageId: string) {
-        return this.prismaService.image.delete({
+    public async deleteImageFromProduct(imageId: string, user: string) {
+        // Search file then delete it from AWS
+        const image = await this.prismaService.image.findUnique({
+            where: { id: imageId },
+            include: {
+                product: true
+            }
+        });
+
+        if(user !== image.product.sellerId){
+            return {
+                statusCode: HttpStatus.FORBIDDEN,
+                message: NOT_OWNER_OF_THE_PRODUCT,
+                error: 'Forbidden',
+            }
+        }
+
+        await this.uploadAwsService.deleteFile(image.url);
+
+        await this.prismaService.image.delete({
             where: {
                 id: imageId
             }
         });
+        return { success: true }
     }
 }
