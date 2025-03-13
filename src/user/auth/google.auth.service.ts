@@ -83,9 +83,11 @@ export class GoogleAuthService {
          if (existingUser.role === UserRole.CLIENT) {
             const token = jwt.sign(
                {
+                  sub: existingUser.sub,
                   role: existingUser.role,
                   status: existingUser.clientProfile.status,
-                  sub: existingUser.sub,
+                  isWalletPasswordDefined:
+                     existingUser.clientProfile.isWalletPasswordDefined,
                },
                this.JWT_SECRET_CLIENT,
                {
@@ -96,9 +98,11 @@ export class GoogleAuthService {
          } else if (existingUser.role === UserRole.DRIVER) {
             const token = jwt.sign(
                {
+                  sub: existingUser.sub,
                   role: existingUser.role,
                   status: existingUser.driverProfile.status,
-                  sub: existingUser.sub,
+                  isWalletPasswordDefined:
+                     existingUser.driverProfile.isWalletPasswordDefined,
                },
                this.JWT_SECRET_DRIVER,
                {
@@ -109,9 +113,11 @@ export class GoogleAuthService {
          } else if (existingUser.role === UserRole.ADMIN) {
             const token = jwt.sign(
                {
+                  sub: existingUser.sub,
                   role: existingUser.role,
                   status: existingUser.adminProfile.status,
-                  sub: existingUser.sub,
+                  isWalletPasswordDefined:
+                     existingUser.adminProfile.isTransactionPasswordDefined,
                },
                this.JWT_SECRET_ADMIN,
                {

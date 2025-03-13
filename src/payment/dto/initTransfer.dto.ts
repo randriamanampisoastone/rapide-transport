@@ -8,7 +8,7 @@ import {
    MinLength,
 } from 'class-validator'
 
-export class InitTransfertDto {
+export class InitTransferDto {
    @IsNotEmpty()
    @Matches(/^(?:\+261|261|0)(32|33|34|37|38)\d{7}$/, {
       message:

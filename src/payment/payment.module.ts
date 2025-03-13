@@ -10,11 +10,11 @@ import { Gateway } from 'src/gateway/gateway'
 import { LocationService } from 'src/gateway/location/location.service'
 import { InfoOnRideService } from 'src/ride/info-on-ride.service'
 import { CheckRideService } from 'src/ride/check-ride.service'
-import { TransfertController } from './transfert.controller'
-import { TransfertService } from './transfert.service'
+import { TransferController } from './transfer.controller'
+import { TransferService } from './transfer.service'
 
 @Module({
-   controllers: [PasswordController, PaymentController, TransfertController],
+   controllers: [PasswordController, PaymentController, TransferController],
    providers: [
       PasswordService,
       DepositeService,
@@ -25,7 +25,7 @@ import { TransfertService } from './transfert.service'
       LocationService,
       InfoOnRideService,
       CheckRideService,
-      TransfertService
+      TransferService,
    ],
 })
 export class PaymentModule {}
