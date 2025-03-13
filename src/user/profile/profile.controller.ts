@@ -239,9 +239,9 @@ export class ProfileController {
       )
    }
 
-   @Get('GetAdmins')
-   // @SetMetadata('allowedRole', ['SUPER_ADMIN'])
-   // @UseGuards(RolesGuard)
+   @Get('getAdmins')
+   @SetMetadata('allowedRole', ['SUPER_ADMIN'])
+   @UseGuards(RolesGuard)
    async getAdmins(
       @Query('page') page: number,
       @Query('pageSize') pageSize: number,
@@ -250,8 +250,8 @@ export class ProfileController {
    }
 
    @Patch('updateAdminStatus')
-   // @SetMetadata('allowedRole', ['SUPER_ADMIN'])
-   // @UseGuards(RolesGuard)
+   @SetMetadata('allowedRole', ['SUPER_ADMIN'])
+   @UseGuards(RolesGuard)
    async updateAdminStatus(
       @Query('adminProfileId') adminProfileId: string,
       @Query('status') status: ProfileStatus,
@@ -263,8 +263,8 @@ export class ProfileController {
    }
 
    @Patch('updateAdminRole')
-   // @SetMetadata('allowedRole', ['SUPER_ADMIN'])
-   // @UseGuards(RolesGuard)
+   @SetMetadata('allowedRole', ['SUPER_ADMIN'])
+   @UseGuards(RolesGuard)
    async updateAdminRole(
       @Query('adminProfileId') adminProfileId: string,
       @Query('role') role: UserRole,
