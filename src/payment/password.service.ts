@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import * as bcrypt from 'bcrypt'
 
@@ -26,6 +26,39 @@ export class PasswordService {
          await this.prismaService.adminProfile.update({
             where: { adminProfileId },
             data: { transactionPassword: hashedPassword },
+         })
+      } catch (error) {
+         throw error
+      }
+   }
+
+   async changeClientPassword(
+      clientProfileId: string,
+      oldWalletPassword: string,
+      newWalletPassword: string,
+   ) {
+      try {
+         await this.prismaService.$transaction(async (prisma) => {
+            const clientProfile = await prisma.clientProfile.findUnique({
+               where: { clientProfileId },
+               select: { walletPassword: true },
+            })
+
+            const isMatch = await bcrypt.compare(
+               oldWalletPassword,
+               clientProfile.walletPassword,
+            )
+            if (!isMatch) {
+               throw new BadRequestException('incorrect password')
+            }
+
+            const salt = await bcrypt.genSalt(10, 'a')
+            const hashedPassword = await bcrypt.hash(newWalletPassword, salt)
+
+            await prisma.clientProfile.update({
+               where: { clientProfileId },
+               data: { walletPassword: hashedPassword },
+            })
          })
       } catch (error) {
          throw error
