@@ -21,7 +21,7 @@ enum VehicleType {
 
 enum TransactionType {
   DEPOSIT
-  TRANSFERT
+  TRANSFER
   RETRAIT
 }
 
@@ -114,7 +114,7 @@ enum PaymentTransactionStatus {
 
 enum PaymentTransactionType {
   DEPOSIT
-  TRANSFERT
+  TRANSFER
   RETRAIT
   PAYMENT
 }
@@ -155,6 +155,7 @@ model ClientProfile {
   clientRequest       ClientRequest[] @relation("ClientRequest")
   paymentTransaction  PaymentTransaction[] @relation("ClientPaymentTransaction")
   walletPassword      String?
+  isWalletPasswordDefined Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -168,27 +169,30 @@ model DriverProfile {
   ride           Ride[]          @relation("DriverRide")
   accountBalance AccountBalance? @relation("DriverAccountBalance")
 
-  status       ProfileStatus @default(UNDER_REVIEW)
+  status         ProfileStatus @default(UNDER_REVIEW)
   completeRide Int           @default(0)
 
   paymentTransaction PaymentTransaction[] @relation("DriverPaymentTransaction")
+  walletPassword      String?
+  isWalletPasswordDefined Boolean @default(false)
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt 
 }
 
 model AdminProfile {
   adminProfileId String  @id
   profile        Profile @relation("AuthAdminProfile", fields: [adminProfileId], references: [sub], onDelete: Cascade)
 
-  status    ProfileStatus @default(UNDER_REVIEW)
+  status         ProfileStatus @default(UNDER_REVIEW)
 
   transactionPassword String?
+  isTransactionPasswordDefined Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
+ 
 model Address {
   addressId String @id @default(uuid())
 

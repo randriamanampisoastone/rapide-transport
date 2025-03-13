@@ -4,7 +4,7 @@ import {
    NotFoundException,
 } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { InitTransfertDto } from './dto/initTransfert.dto'
+import { InitTransferDto } from './dto/initTransfer.dto'
 import * as bcrypt from 'bcrypt'
 import * as speakeasy from 'speakeasy'
 import { SmsService } from 'src/sms/sms.service'
@@ -15,14 +15,13 @@ import {
    PaymentTransactionType,
 } from '@prisma/client'
 import { RedisService } from 'src/redis/redis.service'
-import { TRANSFERT_VALIDATION } from 'constants/redis.constant'
-import { TransfertRedisDataInterface } from 'interfaces/transfert.redis.data.interface'
-import { attempt } from 'joi'
+import { TRANSFER_VALIDATION } from 'constants/redis.constant'
 import { Gateway } from 'src/gateway/gateway'
-import { EVENT_TRANSFERT } from 'constants/event.constant'
+import { EVENT_TRANSFER } from 'constants/event.constant'
+import { TransferRedisDataInterface } from 'interfaces/transfer.redis.data.interface'
 
 @Injectable()
-export class TransfertService {
+export class TransferService {
    constructor(
       private readonly prismaService: PrismaService,
       private readonly smsService: SmsService,
@@ -30,12 +29,12 @@ export class TransfertService {
       private readonly gateway: Gateway,
    ) {}
 
-   async initTransfert(initTransfertDto: InitTransfertDto) {
+   async initTransfer(initTransferDto: InitTransferDto) {
       try {
          const transaction = await this.prismaService.$transaction(
             async (prisma) => {
                const senderClientProfile = await prisma.profile.findUnique({
-                  where: { phoneNumber: initTransfertDto.fromPhoneNumber },
+                  where: { phoneNumber: initTransferDto.fromPhoneNumber },
                   select: {
                      sub: true,
                      phoneNumber: true,
@@ -56,7 +55,7 @@ export class TransfertService {
                   )
                }
                const isMatch = await bcrypt.compare(
-                  initTransfertDto.walletPassword,
+                  initTransferDto.walletPassword,
                   senderClientProfile.clientProfile.walletPassword,
                )
                if (!isMatch) {
@@ -67,14 +66,14 @@ export class TransfertService {
                }
                if (
                   senderClientProfile.clientProfile.accountBalance.balance <
-                  initTransfertDto.amount
+                  initTransferDto.amount
                ) {
                   throw new BadRequestException(
                      'You do not have enough funds to make this transfer.',
                   )
                }
                const reseiverClientProfile = await prisma.profile.findUnique({
-                  where: { phoneNumber: initTransfertDto.toPhoneNumber },
+                  where: { phoneNumber: initTransferDto.toPhoneNumber },
                   select: {
                      sub: true,
                      lastName: true,
@@ -92,16 +91,16 @@ export class TransfertService {
                   secret: secret.base32,
                   encoding: 'base32',
                })
-               const transfertRedisData: TransfertRedisDataInterface = {
+               const transferRedisData: TransferRedisDataInterface = {
                   from: senderClientProfile.sub,
                   to: reseiverClientProfile.sub,
-                  amount: initTransfertDto.amount,
+                  amount: initTransferDto.amount,
                   code: confirmationCode,
                   attempt: 3,
                }
                await this.redisService.set(
-                  `${TRANSFERT_VALIDATION}-${senderClientProfile.sub}`,
-                  JSON.stringify(transfertRedisData),
+                  `${TRANSFER_VALIDATION}-${senderClientProfile.sub}`,
+                  JSON.stringify(transferRedisData),
                   10 * 60,
                )
                await this.smsService.sendSMS(
@@ -113,7 +112,7 @@ export class TransfertService {
                   firstName: reseiverClientProfile.firstName,
                   lastName: reseiverClientProfile.lastName,
                   profilePhoto: reseiverClientProfile.profilePhoto,
-                  amount: initTransfertDto.amount,
+                  amount: initTransferDto.amount,
                }
             },
          )
@@ -123,33 +122,33 @@ export class TransfertService {
       }
    }
 
-   async validationTransfert(clientProfileId: string, code: string) {
+   async validationTransfer(clientProfileId: string, code: string) {
       try {
-         const transfertInfo: TransfertRedisDataInterface = JSON.parse(
+         const transferInfo: TransferRedisDataInterface = JSON.parse(
             await this.redisService.get(
-               `${TRANSFERT_VALIDATION}-${clientProfileId}`,
+               `${TRANSFER_VALIDATION}-${clientProfileId}`,
             ),
          )
-         if (!transfertInfo) {
-            throw new NotFoundException('Transfert information not found')
+         if (!transferInfo) {
+            throw new NotFoundException('Transfer information not found')
          }
-         if (transfertInfo.code !== code) {
-            if (transfertInfo.attempt > 1) {
-               transfertInfo.attempt--
+         if (transferInfo.code !== code) {
+            if (transferInfo.attempt > 1) {
+               transferInfo.attempt--
                const ttl = await this.redisService.ttl(
-                  `${TRANSFERT_VALIDATION}-${clientProfileId}`,
+                  `${TRANSFER_VALIDATION}-${clientProfileId}`,
                )
                await this.redisService.set(
-                  `${TRANSFERT_VALIDATION}-${clientProfileId}`,
-                  JSON.stringify(transfertInfo),
+                  `${TRANSFER_VALIDATION}-${clientProfileId}`,
+                  JSON.stringify(transferInfo),
                   ttl,
                )
                throw new BadRequestException(
-                  `Incorrect OTP code. You have ${transfertInfo.attempt} attempt left.`,
+                  `Incorrect OTP code. You have ${transferInfo.attempt} attempt left.`,
                )
             } else {
                await this.redisService.remove(
-                  `${TRANSFERT_VALIDATION}-${clientProfileId}`,
+                  `${TRANSFER_VALIDATION}-${clientProfileId}`,
                )
                throw new BadRequestException(
                   'You have no attempts left. Please try again later.',
@@ -160,12 +159,12 @@ export class TransfertService {
             async (prisma) => {
                const senderAccountBalance = await prisma.accountBalance.update({
                   where: {
-                     clientProfileId: transfertInfo.from,
-                     balance: { gt: transfertInfo.amount },
+                     clientProfileId: transferInfo.from,
+                     balance: { gt: transferInfo.amount },
                   },
                   data: {
                      balance: {
-                        decrement: transfertInfo.amount,
+                        decrement: transferInfo.amount,
                      },
                   },
                   select: {
@@ -187,9 +186,9 @@ export class TransfertService {
                })
                const reseiverAccountBalance =
                   await prisma.accountBalance.update({
-                     where: { clientProfileId: transfertInfo.to },
+                     where: { clientProfileId: transferInfo.to },
                      data: {
-                        balance: { increment: transfertInfo.amount },
+                        balance: { increment: transferInfo.amount },
                      },
                      select: {
                         balance: true,
@@ -210,16 +209,16 @@ export class TransfertService {
                   })
                const transaction = await prisma.paymentTransaction.create({
                   data: {
-                     amount: transfertInfo.amount,
-                     from: transfertInfo.from,
-                     to: transfertInfo.to,
-                     clientProfileId: transfertInfo.from,
+                     amount: transferInfo.amount,
+                     from: transferInfo.from,
+                     to: transferInfo.to,
+                     clientProfileId: transferInfo.from,
                      paymentMethod: PaymentMethodType.RAPIDE_WALLET,
                      paymentTransactionStatus: PaymentTransactionStatus.SUCCESS,
-                     paymentTransactionType: PaymentTransactionType.TRANSFERT,
+                     paymentTransactionType: PaymentTransactionType.TRANSFER,
                      fees: 0,
                      return: 0,
-                     description: 'Transfert with rapide wallet.',
+                     description: 'Transfer with rapide wallet.',
                   },
                })
                const reseiverProfile =
@@ -227,20 +226,20 @@ export class TransfertService {
                const senderProfile = senderAccountBalance.clientProfile.profile
                await this.gateway.sendNotificationToClient(
                   reseiverProfile.sub,
-                  EVENT_TRANSFERT,
+                  EVENT_TRANSFER,
                   { balance: reseiverAccountBalance.balance },
                )
                await this.gateway.sendNotificationToClient(
                   senderProfile.sub,
-                  EVENT_TRANSFERT,
+                  EVENT_TRANSFER,
                   { balance: senderAccountBalance.balance },
                )
                await this.smsService.sendSMS(
                   [reseiverProfile.phoneNumber],
-                  `Dear ${reseiverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${reseiverProfile.lastName} ${reseiverProfile.firstName}, your reseave ${transfertInfo.amount} Ar from ${senderProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${senderProfile.lastName} ${senderProfile.firstName}. The transaction code is ${transaction.reference.toString().padStart(6, '0')}`,
+                  `Dear ${reseiverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${reseiverProfile.lastName} ${reseiverProfile.firstName}, your reseave ${transferInfo.amount} Ar from ${senderProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${senderProfile.lastName} ${senderProfile.firstName}. The transaction code is ${transaction.reference.toString().padStart(6, '0')}`,
                )
                await this.redisService.remove(
-                  `${TRANSFERT_VALIDATION}-${clientProfileId}`,
+                  `${TRANSFER_VALIDATION}-${clientProfileId}`,
                )
                return {
                   senderAccountBalance,
@@ -256,26 +255,26 @@ export class TransfertService {
 
    async resendCode(clientProfileId: string) {
       try {
-         const transfertInfo: TransfertRedisDataInterface = JSON.parse(
+         const transferInfo: TransferRedisDataInterface = JSON.parse(
             await this.redisService.get(
-               `${TRANSFERT_VALIDATION}-${clientProfileId}`,
+               `${TRANSFER_VALIDATION}-${clientProfileId}`,
             ),
          )
-         if (!transfertInfo) {
-            throw new NotFoundException('transfert information not found')
+         if (!transferInfo) {
+            throw new NotFoundException('transfer information not found')
          }
          const secret = speakeasy.generateSecret({ length: 20 })
          const confirmationCode = speakeasy.totp({
             secret: secret.base32,
             encoding: 'base32',
          })
-         transfertInfo.code = confirmationCode
+         transferInfo.code = confirmationCode
          const ttl = await this.redisService.ttl(
-            `${TRANSFERT_VALIDATION}-${clientProfileId}`,
+            `${TRANSFER_VALIDATION}-${clientProfileId}`,
          )
          await this.redisService.set(
-            `${TRANSFERT_VALIDATION}-${clientProfileId}`,
-            JSON.stringify(transfertInfo),
+            `${TRANSFER_VALIDATION}-${clientProfileId}`,
+            JSON.stringify(transferInfo),
             ttl,
          )
          const senderClientProfile =
@@ -290,7 +289,7 @@ export class TransfertService {
             })
          await this.smsService.sendSMS(
             [senderClientProfile.phoneNumber],
-            `Dear ${senderClientProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${senderClientProfile.lastName} ${senderClientProfile.firstName}, your transaction code is : ${transfertInfo.code}`,
+            `Dear ${senderClientProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${senderClientProfile.lastName} ${senderClientProfile.firstName}, your transaction code is : ${transferInfo.code}`,
          )
       } catch (error) {
          throw error

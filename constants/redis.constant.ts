@@ -8,5 +8,6 @@ export const SMS_TOKEN = 'sms-token'
 export const NEW_CLIENT = 'new-client'
 export const DAILY_RAPIDE_BALANCE = 'daily-rapide-balance'
 export const DAILY_RAPIDE_RIDE_COMPLET = 'daily-rapide-ride-complet'
-export const TRANSFERT_VALIDATION = 'transfert-validation'
+export const TRANSFER_VALIDATION = 'transfer-validation'
 export const PAYMENT_VALIDATION = 'payment-validation'
+
