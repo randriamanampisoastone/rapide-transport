@@ -19,7 +19,7 @@ export class UploadAwsService {
       })
    }
 
-   async uploadImage(file: Express.Multer.File) {
+   async uploadFile(file: Express.Multer.File) {
       const fileName = `rapid-${file.originalname}-${Date.now()}`
 
       const params = {
@@ -27,7 +27,7 @@ export class UploadAwsService {
          Key: fileName,
          Body: file.buffer,
          ContentType: file.mimetype,
-         ACL: 'public-read',
+         // ACL: 'public-read',
       }
 
       const uploadResult = await this.s3.upload(params).promise()
