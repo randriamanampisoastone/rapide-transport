@@ -3,9 +3,7 @@ import {
    IsEnum,
    IsNotEmpty,
    IsNumber,
-   IsPositive,
    IsString,
-   Matches,
    Max,
    Min,
 } from 'class-validator'

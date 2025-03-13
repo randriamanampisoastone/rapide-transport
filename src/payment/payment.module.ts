@@ -12,9 +12,11 @@ import { InfoOnRideService } from 'src/ride/info-on-ride.service'
 import { CheckRideService } from 'src/ride/check-ride.service'
 import { TransfertController } from './transfert.controller'
 import { TransfertService } from './transfert.service'
+import { RidePaymentController } from './ride-payment/ride-payment.controller'
+import { RidePaymentService } from './ride-payment/ride-payment.service'
 
 @Module({
-   controllers: [PasswordController, PaymentController, TransfertController],
+   controllers: [PasswordController, PaymentController, TransfertController, RidePaymentController],
    providers: [
       PasswordService,
       DepositeService,
@@ -25,7 +27,8 @@ import { TransfertService } from './transfert.service'
       LocationService,
       InfoOnRideService,
       CheckRideService,
-      TransfertService
+      TransfertService,
+      RidePaymentService
    ],
 })
 export class PaymentModule {}
