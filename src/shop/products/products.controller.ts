@@ -127,8 +127,6 @@ export class ProductsController {
         return this.productService.deleteImageFromProduct(id, user);
     }
 
-    @SetMetadata('allowedRole', [UserRole.ADMIN, UserRole.SELLER, UserRole.CLIENT])
-    @UseGuards(RolesGuard)
     @ApiOperation({summary: 'Fetch all products and can filter'})
     @Get()
     @ApiOperation({summary: 'Get all products with filters'})
@@ -162,8 +160,6 @@ export class ProductsController {
         );
     }
 
-    @SetMetadata('allowedRole', [UserRole.ADMIN, UserRole.SELLER, UserRole.CLIENT])
-    @UseGuards(RolesGuard)
     @ApiOperation({summary: 'Fetch a product by id'})
     @Get(':id')
     @ApiOperation({summary: 'Get product infos'})
