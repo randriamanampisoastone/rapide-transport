@@ -1,15 +1,18 @@
 import { Module } from '@nestjs/common'
 import { ResetBalanceServce } from './reset-balance.service'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { AccountBalanceController } from './accountBalance.controller'
+import { RapideWalletController } from './rapideWallet.controller'
 import { GetRapideBalanceService } from './get-rapide-balance.service'
 import { RedisService } from 'src/redis/redis.service'
 import { DriverBalanceService } from './driverBalance.service'
-import { ClientBalanceService } from './client-balance.service'
 import { Gateway } from 'src/gateway/gateway'
 import { LocationService } from 'src/gateway/location/location.service'
 import { InfoOnRideService } from 'src/ride/info-on-ride.service'
 import { CheckRideService } from 'src/ride/check-ride.service'
+import { PasswordController } from './password.controller'
+import { PasswordService } from './password.service'
+import { SmsService } from 'src/sms/sms.service'
+import { RapideWalletService } from './rapide-wallet.service'
 
 @Module({
    imports: [],
@@ -19,12 +22,14 @@ import { CheckRideService } from 'src/ride/check-ride.service'
       PrismaService,
       RedisService,
       DriverBalanceService,
-      ClientBalanceService,
       Gateway,
       LocationService,
       InfoOnRideService,
       CheckRideService,
+      PasswordService,
+      SmsService,
+      RapideWalletService,
    ],
-   controllers: [AccountBalanceController],
+   controllers: [RapideWalletController, PasswordController],
 })
-export class AccountBalanceModule {}
+export class RapideWalletModule {}

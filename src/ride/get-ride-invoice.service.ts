@@ -24,7 +24,7 @@ export class GetRideInvoiceService {
                         profile: true,
                      },
                   },
-                  paymentTransactions: true,
+                  transaction: true,
                },
                skip: (page - 1) * pageSize,
                take: pageSize,

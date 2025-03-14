@@ -1,8 +1,5 @@
 import { Module } from '@nestjs/common'
-import { PasswordController } from './password.controller'
-import { PasswordService } from './password.service'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { PaymentController } from './payment.controller'
 import { DepositeService } from './deposite.service'
 import { SmsService } from 'src/sms/sms.service'
 import { RedisService } from 'src/redis/redis.service'
@@ -16,16 +13,16 @@ import { TransferService } from './transfer.service'
 
 import { RidePaymentController } from './ride-payment/ride-payment.controller'
 import { RidePaymentService } from './ride-payment/ride-payment.service'
+import { PaymentController } from './payment.controller'
+import { GetTransactionService } from './get-transacation.service'
 
 @Module({
    controllers: [
-      PasswordController,
       PaymentController,
       TransferController,
       RidePaymentController,
    ],
    providers: [
-      PasswordService,
       DepositeService,
       PrismaService,
       SmsService,
@@ -36,6 +33,7 @@ import { RidePaymentService } from './ride-payment/ride-payment.service'
       CheckRideService,
       TransferService,
       RidePaymentService,
+      GetTransactionService
    ],
 })
 export class PaymentModule {}

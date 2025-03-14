@@ -143,7 +143,7 @@ model ClientProfile {
   clientAddress       Address[]            @relation("ClientAddress")
   rideInvoice         RideInvoice[]        @relation("ClientRideInvoice")
   ride                Ride[]               @relation("ClientRide")
-  rapideWallet        RapideWallet?        @relation("ClientAccountBalance")
+  rapideWallet        RapideWallet?        @relation("ClientRapideWallet")
 
   status              ProfileStatus        @default(ACTIVE)
   completeRide        Int                  @default(0)
@@ -162,7 +162,7 @@ model DriverProfile {
 
   rideInvoice         RideInvoice[]   @relation("DriverRideInvoice")
   ride                Ride[]          @relation("DriverRide")
-  rapideWallet        RapideWallet?   @relation("DriverAccountBalance")
+  rapideWallet        RapideWallet?   @relation("DriverRapideWallet")
 
   status              ProfileStatus   @default(UNDER_REVIEW)
   completeRide        Int             @default(0)
@@ -208,16 +208,23 @@ model RapideWallet {
   balance              Float               @default(0)
   status               RapideWalletStatus  @default(PENDING)
 
-  idCard               String? 
-  idCardPhotoRecto     String? 
+  idCard               String?
+  idCardPhotoRecto     String?
   idCardPhotoVerso     String?
-  password             String? 
+  password             String?
+  depositeCount        Int                 @default(0)
+  transferCount        Int                 @default(0)
+  paymentCount         Int                 @default(0)
+  transactionCount     Int                 @default(0)
+  successCount         Int                 @default(0)
+  failedCount          Int                 @default(0)
+  rejectedCount        Int                 @default(0)
 
   clientProfileId      String?             @unique
-  clientProfile        ClientProfile?      @relation("ClientAccountBalance", fields: [clientProfileId], references: [clientProfileId])
+  clientProfile        ClientProfile?      @relation("ClientRapideWallet", fields: [clientProfileId], references: [clientProfileId])
   
   driverProfileId      String?             @unique
-  driverProfile        DriverProfile?      @relation("DriverAccountBalance", fields: [driverProfileId], references: [driverProfileId])
+  driverProfile        DriverProfile?      @relation("DriverRapideWallet", fields: [driverProfileId], references: [driverProfileId])
 
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt

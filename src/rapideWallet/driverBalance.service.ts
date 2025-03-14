@@ -10,22 +10,18 @@ export class DriverBalanceService {
             where: { sub: driverProfileId },
             select: {
                driverProfile: {
-                  select: { accountBalance: true },
+                  select: { rapideWallet: true },
                },
             },
          })
          const currentDriverBalance: number =
-            driver.driverProfile.accountBalance.balance
-         const accountBalanceId: string =
-            driver.driverProfile.accountBalance.accountBalanceId
+            driver.driverProfile.rapideWallet.balance
+         const rapideWalletId: string =
+            driver.driverProfile.rapideWallet.rapideWalletId
 
-         const updatedDriver = this.prismaService.accountBalance.update({
-            where: {
-               accountBalanceId,
-            },
-            data: {
-               balance: currentDriverBalance + toIncreaseAmount,
-            },
+         const updatedDriver = this.prismaService.rapideWallet.update({
+            where: { rapideWalletId },
+            data: { balance: currentDriverBalance + toIncreaseAmount },
          })
 
          return updatedDriver
@@ -33,14 +29,14 @@ export class DriverBalanceService {
          throw error
       }
    }
-   async getSold(driverProfileId: string) {
+   async getSold(profileId: string) {
       try {
          const driver = await this.prismaService.profile.findUnique({
-            where: { sub: driverProfileId },
+            where: { sub: profileId },
             select: {
                driverProfile: {
                   select: {
-                     accountBalance: {
+                     rapideWallet: {
                         select: {
                            balance: true,
                         },
@@ -49,7 +45,7 @@ export class DriverBalanceService {
                },
             },
          })
-         return driver.driverProfile.accountBalance.balance
+         return driver.driverProfile.rapideWallet.balance
       } catch (error) {
          throw error
       }

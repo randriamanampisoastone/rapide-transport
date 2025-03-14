@@ -30,7 +30,6 @@ export class RidePaymentService {
             await this.prismaService.clientProfile.findUnique({
                where: { clientProfileId },
                select: {
-                  walletPassword: true,
                   profile: {
                      select: {
                         gender: true,
@@ -39,6 +38,11 @@ export class RidePaymentService {
                         phoneNumber: true,
                      },
                   },
+                  rapideWallet: {
+                     select: {
+                        password: true
+                     }
+                  }
                },
             })
          if (!clientProfile) {
@@ -46,7 +50,7 @@ export class RidePaymentService {
          }
          const isMatch = await bcrypt.compare(
             initRapideWalletPayment.walletPassword,
-            clientProfile.walletPassword,
+            clientProfile.rapideWallet.password,
          )
          if (!isMatch) {
             throw new BadRequestException('Password incorrect')

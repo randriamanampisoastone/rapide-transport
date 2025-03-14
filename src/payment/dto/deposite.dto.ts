@@ -1,4 +1,4 @@
-import { PaymentMethodType } from '@prisma/client'
+import { MethodType } from '@prisma/client'
 import {
    IsEnum,
    IsNotEmpty,
@@ -19,7 +19,7 @@ export class DepositeDto {
    @Max(1000000)
    amount: number
 
-   @IsEnum(PaymentMethodType)
+   @IsEnum(MethodType)
    @IsNotEmpty()
-   paymentMethodType: PaymentMethodType
+   methodType: MethodType
 }

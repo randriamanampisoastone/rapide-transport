@@ -10,9 +10,10 @@ import * as speakeasy from 'speakeasy'
 import { SmsService } from 'src/sms/sms.service'
 import {
    GenderType,
-   PaymentMethodType,
-   PaymentTransactionStatus,
-   PaymentTransactionType,
+   MethodType,
+   RapideWalletStatus,
+   TransactionStatus,
+   TransactionType,
 } from '@prisma/client'
 import { RedisService } from 'src/redis/redis.service'
 import { TRANSFER_VALIDATION } from 'constants/redis.constant'
@@ -43,20 +44,17 @@ export class TransferService {
                      gender: true,
                      clientProfile: {
                         select: {
-                           walletPassword: true,
-                           accountBalance: { select: { balance: true } },
+                           rapideWallet: { select: { balance: true, password: true, status: true } },
                         },
                      },
                   },
                })
-               if (!senderClientProfile.clientProfile.walletPassword) {
-                  throw new BadRequestException(
-                     "You don't have wallet password yet please chouse one",
-                  )
+               if (senderClientProfile.clientProfile.rapideWallet.status === RapideWalletStatus.PENDING) {
+                  throw new BadRequestException("You don't have a wallet")
                }
                const isMatch = await bcrypt.compare(
                   initTransferDto.walletPassword,
-                  senderClientProfile.clientProfile.walletPassword,
+                  senderClientProfile.clientProfile.rapideWallet.password,
                )
                if (!isMatch) {
                   throw new BadRequestException('Incorrect password')
@@ -65,7 +63,7 @@ export class TransferService {
                   throw new NotFoundException('Client sender not found')
                }
                if (
-                  senderClientProfile.clientProfile.accountBalance.balance <
+                  senderClientProfile.clientProfile.rapideWallet.balance <
                   initTransferDto.amount
                ) {
                   throw new BadRequestException(
@@ -157,7 +155,7 @@ export class TransferService {
          }
          const transactionData = await this.prismaService.$transaction(
             async (prisma) => {
-               const senderAccountBalance = await prisma.accountBalance.update({
+               const senderRapideWallet = await prisma.rapideWallet.update({
                   where: {
                      clientProfileId: transferInfo.from,
                      balance: { gt: transferInfo.amount },
@@ -184,8 +182,8 @@ export class TransferService {
                      },
                   },
                })
-               const reseiverAccountBalance =
-                  await prisma.accountBalance.update({
+               const reseiverRapideWallet =
+                  await prisma.rapideWallet.update({
                      where: { clientProfileId: transferInfo.to },
                      data: {
                         balance: { increment: transferInfo.amount },
@@ -207,32 +205,31 @@ export class TransferService {
                         },
                      },
                   })
-               const transaction = await prisma.paymentTransaction.create({
+               const transaction = await prisma.transaction.create({
                   data: {
                      amount: transferInfo.amount,
                      from: transferInfo.from,
                      to: transferInfo.to,
                      clientProfileId: transferInfo.from,
-                     paymentMethod: PaymentMethodType.RAPIDE_WALLET,
-                     paymentTransactionStatus: PaymentTransactionStatus.SUCCESS,
-                     paymentTransactionType: PaymentTransactionType.TRANSFER,
+                     method: MethodType.RAPIDE_WALLET,
+                     status: TransactionStatus.SUCCESS,
+                     type: TransactionType.TRANSFER,
                      fees: 0,
-                     return: 0,
                      description: 'Transfer with rapide wallet.',
                   },
                })
                const reseiverProfile =
-                  reseiverAccountBalance.clientProfile.profile
-               const senderProfile = senderAccountBalance.clientProfile.profile
+                  reseiverRapideWallet.clientProfile.profile
+               const senderProfile = senderRapideWallet.clientProfile.profile
                await this.gateway.sendNotificationToClient(
                   reseiverProfile.sub,
                   EVENT_TRANSFER,
-                  { balance: reseiverAccountBalance.balance },
+                  { balance: reseiverRapideWallet.balance },
                )
                await this.gateway.sendNotificationToClient(
                   senderProfile.sub,
                   EVENT_TRANSFER,
-                  { balance: senderAccountBalance.balance },
+                  { balance: senderRapideWallet.balance },
                )
                await this.smsService.sendSMS(
                   [reseiverProfile.phoneNumber],
@@ -242,7 +239,7 @@ export class TransferService {
                   `${TRANSFER_VALIDATION}-${clientProfileId}`,
                )
                return {
-                  senderAccountBalance,
+                  senderRapideWallet,
                   transaction,
                }
             },
