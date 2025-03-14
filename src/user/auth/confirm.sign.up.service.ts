@@ -151,7 +151,7 @@ export class ConfirmSignUpService {
                clientProfileId: authProfile.sub,
             },
          })
-         await prisma.accountBalance.create({
+         await prisma.rapideWallet.create({
             data: {
                clientProfileId: clientProfile.clientProfileId,
             },
@@ -184,7 +184,7 @@ export class ConfirmSignUpService {
                driverProfileId: authProfile.sub,
             },
          })
-         await prisma.accountBalance.create({
+         await prisma.rapideWallet.create({
             data: {
                driverProfileId: driverProfile.driverProfileId,
             },
