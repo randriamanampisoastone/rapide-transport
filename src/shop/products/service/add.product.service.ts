@@ -1,8 +1,8 @@
 import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
-import {ERROR_CREATING_PRODUCT} from "../../../constants/response.constant";
-import {UploadAwsService} from "../Common/upload-aws/upload-aws.service";
-import {PrismaService} from "../../prisma/prisma.service";
-import {ProductsService} from "./products.service";
+import {ERROR_CREATING_PRODUCT} from "../../../../constants/response.constant";
+import {UploadAwsService} from "../../Common/upload-aws/upload-aws.service";
+import {PrismaService} from "../../../prisma/prisma.service";
+import {ProductsService} from "../products.service";
 
 @Injectable()
 export class AddProductService extends ProductsService {

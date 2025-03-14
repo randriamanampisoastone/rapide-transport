@@ -14,6 +14,9 @@ export const SAME_PRODUCT_ON_A_CUSTOMER = 'SAME_PRODUCT_ON_A_CUSTOMER'
 export const PRODUCT_NOT_FOUND = 'PRODUCT_NOT_FOUND'
 export const NOT_OWNER_OF_THE_PRODUCT = 'NOT_OWNER_OF_THE_PRODUCT'
 
+// ## seller response
+export const SELLER_NOT_FOUND = 'SELLER_NOT_FOUND'
+
 
 // ## Error response
 export const INVALID_PARAMS = 'INVALID_PARAMS'
