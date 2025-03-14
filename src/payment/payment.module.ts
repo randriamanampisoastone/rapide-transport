@@ -18,7 +18,12 @@ import { RidePaymentController } from './ride-payment/ride-payment.controller'
 import { RidePaymentService } from './ride-payment/ride-payment.service'
 
 @Module({
-   controllers: [PasswordController, PaymentController, TransfertController, RidePaymentController],
+   controllers: [
+      PasswordController,
+      PaymentController,
+      TransferController,
+      RidePaymentController,
+   ],
    providers: [
       PasswordService,
       DepositeService,
@@ -30,8 +35,7 @@ import { RidePaymentService } from './ride-payment/ride-payment.service'
       InfoOnRideService,
       CheckRideService,
       TransferService,
-      RidePaymentService
-
+      RidePaymentService,
    ],
 })
 export class PaymentModule {}

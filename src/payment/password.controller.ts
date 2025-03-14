@@ -4,7 +4,6 @@ import {
    ForbiddenException,
    Patch,
    Post,
-   Query,
    SetMetadata,
    UseGuards,
 } from '@nestjs/common'

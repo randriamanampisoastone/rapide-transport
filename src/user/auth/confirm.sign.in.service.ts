@@ -87,7 +87,11 @@ export class ConfirmSignInService {
                   clientProfile: {
                      select: {
                         status: true,
-                        isWalletPasswordDefined: true,
+                        rapideWallet: {
+                           select: {
+                              status: true,
+                           },
+                        },
                      },
                   },
                },
@@ -96,8 +100,8 @@ export class ConfirmSignInService {
                sub: clientProfile.sub,
                role: clientProfile.role,
                status: clientProfile.clientProfile.status,
-               isWalletPasswordDefined:
-                  clientProfile.clientProfile.isWalletPasswordDefined,
+               rapideWalletStatus:
+                  clientProfile.clientProfile.rapideWallet.status,
             }
             const token = jwt.sign(
                updateClientProfile,
@@ -116,7 +120,11 @@ export class ConfirmSignInService {
                   driverProfile: {
                      select: {
                         status: true,
-                        isWalletPasswordDefined: true,
+                        rapideWallet: {
+                           select: {
+                              status: true,
+                           },
+                        },
                      },
                   },
                },
@@ -125,8 +133,8 @@ export class ConfirmSignInService {
                sub: driverProfile.sub,
                role: driverProfile.role,
                status: driverProfile.driverProfile.status,
-               isWalletPasswordDefined:
-                  driverProfile.driverProfile.isWalletPasswordDefined,
+               rapideWalletStatus:
+                  driverProfile.driverProfile.rapideWallet.status,
             }
             const token = jwt.sign(
                updateDriverProfile,
