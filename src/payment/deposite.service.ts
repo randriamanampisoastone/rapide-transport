@@ -9,21 +9,21 @@ import { DepositeDto } from './dto/deposite.dto'
 import * as bcrypt from 'bcrypt'
 import {
    GenderType,
-   PaymentMethodType,
-   PaymentTransactionStatus,
-   PaymentTransactionType,
+   MethodType,
+   TransactionStatus,
+   TransactionType,
 } from '@prisma/client'
 import { SmsService } from 'src/sms/sms.service'
 import { Gateway } from 'src/gateway/gateway'
 import { EVENT_DEPOSITE } from 'constants/event.constant'
-import { AmountDto } from 'src/accountBalance/dto/amount.dto'
+import { AmountDto } from 'src/rapideWallet/dto/amount.dto'
 
 @Injectable()
 export class DepositeService {
    constructor(
       private readonly prismaService: PrismaService,
       private readonly smsService: SmsService,
-      private readonly gateWay: Gateway
+      private readonly gateWay: Gateway,
    ) {}
 
    async deposite(
@@ -46,49 +46,51 @@ export class DepositeService {
          if (!isMatch) {
             throw new BadRequestException('Password incorrect')
          }
-         const transaction = await this.prismaService.$transaction(
+         await this.prismaService.$transaction(
             async (prisma) => {
-               const accountBalance = await prisma.accountBalance.update({
+               const rapideWallet = await prisma.rapideWallet.update({
                   where: { clientProfileId },
                   data: { balance: { increment: depositeDto.amount } },
                   include: { clientProfile: { include: { profile: true } } },
                })
 
-               if (!accountBalance) {
+               if (!rapideWallet) {
                   throw new ForbiddenException(
                      'Error when trying to increment client balance',
                   )
                }
 
-               const transaction = await prisma.paymentTransaction.create({
+               const transaction = await prisma.transaction.create({
                   data: {
                      amount: depositeDto.amount,
                      from: adminProfileId,
                      to: clientProfileId,
-                     fees: 0,
-                     return: 0,
-                     paymentMethod: depositeDto.paymentMethodType,
-                     paymentTransactionStatus: PaymentTransactionStatus.SUCCESS,
-                     paymentTransactionType: PaymentTransactionType.DEPOSIT,
+                     method: depositeDto.methodType,
+                     status: TransactionStatus.SUCCESS,
+                     type: TransactionType.DEPOSIT,
                      clientProfileId: clientProfileId,
                   },
                })
 
-               const clientProfile = accountBalance.clientProfile.profile
+               const clientProfile = rapideWallet.clientProfile.profile
 
                await this.smsService.sendSMS(
                   [clientProfile.phoneNumber],
                   `Dear ${clientProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${clientProfile.lastName} ${clientProfile.firstName}, you have received ${depositeDto.amount} Ar. The transaction reference is ${transaction.reference.toString().padStart(6, '0')}`,
                )
 
-               await this.gateWay.sendNotificationToClient(clientProfileId, EVENT_DEPOSITE, {
-                  referance: transaction.reference,
-                  paymentTransactionId: transaction.paymentTransactionId,
-                  amount: depositeDto.amount,
-               })
+               await this.gateWay.sendNotificationToClient(
+                  clientProfileId,
+                  EVENT_DEPOSITE,
+                  {
+                     referance: transaction.reference,
+                     paymentTransactionId: transaction.transactionId,
+                     amount: depositeDto.amount,
+                  },
+               )
 
                return {
-                  accountBalance,
+                  rapideWallet,
                   transaction,
                }
             },

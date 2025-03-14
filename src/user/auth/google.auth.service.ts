@@ -64,8 +64,24 @@ export class GoogleAuthService {
          const existingUser = await this.prismaService.profile.findUnique({
             where: { email: payload.email },
             include: {
-               clientProfile: true,
-               driverProfile: true,
+               clientProfile: {
+                  include: {
+                     rapideWallet: {
+                        select: {
+                           status: true,
+                        },
+                     },
+                  },
+               },
+               driverProfile: {
+                  include: {
+                     rapideWallet: {
+                        select: {
+                           status: true,
+                        },
+                     },
+                  },
+               },
                adminProfile: true,
             },
          })
@@ -86,8 +102,7 @@ export class GoogleAuthService {
                   sub: existingUser.sub,
                   role: existingUser.role,
                   status: existingUser.clientProfile.status,
-                  isWalletPasswordDefined:
-                     existingUser.clientProfile.isWalletPasswordDefined,
+                  rapideWalletStatus: existingUser.clientProfile.rapideWallet.status,
                },
                this.JWT_SECRET_CLIENT,
                {
@@ -101,8 +116,8 @@ export class GoogleAuthService {
                   sub: existingUser.sub,
                   role: existingUser.role,
                   status: existingUser.driverProfile.status,
-                  isWalletPasswordDefined:
-                     existingUser.driverProfile.isWalletPasswordDefined,
+                  rapideWalletStatus:
+                     existingUser.driverProfile.rapideWallet.status,
                },
                this.JWT_SECRET_DRIVER,
                {

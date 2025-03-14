@@ -26,7 +26,7 @@ import { CompleteService } from './complete.service'
 import { ReviewService } from './review.service'
 import { LatLng } from 'interfaces/location.interface'
 import { VehicleType } from 'enums/vehicle.enum'
-import { PaymentMethodType } from 'enums/payment.enum'
+import { MethodType } from 'enums/payment.enum'
 import { StoppedService } from './stopped.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
@@ -89,7 +89,7 @@ export class RideController {
          pickUpLocation: LatLng
          dropOffLocation: LatLng
          vehicleType: VehicleType
-         paymentMethodType: PaymentMethodType
+         methodType: MethodType
          clientExpoToken: string
       },
       @GetUser('sub') clientProfileId: string,

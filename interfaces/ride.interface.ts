@@ -1,7 +1,7 @@
 import { VehicleType } from 'enums/vehicle.enum'
 import { EstimatedPrice } from './price.interface'
 import { LatLng } from './location.interface'
-import { PaymentMethodType } from 'enums/payment.enum'
+import { MethodType } from 'enums/payment.enum'
 import { RideStatus } from 'enums/ride.enum'
 
 export interface RideDataKey {
@@ -16,7 +16,7 @@ export interface RideData {
    driverProfileId?: string
    vehicleType: VehicleType
    vehicleId?: string
-   paymentMethodType: PaymentMethodType
+   methodType: MethodType
    pickUpLocation: LatLng
    dropOffLocation: LatLng
    encodedPolyline: string

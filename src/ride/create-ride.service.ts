@@ -13,7 +13,7 @@ import { ItineraryData } from 'interfaces/itinerary.interface'
 import { EstimatedPrice } from 'interfaces/price.interface'
 import { ITINERARY_PREFIX, RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
-import { PaymentMethodType } from 'enums/payment.enum'
+import { MethodType } from 'enums/payment.enum'
 import { LatLng } from 'interfaces/location.interface'
 import { FindDriverService } from './find-driver.service'
 import { PrismaService } from 'src/prisma/prisma.service'
@@ -28,7 +28,7 @@ export interface CreateRideDto {
    pickUpLocation: LatLng
    dropOffLocation: LatLng
    vehicleType: VehicleType
-   paymentMethodType: PaymentMethodType
+   methodType: MethodType
    clientExpoToken: string
 }
 
@@ -112,7 +112,7 @@ export class CreateRideService {
          const pickUpLocation = createRideDto.pickUpLocation
          const dropOffLocation = createRideDto.dropOffLocation
          const vehicleType = createRideDto.vehicleType
-         const paymentMethodType = createRideDto.paymentMethodType
+         const methodType = createRideDto.methodType
          const clientExpoToken = createRideDto.clientExpoToken
 
          const itinerary = await this.redisService.get(
@@ -133,7 +133,7 @@ export class CreateRideService {
                rideId: crypto.randomUUID(),
                clientProfileId,
                vehicleType,
-               paymentMethodType,
+               methodType,
                pickUpLocation,
                dropOffLocation,
                encodedPolyline,
@@ -152,7 +152,7 @@ export class CreateRideService {
                pickUpLocation,
                dropOffLocation,
                vehicleType,
-               paymentMethodType,
+               methodType,
             } = createRideDto
 
             const newItinerary =
@@ -171,7 +171,7 @@ export class CreateRideService {
                rideId: crypto.randomUUID(),
                clientProfileId,
                vehicleType,
-               paymentMethodType,
+               methodType,
                pickUpLocation,
                dropOffLocation,
                encodedPolyline,

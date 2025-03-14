@@ -18,7 +18,7 @@ import { CompleteService } from './complete.service'
 import { ReviewService } from './review.service'
 import { GetRideService } from './get-ride.service'
 import { StoppedService } from './stopped.service'
-import { DriverBalanceService } from 'src/accountBalance/driverBalance.service'
+import { DriverBalanceService } from 'src/rapideWallet/driverBalance.service'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { InfoOnRideService } from './info-on-ride.service'
 import { GetRideInvoiceService } from './get-ride-invoice.service'
@@ -65,7 +65,7 @@ import { NotificationService } from 'src/notification/notification.service'
 
       DeleteRideService,
 
-      NotificationService
+      NotificationService,
    ],
 })
 export class RideModule {}

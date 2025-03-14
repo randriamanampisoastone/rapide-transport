@@ -10,4 +10,4 @@ export const DAILY_RAPIDE_BALANCE = 'daily-rapide-balance'
 export const DAILY_RAPIDE_RIDE_COMPLET = 'daily-rapide-ride-complet'
 export const TRANSFER_VALIDATION = 'transfer-validation'
 export const PAYMENT_VALIDATION = 'payment-validation'
-
+export const RAPIDE_WALLET_VALIDATION = 'rapide-wallet-validation'

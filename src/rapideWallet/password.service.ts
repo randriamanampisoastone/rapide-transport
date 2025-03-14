@@ -6,19 +6,6 @@ import * as bcrypt from 'bcrypt'
 export class PasswordService {
    constructor(private readonly prismaService: PrismaService) {}
 
-   async setClientPassword(clientProfileId: string, password: string) {
-      try {
-         const salt = await bcrypt.genSalt(10, 'a')
-         const hashedPassword = await bcrypt.hash(password, salt)
-         await this.prismaService.clientProfile.update({
-            where: { clientProfileId },
-            data: { walletPassword: hashedPassword },
-         })
-      } catch (error) {
-         throw error
-      }
-   }
-
    async setAdminPassword(adminProfileId: string, password: string) {
       try {
          const salt = await bcrypt.genSalt(10, 'a')
@@ -34,30 +21,30 @@ export class PasswordService {
 
    async changeClientPassword(
       clientProfileId: string,
-      oldWalletPassword: string,
-      newWalletPassword: string,
+      oldPassword: string,
+      newPassword: string,
    ) {
       try {
          await this.prismaService.$transaction(async (prisma) => {
-            const clientProfile = await prisma.clientProfile.findUnique({
+            const clientProfile = await prisma.rapideWallet.findUnique({
                where: { clientProfileId },
-               select: { walletPassword: true },
+               select: { password: true },
             })
 
             const isMatch = await bcrypt.compare(
-               oldWalletPassword,
-               clientProfile.walletPassword,
+               oldPassword,
+               clientProfile.password,
             )
             if (!isMatch) {
                throw new BadRequestException('incorrect password')
             }
 
             const salt = await bcrypt.genSalt(10, 'a')
-            const hashedPassword = await bcrypt.hash(newWalletPassword, salt)
+            const hashedPassword = await bcrypt.hash(newPassword, salt)
 
-            await prisma.clientProfile.update({
+            await prisma.rapideWallet.update({
                where: { clientProfileId },
-               data: { walletPassword: hashedPassword },
+               data: { password: hashedPassword },
             })
          })
       } catch (error) {

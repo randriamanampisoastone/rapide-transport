@@ -5,12 +5,12 @@ import {
    InternalServerErrorException,
    NotFoundException,
 } from '@nestjs/common'
-import { PaymentMethodType } from '@prisma/client'
+import { MethodType } from '@prisma/client'
 import { EVENT_RIDE_COMPLETED } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
 import { RideData } from 'interfaces/ride.interface'
-import { DriverBalanceService } from 'src/accountBalance/driverBalance.service'
+import { DriverBalanceService } from 'src/rapideWallet/driverBalance.service'
 import { Gateway } from 'src/gateway/gateway'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
@@ -26,7 +26,7 @@ export class CompleteService {
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
       private readonly driverBalanceService: DriverBalanceService,
-      private readonly prismaService: PrismaService
+      private readonly prismaService: PrismaService,
    ) {}
    async complete(completeDto: CompleteDto) {
       try {
@@ -95,6 +95,10 @@ export class CompleteService {
             dropOffLocation,
             estimatedPrice,
             rideId: rideInvoiceId,
+            estimatedDuration,
+            review,
+            note,
+            clientProfileId,
             ...rideDataRest
          } = rideData
          await this.prismaService.rideInvoice.create({
@@ -105,8 +109,6 @@ export class CompleteService {
                pickUpLongitude: pickUpLocation.longitude,
                dropOffLatitude: dropOffLocation.latitude,
                dropOffLongitude: dropOffLocation.longitude,
-               estimatedPriceLower: estimatedPrice.lower,
-               estimatedPriceUpper: estimatedPrice.upper,
                status: RideStatus.COMPLETED,
                endTime: updatedRideData.endTime,
             },

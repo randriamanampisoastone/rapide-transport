@@ -1,4 +1,4 @@
-export enum PaymentMethodType {
+export enum MethodType {
    CASH = 'CASH',
    MVOLA = 'MVOLA',
    ORANGE_MONEY = 'ORANGE_MONEY',
