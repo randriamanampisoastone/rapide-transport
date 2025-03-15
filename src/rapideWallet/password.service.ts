@@ -51,4 +51,17 @@ export class PasswordService {
          throw error
       }
    }
+
+   async resetClientPassword(clientProfileId: string, newPassword: string) {
+      try {
+         const salt = await bcrypt.genSalt(10, 'a')
+         const hashedPassword = await bcrypt.hash(newPassword, salt)
+         await this.prismaService.rapideWallet.update({
+            where: { clientProfileId },
+            data: { password: hashedPassword },
+         })
+      } catch (error) {
+         throw error
+      }
+   }
 }

@@ -14,6 +14,7 @@ import { DriverBalanceService } from 'src/rapideWallet/driverBalance.service'
 import { Gateway } from 'src/gateway/gateway'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
+import { RidePaymentService } from 'src/payment/ride-payment/ride-payment.service'
 
 export interface CompleteDto {
    driverProfileId: string
@@ -27,6 +28,7 @@ export class CompleteService {
       private readonly redisService: RedisService,
       private readonly driverBalanceService: DriverBalanceService,
       private readonly prismaService: PrismaService,
+      private readonly ridePaymentService: RidePaymentService,
    ) {}
    async complete(completeDto: CompleteDto) {
       try {
@@ -89,6 +91,19 @@ export class CompleteService {
          //    rideData.driverProfileId,
          //    Math.round(rideData.realPrice),
          // )
+
+         if (rideData.methodType === MethodType.CASH) {
+            await this.ridePaymentService.cashPayment(
+               rideData.clientProfileId,
+               rideData.driverProfileId,
+               Math.round(rideData.realPrice),
+            )
+         } else if (rideData.methodType === MethodType.RAPIDE_WALLET) {
+            await this.ridePaymentService.processPaymentWithRapideWallet(
+               rideData.clientProfileId,
+               Math.round(rideData.realPrice),
+            )
+         }
 
          const {
             pickUpLocation,

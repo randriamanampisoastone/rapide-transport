@@ -44,12 +44,21 @@ export class TransferService {
                      gender: true,
                      clientProfile: {
                         select: {
-                           rapideWallet: { select: { balance: true, password: true, status: true } },
+                           rapideWallet: {
+                              select: {
+                                 balance: true,
+                                 password: true,
+                                 status: true,
+                              },
+                           },
                         },
                      },
                   },
                })
-               if (senderClientProfile.clientProfile.rapideWallet.status === RapideWalletStatus.PENDING) {
+               if (
+                  senderClientProfile.clientProfile.rapideWallet.status ===
+                  RapideWalletStatus.PENDING
+               ) {
                   throw new BadRequestException("You don't have a wallet")
                }
                const isMatch = await bcrypt.compare(
@@ -161,9 +170,10 @@ export class TransferService {
                      balance: { gt: transferInfo.amount },
                   },
                   data: {
-                     balance: {
-                        decrement: transferInfo.amount,
-                     },
+                     balance: { decrement: transferInfo.amount },
+                     transferCount: { increment: 1 },
+                     transactionCount: { increment: 1 },
+                     successCount: { increment: 1 },
                   },
                   select: {
                      balance: true,
@@ -182,29 +192,31 @@ export class TransferService {
                      },
                   },
                })
-               const reseiverRapideWallet =
-                  await prisma.rapideWallet.update({
-                     where: { clientProfileId: transferInfo.to },
-                     data: {
-                        balance: { increment: transferInfo.amount },
-                     },
-                     select: {
-                        balance: true,
-                        clientProfile: {
-                           select: {
-                              profile: {
-                                 select: {
-                                    firstName: true,
-                                    lastName: true,
-                                    phoneNumber: true,
-                                    gender: true,
-                                    sub: true,
-                                 },
+               const reseiverRapideWallet = await prisma.rapideWallet.update({
+                  where: { clientProfileId: transferInfo.to },
+                  data: {
+                     balance: { increment: transferInfo.amount },
+                     transactionCount: { increment: 1 },
+                     transferCount: { increment: 1 },
+                     successCount: { increment: 1 },
+                  },
+                  select: {
+                     balance: true,
+                     clientProfile: {
+                        select: {
+                           profile: {
+                              select: {
+                                 firstName: true,
+                                 lastName: true,
+                                 phoneNumber: true,
+                                 gender: true,
+                                 sub: true,
                               },
                            },
                         },
                      },
-                  })
+                  },
+               })
                const transaction = await prisma.transaction.create({
                   data: {
                      amount: transferInfo.amount,

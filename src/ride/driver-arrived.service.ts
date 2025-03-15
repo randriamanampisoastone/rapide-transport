@@ -13,6 +13,8 @@ import { RIDE_PREFIX } from 'constants/redis.constant'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { EVENT_DRIVER_ARREIVED } from 'constants/event.constant'
 import { NotificationService } from 'src/notification/notification.service'
+import { RidePaymentService } from 'src/payment/ride-payment/ride-payment.service'
+import { MethodType } from '@prisma/client'
 
 export interface DriverArrivedDto {
    driverProfileId: string
@@ -26,6 +28,7 @@ export class DriverArrivedService {
       private readonly redisService: RedisService,
       private readonly prismaService: PrismaService,
       private readonly notificationService: NotificationService,
+      private readonly ridePaymentService: RidePaymentService,
    ) {}
 
    async drivertArrived(driverArrivedDto: DriverArrivedDto) {
@@ -86,6 +89,18 @@ export class DriverArrivedService {
             'Driver arrived !',
             'Your driver has arrived',
          )
+
+         if (rideData.methodType === MethodType.RAPIDE_WALLET) {
+            const rideTtl = await this.redisService.ttl(
+               `${RIDE_PREFIX + rideId}`,
+            )
+            await this.ridePaymentService.setReceiverAndRideId(
+               rideData.clientProfileId,
+               driverProfileId,
+               rideData.rideId,
+               rideTtl,
+            )
+         }
 
          this.gateway.sendNotificationToClient(
             clientProfileId,
