@@ -18,7 +18,6 @@ import {CategoriesModule} from './shop/categories/categories.module';
 import {OrdersModule} from './shop/orders/orders.module';
 import {PaymentsModule} from './shop/payments/payments.module';
 import {ShippingModule} from './shop/shipping/shipping.module';
-import {ReviewsModule} from './shop/reviews/reviews.module';
 import {CartModule} from './shop/cart/cart.module';
 import {StripeModule} from './shop/stripe/stripe.module';
 import {UploadAwsModule} from "./shop/Common/upload-aws/upload-aws.module";
@@ -58,7 +57,6 @@ import {UploadAwsModule} from "./shop/Common/upload-aws/upload-aws.module";
         OrdersModule,
         PaymentsModule,
         ShippingModule,
-        ReviewsModule,
         CartModule,
         StripeModule,
         UploadAwsModule
