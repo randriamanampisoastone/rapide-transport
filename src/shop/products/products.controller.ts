@@ -2,7 +2,7 @@ import {
     Body,
     Controller,
     Delete,
-    Get, HttpStatus,
+    Get,
     Param,
     Patch,
     Post,
@@ -14,7 +14,7 @@ import {
 } from "@nestjs/common";
 import {AddProductService} from "./service/add.product.service";
 import {CreateProductDto} from "./dto/create-product.dto";
-import {ApiBody, ApiConsumes, ApiOperation, ApiQuery, ApiResponse} from "@nestjs/swagger";
+import {ApiBody, ApiConsumes, ApiOperation, ApiQuery} from "@nestjs/swagger";
 import {UserRole} from "../../../enums/profile.enum";
 import {RolesGuard} from "../../jwt/roles.guard";
 import {GetUser} from "../../jwt/get.user.decorator";
@@ -23,7 +23,9 @@ import {EditProductService} from "./service/edit.product.service";
 import {UpdateProductDto} from "./dto/update-product.dto";
 import {ProductsService} from "./products.service";
 import {SearchProductService} from "./service/search.product.service";
-import {ERROR_CREATING_CATEGORY} from "../../../constants/response.constant";
+import {FavoriteService} from "./service/favorites/favorites.service";
+import {CreateReviewDto} from "./dto/create-review.dto";
+import {ReviewService} from "./service/reviews/review.service";
 
 
 @Controller('products')
@@ -32,10 +34,13 @@ export class ProductsController {
         private readonly addProductService: AddProductService,
         private readonly editProductService: EditProductService,
         private readonly productService: ProductsService,
-        private readonly searchProductService: SearchProductService
+        private readonly searchProductService: SearchProductService,
+        private readonly favoriteService: FavoriteService,
+        private readonly reviewService: ReviewService
     ) {
     }
 
+//----// ### Product part
     private transformData(rawData: any, files: any) {
         // Reshape the form data with optional fields
         const data: any = {};
@@ -129,7 +134,6 @@ export class ProductsController {
 
     @ApiOperation({summary: 'Fetch all products and can filter'})
     @Get()
-    @ApiOperation({summary: 'Get all products with filters'})
     @ApiQuery({name: 'page', required: false, type: Number})
     @ApiQuery({name: 'itemsPerPage', required: false, type: Number})
     @ApiQuery({name: 'name', required: false, type: String})
@@ -165,7 +169,93 @@ export class ProductsController {
     @ApiOperation({summary: 'Get product infos'})
     async getInfoProduct(
         @Param('id') id: string,
-    ){
+    ) {
         return this.searchProductService.getInfoProduct(id);
     }
+
+//----// ### Favorite part
+    @SetMetadata('allowedRole', [UserRole.CLIENT])
+    @UseGuards(RolesGuard)
+    @ApiOperation({summary: 'Add a product to favorites'})
+    @Post('favorite/:productId')
+    async addToFavorite(
+        @Param('productId') productId: string,
+        @GetUser('sub') userId: string
+    ) {
+        return this.favoriteService.addToFavorites(userId, productId);
+    }
+
+    @SetMetadata('allowedRole', [UserRole.CLIENT])
+    @UseGuards(RolesGuard)
+    @ApiOperation({summary: 'Remove a product from favorites'})
+    @Delete('favorite/:productId')
+    async removeFromFavorites(
+        @Param('productId') productId: string,
+        @GetUser('sub') userId: string
+    ) {
+        return this.favoriteService.removeFromFavorite(userId, productId);
+    }
+
+    @SetMetadata('allowedRole', [UserRole.CLIENT])
+    @UseGuards(RolesGuard)
+    @ApiOperation({summary: 'Get user favorites'})
+    @Get('favorite')
+    async getUserFavorites(
+        @GetUser('sub') userId: string
+    ) {
+        return this.favoriteService.getUserFavorites(userId);
+    }
+
+//----// ### Review part
+    @SetMetadata('allowedRole', [UserRole.CLIENT])
+    @UseGuards(RolesGuard)
+    @ApiOperation({summary: 'Create a review user on a product'})
+    @ApiBody({type: CreateReviewDto})
+    @Post('review')
+    async createReview(
+        @GetUser('sub') userId: string,
+        @Body() reviewDto: CreateReviewDto
+    ) {
+        return this.reviewService.createReview(userId, reviewDto);
+    }
+
+    @SetMetadata('allowedRole', [UserRole.CLIENT])
+    @UseGuards(RolesGuard)
+    @ApiOperation({summary: 'Update a review user on a product'})
+    @Patch('review')
+    async updateReview(
+        @GetUser('sub') userId: string,
+        @Body() updateReviewDto: {
+            rating: number;
+            comment: string;
+        }
+    ) {
+        return this.reviewService.updateReview(
+            userId,
+            updateReviewDto.rating,
+            updateReviewDto.comment
+        );
+    }
+
+    @SetMetadata('allowedRole', [UserRole.CLIENT])
+    @UseGuards(RolesGuard)
+    @ApiOperation({summary: 'Delete a review user on a product'})
+    @ApiBody({type: CreateReviewDto})
+    @Delete('review:reviewId')
+    async deleteReview(
+        @Param('productId') reviewId: string,
+        @GetUser('sub') userId: string
+    ){
+        return this.reviewService.deleteReview(reviewId);
+    }
+
+    @ApiOperation({summary: 'Delete a review user on a product'})
+    @ApiBody({type: CreateReviewDto})
+    @Delete('review:reviewId')
+    async getProductReviews(
+        @Param('productId') reviewId: string
+    ){
+        return this.reviewService.getProductReviews(reviewId);
+    }
+
 }

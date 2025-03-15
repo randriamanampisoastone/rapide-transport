@@ -5,6 +5,8 @@ import {UploadAwsService} from "../Common/upload-aws/upload-aws.service";
 import {EditProductService} from "./service/edit.product.service";
 import {ProductsService} from "./products.service";
 import {SearchProductService} from "./service/search.product.service";
+import {FavoriteService} from "./service/favorites/favorites.service";
+import {ReviewService} from "./service/reviews/review.service";
 
 @Module({
     controllers: [ProductsController],
@@ -13,7 +15,9 @@ import {SearchProductService} from "./service/search.product.service";
         EditProductService,
         ProductsService,
         UploadAwsService,
-        SearchProductService
+        SearchProductService,
+        FavoriteService,
+        ReviewService
     ],
 })
 export class ProductsModule {}

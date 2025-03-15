@@ -31,17 +31,7 @@ export class UpdateProductDto {
     @ApiProperty({example: true, description: 'Is active if product is clothing'})
     @IsOptional()
     @IsBoolean()
-    isClothes: boolean;
-
-    @ApiProperty({example: 'Blue', description: 'Color of the cloths'})
-    @IsOptional()
-    @IsString()
-    color?: string;
-
-    @ApiProperty({example: 'XL', description: 'Size of the cloths'})
-    @IsOptional()
-    @IsString()
-    size?: string;
+    toWear: boolean;
 
     @ApiProperty({
         type: 'array',
