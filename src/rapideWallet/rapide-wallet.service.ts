@@ -12,7 +12,6 @@ import { RedisService } from 'src/redis/redis.service'
 import { SmsService } from 'src/sms/sms.service'
 import { RAPIDE_WALLET_VALIDATION } from 'constants/redis.constant'
 import { SetRapideWalletInfoValidationInterface } from 'interfaces/set.rapide.wallet.info.validation.interface'
-import { attempt } from 'joi'
 
 @Injectable()
 export class RapideWalletService {
