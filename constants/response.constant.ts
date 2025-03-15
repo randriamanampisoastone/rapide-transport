@@ -17,6 +17,9 @@ export const NOT_OWNER_OF_THE_PRODUCT = 'NOT_OWNER_OF_THE_PRODUCT'
 // ## seller response
 export const SELLER_NOT_FOUND = 'SELLER_NOT_FOUND'
 
+// ## Adding to favorite
+export const PBM_IN_ADDING_FAVORITE = 'PBM_IN_ADDING_FAVORITE'
+
 
 // ## Error response
 export const INVALID_PARAMS = 'INVALID_PARAMS'
