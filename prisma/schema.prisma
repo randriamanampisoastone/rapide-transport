@@ -105,6 +105,7 @@ model Profile {
   orders        Order[]
   products      Product[] // for seller
   review        Review[]
+  favorites     Favorite[]
   cart          Cart?
   stripeAccount StripeAccount?
 }
@@ -316,18 +317,33 @@ model Product {
   description String
   price       Decimal
   inventory   Int               @default(0)
-  isClothes   Boolean           @default(false)
-  colors      String?
-  sizes       String?
+  toWear      Boolean           @default(false)
   images      Image[]
   reviews     Review[]
   orderItems  OrderItem[]
   cartItems   CartItem[]
   categories  ProductCategory[]
+  variants    ProductVariant[]
+  favorites   Favorite[]
   sellerId    String
   seller      Profile           @relation(fields: [sellerId], references: [sub])
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProductVariant {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  color     String
+  size      String
+  stock     Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, color, size])
 }
 
 // Join table for many-to-many relationship
@@ -349,6 +365,15 @@ model Image {
   isMain    Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Favorite {
+  user      Profile @relation(fields: [userId], references: [sub])
+  userId    String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+
+  @@id([userId, productId])
 }
 
 model Order {
