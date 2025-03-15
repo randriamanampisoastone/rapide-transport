@@ -81,7 +81,7 @@ export class RapideWalletController {
       )
    }
 
-   @Post('set-rapide-wallet-info')
+   @Post('validate-rapide-wallet-info')
    @SetMetadata('allowedRole', ['DRIVER', 'CLIENT'])
    @UseGuards(RolesGuard)
    async validateInformation(
