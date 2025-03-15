@@ -102,7 +102,8 @@ export class GoogleAuthService {
                   sub: existingUser.sub,
                   role: existingUser.role,
                   status: existingUser.clientProfile.status,
-                  rapideWalletStatus: existingUser.clientProfile.rapideWallet.status,
+                  rapideWalletStatus:
+                     existingUser.clientProfile.rapideWallet.status,
                },
                this.JWT_SECRET_CLIENT,
                {

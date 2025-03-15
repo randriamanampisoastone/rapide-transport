@@ -12,6 +12,7 @@ import { SignUpDto } from './dto/sign.up.dto'
 import { UserRole } from 'enums/profile.enum'
 import { ConfirmDto } from './dto/confirm.dto'
 import { ConfigService } from '@nestjs/config'
+import { RapideWalletStatus } from '@prisma/client'
 
 @Injectable()
 export class ConfirmSignUpService {
@@ -85,7 +86,7 @@ export class ConfirmSignUpService {
                   sub: clientProfile.sub,
                   role: clientProfile.role,
                   status: clientProfile.status,
-                  isWalletPasswordDefined: false,
+                  rapideWalletStatus: RapideWalletStatus.UNDETERMINED,
                },
                this.JWT_SECRET_CLIENT,
                {
@@ -100,7 +101,7 @@ export class ConfirmSignUpService {
                   role: driverProfile.role,
                   status: driverProfile.status,
                   sub: driverProfile.sub,
-                  isWalletPasswordDefined: false,
+                  rapideWalletStatus: RapideWalletStatus.UNDETERMINED,
                },
                this.JWT_SECRET_DRIVER,
                {

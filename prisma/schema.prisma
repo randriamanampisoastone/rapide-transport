@@ -42,10 +42,11 @@ enum InvoiceStatus {
 }
 
 enum RapideWalletStatus {
-  ACTIVE             // Le solde est utilisable.
-  PENDING            // Le solde est en attente d'une confirmation.
-  FROZEN             // Le solde est gelé pour une raison donnée.
-  CLOSED             // Le compte ou le solde est clôturé.
+  UNDETERMINED
+  ACTIVE              
+  PENDING            
+  FROZEN         
+  CLOSED             
 }
 
 enum UserRole {
@@ -206,7 +207,7 @@ model RapideWallet {
   rapideWalletId       String              @id @default(uuid())
 
   balance              Float               @default(0)
-  status               RapideWalletStatus  @default(PENDING)
+  status               RapideWalletStatus  @default(UNDETERMINED)
 
   idCard               String?
   idCardPhotoRecto     String?
