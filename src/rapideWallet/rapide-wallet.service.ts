@@ -220,4 +220,18 @@ export class RapideWalletService {
          throw error
       }
    }
+
+   async getRapideWallet(profileId: string, userRole: UserRole) {
+      try {
+         const condition =
+            userRole === UserRole.CLIENT
+               ? { clientProfileId: profileId }
+               : { driverProfileId: profileId }
+         return await this.prismaService.rapideWallet.findUnique({
+            where: condition,
+         })
+      } catch (error) {
+         throw error
+      }
+   }
 }
