@@ -214,7 +214,44 @@ export class RapideWalletService {
          const rapideWallet = await this.prismaService.rapideWallet.update({
             where: { rapideWalletId },
             data: { status },
+            select: {
+               clientProfile: {
+                  select: {
+                     profile: {
+                        select: {
+                           phoneNumber: true,
+                           gender: true,
+                           firstName: true,
+                           lastName: true,
+                        },
+                     },
+                  },
+               },
+               driverProfile: {
+                  select: {
+                     profile: {
+                        select: {
+                           phoneNumber: true,
+                           gender: true,
+                           firstName: true,
+                           lastName: true,
+                        },
+                     },
+                  },
+               },
+            },
          })
+         if (status === RapideWalletStatus.ACTIVE) {
+            console.log('sms sended')
+            const customerProfile = rapideWallet.clientProfile
+               ? rapideWallet.clientProfile.profile
+               : rapideWallet.driverProfile.profile
+            console.log(customerProfile)
+            await this.smsService.sendSMS(
+               [customerProfile.phoneNumber],
+               `Dear ${customerProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${customerProfile.firstName} ${customerProfile.lastName}, your Rapide Wallet is now active!`,
+            )
+         }
          return rapideWallet
       } catch (error) {
          throw error
