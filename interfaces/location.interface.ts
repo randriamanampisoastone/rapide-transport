@@ -14,7 +14,6 @@ export interface LocationData {
 export interface UpdateClientLocationInterface {
    clientProfileId: string
    clientLocation: LatLng
-   isOnRide: boolean
    driverProfileId?: string
 }
 
@@ -24,4 +23,5 @@ export interface UpdateDriverLocationInterface {
    vehicleType: VehicleType
    isOnRide: boolean
    clientProfileId?: string
+   driverExpoPushToken?: string
 }

@@ -55,13 +55,11 @@ export class ClientRequestService {
       }
    }
 
-   async getAllCientRequest() {
+   async removeRequest(clientRequestId: string) {
       try {
-         const clientRequests = await this.prismaService.clientRequest.groupBy({
-            by: ['clientRequestId'],
+         return await this.prismaService.clientRequest.deleteMany({
+            where: { OR: [{ clientRequestId }, { responseFor: clientRequestId }] },
          })
-
-         return clientRequests
       } catch (error) {
          throw error
       }

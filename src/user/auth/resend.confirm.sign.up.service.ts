@@ -7,6 +7,7 @@ import { RedisService } from 'src/redis/redis.service'
 import { AUTH_SIGN_UP_PREFIX } from 'constants/redis.constant'
 import { SmsService } from 'src/sms/sms.service'
 import { ResendConfirmDto } from './dto/resend.confirm.dto'
+import * as speakeasy from 'speakeasy'
 
 @Injectable()
 export class ResendConfirmSignUpService {
@@ -35,13 +36,19 @@ export class ResendConfirmSignUpService {
                'You have reached the maximum number of attempts',
             )
          }
-         // await this.smsService.sendSMS(
-         //    [resendConfirmDto.phoneNumber],
-         //    `Your Rapide App OTP Code is : ${signUpDto.confirmationCode}`,
-         // )
+         const secret = speakeasy.generateSecret({ length: 20 })
+         const confirmationCode = speakeasy.totp({
+            secret: secret.base32,
+            encoding: 'base32',
+         })
+         await this.smsService.sendSMS(
+            [resendConfirmDto.phoneNumber],
+            `Your Rapide App confirmation code is : ${confirmationCode}`,
+         )
          const ttl = await this.redisService.ttl(
             `${AUTH_SIGN_UP_PREFIX + resendConfirmDto.phoneNumber}`,
          )
+
          const updateSignUpDto = {
             ...signUpDto,
             attempt: signUpDto.attempt + 1,

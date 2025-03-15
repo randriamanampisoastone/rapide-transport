@@ -1,4 +1,10 @@
-import { Injectable } from '@nestjs/common'
+import {
+   BadRequestException,
+   ForbiddenException,
+   HttpException,
+   Injectable,
+   NotFoundException,
+} from '@nestjs/common'
 import { EVENT_CLIENT_GIVE_UP } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
@@ -27,16 +33,18 @@ export class ClientGiveUpService {
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
 
          if (!ride) {
-            throw new Error('Ride not found')
+            throw new NotFoundException('RideNotFound')
          }
 
          const rideData: RideData = JSON.parse(ride)
 
          if (rideData.status !== RideStatus.ON_RIDE) {
-            throw new Error('Ride is not in ON_RIDE status')
+            // throw new Error('Ride is not in ON_RIDE status')
+            throw new BadRequestException('Ride is not in ON_RIDE status')
          }
          if (rideData.clientProfileId !== clientProfileId) {
-            throw new Error('Client is not the client of the ride')
+            // throw new Error('Client is not the client of the ride')
+            throw new ForbiddenException('Client is not the client of the ride')
          }
 
          const {
@@ -77,7 +85,8 @@ export class ClientGiveUpService {
             ...rideDataUpdated,
          })
       } catch (error) {
-         throw error
+         // throw error
+         throw new HttpException(error.message, error.status)
       }
    }
 }

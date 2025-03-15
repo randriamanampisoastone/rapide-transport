@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import {
+   ForbiddenException,
+   HttpException,
+   HttpStatus,
+   Injectable,
+   NotFoundException,
+} from '@nestjs/common'
 import { EVENT_CLIENT_STOPPED } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
@@ -27,11 +33,11 @@ export class StoppedService {
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
 
          if (!ride) {
-            throw new Error('Ride not found')
+            throw new NotFoundException('RideNotFound')
          }
 
          const rideData: RideData = JSON.parse(ride)
-         console.log('ooooooo', rideData.status)
+         // console.log('ooooooo', rideData.status)
 
          if (
             rideData.status !== RideStatus.DRIVER_ACCEPTED &&
@@ -44,7 +50,8 @@ export class StoppedService {
             )
          }
          if (rideData.clientProfileId !== clientProfileId) {
-            throw new Error('Client is not the client of the ride')
+            // throw new Error('Client is not the client of the ride')
+            throw new ForbiddenException('Client is not the client of the ride')
          }
 
          const {
@@ -85,7 +92,8 @@ export class StoppedService {
             ...rideDataUpdated,
          })
       } catch (error) {
-         throw error
+         // throw error
+         throw new HttpException(error.message, HttpStatus.BAD_REQUEST)
       }
    }
 }

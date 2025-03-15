@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { parseRidePostgresDataForRideData } from 'utils/rideDataParser.util'
 
@@ -24,7 +24,8 @@ export class ReviewService {
          )
 
          if (ride.clientProfileId !== clientProfileId) {
-            throw new Error('Client is not the client of the ride')
+            // throw new Error('Client is not the client of the ride')
+            throw new ForbiddenException('Client is not the client of the ride')
          }
 
          await this.prismaService.ride.update({
@@ -37,7 +38,8 @@ export class ReviewService {
             },
          })
       } catch (error) {
-         throw error
+         // throw error
+         throw new BadRequestException('Error adding review')
       }
    }
 }

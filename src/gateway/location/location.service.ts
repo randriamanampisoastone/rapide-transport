@@ -44,12 +44,14 @@ export class LocationService {
       const driverLocation = data.driverLocation
       const vehicleType = data.vehicleType
       const isOnRide = data.isOnRide
+      const driverExpoPushToken = data.driverExpoPushToken
 
       if (!isOnRide) {
          await this.redisService.addDriverLocationToRedis(
             driverProfileId,
             driverLocation,
             vehicleType,
+            driverExpoPushToken,
          )
       } else {
          const clientProfileId = data.clientProfileId
@@ -58,6 +60,7 @@ export class LocationService {
             driverProfileId,
             driverLocation,
             vehicleType,
+            driverExpoPushToken,
          })
       }
 

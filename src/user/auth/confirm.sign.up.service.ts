@@ -12,6 +12,7 @@ import { SignUpDto } from './dto/sign.up.dto'
 import { UserRole } from 'enums/profile.enum'
 import { ConfirmDto } from './dto/confirm.dto'
 import { ConfigService } from '@nestjs/config'
+import { RapideWalletStatus } from '@prisma/client'
 
 @Injectable()
 export class ConfirmSignUpService {
@@ -82,16 +83,16 @@ export class ConfirmSignUpService {
             await this.redisService.setClientToNew(clientProfile.sub)
             const token = jwt.sign(
                {
+                  sub: clientProfile.sub,
                   role: clientProfile.role,
                   status: clientProfile.status,
-                  sub: clientProfile.sub,
+                  rapideWalletStatus: RapideWalletStatus.UNDETERMINED,
                },
                this.JWT_SECRET_CLIENT,
                {
                   expiresIn: this.JWT_EXPIRES_IN,
                },
             )
-
             return { token }
          } else if (restSignUpDto.role === UserRole.DRIVER) {
             const driverProfile = await this.createDriverProfile(restSignUpDto)
@@ -100,6 +101,7 @@ export class ConfirmSignUpService {
                   role: driverProfile.role,
                   status: driverProfile.status,
                   sub: driverProfile.sub,
+                  rapideWalletStatus: RapideWalletStatus.UNDETERMINED,
                },
                this.JWT_SECRET_DRIVER,
                {
@@ -112,9 +114,10 @@ export class ConfirmSignUpService {
             const adminProfile = await this.createAdminProfile(restSignUpDto)
             const token = jwt.sign(
                {
+                  sub: adminProfile.sub,
                   role: adminProfile.role,
                   status: adminProfile.status,
-                  sub: adminProfile.sub,
+                  isTransactionPasswordDefined: false,
                },
                this.JWT_SECRET_ADMIN,
                {
@@ -149,7 +152,7 @@ export class ConfirmSignUpService {
                clientProfileId: authProfile.sub,
             },
          })
-         await prisma.accountBalance.create({
+         await prisma.rapideWallet.create({
             data: {
                clientProfileId: clientProfile.clientProfileId,
             },
@@ -182,7 +185,7 @@ export class ConfirmSignUpService {
                driverProfileId: authProfile.sub,
             },
          })
-         await prisma.accountBalance.create({
+         await prisma.rapideWallet.create({
             data: {
                driverProfileId: driverProfile.driverProfileId,
             },

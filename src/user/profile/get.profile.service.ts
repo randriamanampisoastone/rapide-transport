@@ -27,7 +27,7 @@ export class GetProfileService {
                clientProfile: {
                   select: {
                      status: true,
-                     accountBalance: {
+                     rapideWallet: {
                         select: {
                            balance: true,
                         },
@@ -47,7 +47,7 @@ export class GetProfileService {
             profilePhoto: clientProfile.profilePhoto,
             role: clientProfile.role,
             status: clientProfile.clientProfile.status,
-            balance: clientProfile.clientProfile.accountBalance.balance,
+            balance: clientProfile.clientProfile.rapideWallet.balance,
          }
       } catch (error) {
          throw error
@@ -70,7 +70,7 @@ export class GetProfileService {
                driverProfile: {
                   select: {
                      status: true,
-                     accountBalance: {
+                     rapideWallet: {
                         select: {
                            balance: true,
                         },
@@ -91,7 +91,7 @@ export class GetProfileService {
             profilePhoto: driverProfile.profilePhoto,
             role: driverProfile.role,
             status: driverProfile.driverProfile.status,
-            balance: driverProfile.driverProfile.accountBalance.balance,
+            balance: driverProfile.driverProfile.rapideWallet.balance,
             completeRide: driverProfile.driverProfile.completeRide,
          }
       } catch (error) {
@@ -100,7 +100,7 @@ export class GetProfileService {
    }
    async getAdminProfile(sub: string) {
       try {
-         const driverProfile = await this.prismaService.profile.findUnique({
+         const adminProfile = await this.prismaService.profile.findUnique({
             where: { sub },
             select: {
                sub: true,
@@ -115,21 +115,23 @@ export class GetProfileService {
                adminProfile: {
                   select: {
                      status: true,
+                     transactionPassword: true,
                   },
                },
             },
          })
          return {
-            adminProfileId: driverProfile.sub,
-            phoneNumber: driverProfile.phoneNumber,
-            email: driverProfile.email,
-            firstName: driverProfile.firstName,
-            lastName: driverProfile.lastName,
-            birthday: driverProfile.birthday,
-            gender: driverProfile.gender,
-            profilePhoto: driverProfile.profilePhoto,
-            role: driverProfile.role,
-            status: driverProfile.adminProfile.status,
+            adminProfileId: adminProfile.sub,
+            phoneNumber: adminProfile.phoneNumber,
+            email: adminProfile.email,
+            firstName: adminProfile.firstName,
+            lastName: adminProfile.lastName,
+            birthday: adminProfile.birthday,
+            gender: adminProfile.gender,
+            profilePhoto: adminProfile.profilePhoto,
+            role: adminProfile.role,
+            status: adminProfile.adminProfile.status,
+            transactionPassword: adminProfile.adminProfile.transactionPassword
          }
       } catch (error) {
          throw error
@@ -143,7 +145,7 @@ export class GetProfileService {
             include: {
                clientProfile: {
                   include: {
-                     accountBalance: true,
+                     rapideWallet: true,
                      clientAddress: true,
                      profile: true,
                      rideInvoice: true,
@@ -169,7 +171,7 @@ export class GetProfileService {
                   profilePhoto: true,
                },
             },
-            accountBalance: true,
+            rapideWallet: true,
             completeRide: true,
             cancelledRide: true,
          }
@@ -206,7 +208,7 @@ export class GetProfileService {
                   phoneNumber: true,
                },
             },
-            accountBalance: true,
+            rapideWallet: true,
          }
 
          const [data, totalCount, newClients] = await Promise.all([
@@ -339,7 +341,7 @@ export class GetProfileService {
                   profilePhoto: true,
                },
             },
-            accountBalance: true,
+            rapideWallet: true,
             completeRide: true,
          }
 
@@ -373,7 +375,7 @@ export class GetProfileService {
                   phoneNumber: true,
                },
             },
-            accountBalance: true,
+            rapideWallet: true,
          }
 
          const [data, totalCount] = await Promise.all([
@@ -456,8 +458,7 @@ export class GetProfileService {
             include: {
                driverProfile: {
                   include: {
-                     accountBalance: true,
-                     transaction: true,
+                     rapideWallet: true,
                      profile: true,
                      rideInvoice: true,
                   },
@@ -465,6 +466,28 @@ export class GetProfileService {
             },
          })
          return clientProfile
+      } catch (error) {
+         throw error
+      }
+   }
+
+   async getAdmins(page: number, pageSize: number) {
+      try {
+         const [data, totalCount] = await Promise.all([
+            await this.prismaService.adminProfile.findMany({
+               include: {
+                  profile: true,
+               },
+               skip: (page - 1) * pageSize,
+               take: pageSize,
+            }),
+            await this.prismaService.adminProfile.count(),
+         ])
+         return {
+            data,
+            hasMore: page * pageSize < totalCount,
+            totalCount,
+         }
       } catch (error) {
          throw error
       }

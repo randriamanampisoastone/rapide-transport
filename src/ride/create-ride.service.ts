@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
    Injectable,
    InternalServerErrorException,
@@ -12,7 +13,7 @@ import { ItineraryData } from 'interfaces/itinerary.interface'
 import { EstimatedPrice } from 'interfaces/price.interface'
 import { ITINERARY_PREFIX, RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
-import { PaymentMethodType } from 'enums/payment.enum'
+import { MethodType } from 'enums/payment.enum'
 import { LatLng } from 'interfaces/location.interface'
 import { FindDriverService } from './find-driver.service'
 import { PrismaService } from 'src/prisma/prisma.service'
@@ -27,7 +28,8 @@ export interface CreateRideDto {
    pickUpLocation: LatLng
    dropOffLocation: LatLng
    vehicleType: VehicleType
-   paymentMethodType: PaymentMethodType
+   methodType: MethodType
+   clientExpoToken: string
 }
 
 @Injectable()
@@ -72,25 +74,14 @@ export class CreateRideService {
 
          return parseRidePostgresDataForRideData(createdRide)
       } catch (error) {
-         throw error
+         throw new InternalServerErrorException(
+            'Error occurred on sending data',
+         )
       }
    }
 
    async createRide(createRideDto: CreateRideDto) {
       try {
-         const user = await this.prismaService.clientProfile.findUnique({
-            where: {
-               clientProfileId: createRideDto.clientProfileId,
-            },
-            select: {
-               status: true,
-            },
-         })
-
-         if (user.status !== ProfileStatus.ACTIVE) {
-            throw new ForbiddenException('The user is not active')
-         }
-
          const rideKeys = await this.redisService.keys(`${RIDE_PREFIX}*`)
          const rideDataList = rideKeys.length
             ? await this.redisService.mget(rideKeys)
@@ -110,6 +101,7 @@ export class CreateRideService {
                   RideStatus.STOPPED,
                   RideStatus.CLIENT_GIVE_UP,
                   RideStatus.CANCELLED,
+                  RideStatus.ADMIN_CANCELLED,
                ].includes(ride_already_exist.status)
             ) {
                return ride_already_exist
@@ -120,7 +112,8 @@ export class CreateRideService {
          const pickUpLocation = createRideDto.pickUpLocation
          const dropOffLocation = createRideDto.dropOffLocation
          const vehicleType = createRideDto.vehicleType
-         const paymentMethodType = createRideDto.paymentMethodType
+         const methodType = createRideDto.methodType
+         const clientExpoToken = createRideDto.clientExpoToken
 
          const itinerary = await this.redisService.get(
             `${ITINERARY_PREFIX + clientProfileId}`,
@@ -140,7 +133,7 @@ export class CreateRideService {
                rideId: crypto.randomUUID(),
                clientProfileId,
                vehicleType,
-               paymentMethodType,
+               methodType,
                pickUpLocation,
                dropOffLocation,
                encodedPolyline,
@@ -149,6 +142,7 @@ export class CreateRideService {
                estimatedPrice,
                status: RideStatus.FINDING_DRIVER,
                createdAt: new Date().toISOString(),
+               clientExpoToken,
             }
             await this.redisService.remove(
                `${ITINERARY_PREFIX + clientProfileId}`,
@@ -158,7 +152,7 @@ export class CreateRideService {
                pickUpLocation,
                dropOffLocation,
                vehicleType,
-               paymentMethodType,
+               methodType,
             } = createRideDto
 
             const newItinerary =
@@ -177,7 +171,7 @@ export class CreateRideService {
                rideId: crypto.randomUUID(),
                clientProfileId,
                vehicleType,
-               paymentMethodType,
+               methodType,
                pickUpLocation,
                dropOffLocation,
                encodedPolyline,
@@ -186,12 +180,11 @@ export class CreateRideService {
                estimatedPrice,
                status: RideStatus.FINDING_DRIVER,
                createdAt: new Date().toISOString(),
+               clientExpoToken,
             }
          }
 
          await this.FindDriverService.notifyDrivers(rideData)
-
-         console.log('rideData on create ride ============> ', rideData)
 
          await this.redisService.set(
             `${RIDE_PREFIX + rideData.rideId}`,
@@ -202,7 +195,6 @@ export class CreateRideService {
          const result = await this.sendRideDataBase(rideData)
          return result
       } catch (error) {
-         console.error('Error creating ride:', error)
          throw new InternalServerErrorException('Error creating ride')
       }
    }

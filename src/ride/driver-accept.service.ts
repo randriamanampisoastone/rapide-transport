@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable } from '@nestjs/common'
+import {
+   BadRequestException,
+   HttpException,
+   Injectable,
+   NotFoundException,
+} from '@nestjs/common'
 import { Gateway } from 'src/gateway/gateway'
 import { RideData } from 'interfaces/ride.interface'
 import { RideStatus } from 'enums/ride.enum'
@@ -8,6 +13,7 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { EVENT_ACCEPTED_RIDE } from 'constants/event.constant'
 import { parseRidePostgresDataForRideData } from 'utils/rideDataParser.util'
 import { ProfileStatus } from '@prisma/client'
+import { NotificationService } from 'src/notification/notification.service'
 
 export interface DriverAcceptDto {
    driverProfileId: string
@@ -20,36 +26,23 @@ export class DriverAcceptService {
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
       private readonly postgresService: PrismaService,
+      private readonly notificationService: NotificationService,
    ) {}
 
    async driverAccept(driverAcceptDto: DriverAcceptDto) {
       try {
-         const driver = await this.postgresService.driverProfile.findUnique({
-            where: {
-               driverProfileId: driverAcceptDto.driverProfileId,
-            },
-            select: {
-               status: true,
-            },
-         })
-
-         if (driver.status !== ProfileStatus.ACTIVE) {
-            throw new ForbiddenException('The driver is not active')
-         }
-
          const rideId = driverAcceptDto.rideId
          const driverProfileId = driverAcceptDto.driverProfileId
 
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
 
          if (!ride) {
-            throw new Error('Ride not found')
+            throw new NotFoundException('RideNotFound')
          }
-
          const rideData: RideData = JSON.parse(ride)
 
          if (rideData.status !== RideStatus.FINDING_DRIVER) {
-            throw new Error('Ride is not in FINDING_DRIVER status')
+            throw new BadRequestException('RideNotInFindingDriverStatus')
          }
 
          const {
@@ -96,6 +89,12 @@ export class DriverAcceptService {
 
          const clientProfileId = rideDataUpdated.clientProfileId
 
+         await this.notificationService.sendPushNotification(
+            rideDataUpdated.clientExpoToken,
+            'Driver accepted !',
+            'Your driver has accepted your ride',
+         )
+
          this.gateway.sendNotificationToClient(
             clientProfileId,
             EVENT_ACCEPTED_RIDE,
@@ -110,7 +109,8 @@ export class DriverAcceptService {
 
          return { ...rideDataUpdated }
       } catch (error) {
-         throw error
+         // throw error
+         throw new HttpException(error.message, error.status)
       }
    }
 }

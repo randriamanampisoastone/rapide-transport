@@ -8,12 +8,13 @@ import { UserModule } from './user/user.module'
 import { RideModule } from './ride/ride.module'
 import { GatewayModule } from './gateway/gatway.module'
 import { VehicleModule } from './vehicle/vehicle.module'
-import { AccountBalanceModule } from './accountBalance/accountBalance.module'
+import { RapideWalletModule } from './rapideWallet/rapideWallet.module'
 import { HistoricalModule } from './historical/historical.module'
 import { TaskPlanModule } from './taskPlan/task.plan.module'
 import { HomeModule } from './home/home.module'
 import { RideStatisticModule } from './ride-statistic/ride-statistic.module'
 import { ClientRequestModule } from './clientRequest/client-request.module'
+import { PaymentModule } from './payment/payment.module'
 
 @Module({
    imports: [
@@ -40,12 +41,13 @@ import { ClientRequestModule } from './clientRequest/client-request.module'
       RideModule,
       GatewayModule,
       VehicleModule,
-      AccountBalanceModule,
+      RapideWalletModule,
       HistoricalModule,
       TaskPlanModule,
       HomeModule,
       RideStatisticModule,
-      ClientRequestModule
+      ClientRequestModule,
+      PaymentModule,
    ],
    controllers: [AppController],
    providers: [],

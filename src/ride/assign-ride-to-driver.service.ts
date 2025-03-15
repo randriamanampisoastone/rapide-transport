@@ -1,6 +1,7 @@
 import {
    BadRequestException,
    ForbiddenException,
+   HttpException,
    Injectable,
 } from '@nestjs/common'
 import { ProfileStatus, RideStatus } from '@prisma/client'
@@ -51,7 +52,8 @@ export class AssignRideToDriverService {
 
          return rideData
       } catch (error) {
-         throw error
+         // throw error
+         throw new HttpException(error.message, error.status)
       }
    }
 }

@@ -16,7 +16,6 @@ export enum UserRole {
    OPERATIONS_MANAGER = 'OPERATIONS_MANAGER',	// Supervise toutes les opérations des services.
    PARTNER_MANAGER = 'PARTNER_MANAGER',	// Gère les relations avec les restaurants, magasins et partenaires.
    COMPLIANCE_MANAGER = 'COMPLIANCE_MANAGER',	// Vérifie les documents des chauffeurs, livreurs et partenaires.
-   TECH_SUPPORT = 'TECH_SUPPORT',	// Gère les problèmes techniques et les bugs du système.
 }
 
 export enum GenderType {

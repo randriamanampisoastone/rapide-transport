@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import { getRouteGoogleMap } from 'api/route.googlemap.api'
 import { RedisService } from 'src/redis/redis.service'
 import { ItineraryData } from 'interfaces/itinerary.interface'
@@ -53,7 +53,8 @@ export class CreateItineraryService {
 
          return itineraryData
       } catch (error) {
-         throw error
+         // throw error
+         throw new InternalServerErrorException('A problem occurred while creating the itinerary.')
       }
    }
 }

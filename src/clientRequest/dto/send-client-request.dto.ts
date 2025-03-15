@@ -2,7 +2,7 @@ import { IsEnum, IsNotEmpty, IsString } from 'class-validator'
 
 enum RequestFor {
    RIDE = 'RIDE',
-   FOOT = 'FOOT',
+   FOOD = 'FOOD',
    MART = 'MART',
    EXPRESS = 'EXPRESS',
 }

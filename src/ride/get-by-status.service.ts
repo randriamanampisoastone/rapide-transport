@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { RideStatus } from 'enums/ride.enum'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { parseRidePostgresDataForRideData } from 'utils/rideDataParser.util'
@@ -18,7 +18,8 @@ export class GetByStatusService {
             count: rides.length,
          }
       } catch (error) {
-         throw error
+         // throw error
+         throw new NotFoundException(`No rides found with status: ${status}`)
       }
    }
 }

@@ -83,9 +83,15 @@ export class ConfirmSignInService {
                select: {
                   sub: true,
                   role: true,
+
                   clientProfile: {
                      select: {
                         status: true,
+                        rapideWallet: {
+                           select: {
+                              status: true,
+                           },
+                        },
                      },
                   },
                },
@@ -94,6 +100,8 @@ export class ConfirmSignInService {
                sub: clientProfile.sub,
                role: clientProfile.role,
                status: clientProfile.clientProfile.status,
+               rapideWalletStatus:
+                  clientProfile.clientProfile.rapideWallet.status,
             }
             const token = jwt.sign(
                updateClientProfile,
@@ -112,6 +120,11 @@ export class ConfirmSignInService {
                   driverProfile: {
                      select: {
                         status: true,
+                        rapideWallet: {
+                           select: {
+                              status: true,
+                           },
+                        },
                      },
                   },
                },
@@ -120,6 +133,8 @@ export class ConfirmSignInService {
                sub: driverProfile.sub,
                role: driverProfile.role,
                status: driverProfile.driverProfile.status,
+               rapideWalletStatus:
+                  driverProfile.driverProfile.rapideWallet.status,
             }
             const token = jwt.sign(
                updateDriverProfile,
@@ -138,6 +153,7 @@ export class ConfirmSignInService {
                   adminProfile: {
                      select: {
                         status: true,
+                        isTransactionPasswordDefined: true,
                      },
                   },
                },
@@ -146,6 +162,8 @@ export class ConfirmSignInService {
                sub: adminProfile.sub,
                role: adminProfile.role,
                status: adminProfile.adminProfile.status,
+               isTransactionPasswordDefined:
+                  adminProfile.adminProfile.isTransactionPasswordDefined,
             }
             const token = jwt.sign(updateAdminProfile, this.JWT_SECRET_ADMIN, {
                expiresIn: this.JWT_EXPIRES_IN,

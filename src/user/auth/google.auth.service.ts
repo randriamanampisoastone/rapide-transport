@@ -64,8 +64,24 @@ export class GoogleAuthService {
          const existingUser = await this.prismaService.profile.findUnique({
             where: { email: payload.email },
             include: {
-               clientProfile: true,
-               driverProfile: true,
+               clientProfile: {
+                  include: {
+                     rapideWallet: {
+                        select: {
+                           status: true,
+                        },
+                     },
+                  },
+               },
+               driverProfile: {
+                  include: {
+                     rapideWallet: {
+                        select: {
+                           status: true,
+                        },
+                     },
+                  },
+               },
                adminProfile: true,
             },
          })
@@ -83,9 +99,11 @@ export class GoogleAuthService {
          if (existingUser.role === UserRole.CLIENT) {
             const token = jwt.sign(
                {
+                  sub: existingUser.sub,
                   role: existingUser.role,
                   status: existingUser.clientProfile.status,
-                  sub: existingUser.sub,
+                  rapideWalletStatus:
+                     existingUser.clientProfile.rapideWallet.status,
                },
                this.JWT_SECRET_CLIENT,
                {
@@ -96,9 +114,11 @@ export class GoogleAuthService {
          } else if (existingUser.role === UserRole.DRIVER) {
             const token = jwt.sign(
                {
+                  sub: existingUser.sub,
                   role: existingUser.role,
                   status: existingUser.driverProfile.status,
-                  sub: existingUser.sub,
+                  rapideWalletStatus:
+                     existingUser.driverProfile.rapideWallet.status,
                },
                this.JWT_SECRET_DRIVER,
                {
@@ -109,9 +129,11 @@ export class GoogleAuthService {
          } else if (existingUser.role === UserRole.ADMIN) {
             const token = jwt.sign(
                {
+                  sub: existingUser.sub,
                   role: existingUser.role,
                   status: existingUser.adminProfile.status,
-                  sub: existingUser.sub,
+                  isWalletPasswordDefined:
+                     existingUser.adminProfile.isTransactionPasswordDefined,
                },
                this.JWT_SECRET_ADMIN,
                {

@@ -18,7 +18,7 @@ import { CompleteService } from './complete.service'
 import { ReviewService } from './review.service'
 import { GetRideService } from './get-ride.service'
 import { StoppedService } from './stopped.service'
-import { DriverBalanceService } from 'src/accountBalance/driverBalance.service'
+import { DriverBalanceService } from 'src/rapideWallet/driverBalance.service'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { InfoOnRideService } from './info-on-ride.service'
 import { GetRideInvoiceService } from './get-ride-invoice.service'
@@ -27,9 +27,13 @@ import { CheckRideService } from './check-ride.service'
 import { AssignRideToDriverService } from './assign-ride-to-driver.service'
 import { ReviewRideService } from './review-ride.service'
 import { DeleteRideService } from './delete-ride.service'
+import { NotificationModule } from 'src/notification/notification.module'
+import { NotificationService } from 'src/notification/notification.service'
+import { RidePaymentService } from 'src/payment/ride-payment/ride-payment.service'
+import { SmsService } from 'src/sms/sms.service'
 
 @Module({
-   imports: [GatewayModule],
+   imports: [GatewayModule, NotificationModule],
    controllers: [RideController, RideInvoiceController],
    providers: [
       RedisService,
@@ -61,7 +65,13 @@ import { DeleteRideService } from './delete-ride.service'
       AssignRideToDriverService,
       ReviewRideService,
 
-      DeleteRideService
+      DeleteRideService,
+
+      NotificationService,
+
+      //For payment
+      RidePaymentService,
+      SmsService,
    ],
 })
 export class RideModule {}

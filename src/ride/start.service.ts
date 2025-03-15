@@ -1,4 +1,10 @@
-import { Injectable } from '@nestjs/common'
+import {
+   BadRequestException,
+   ForbiddenException,
+   HttpException,
+   Injectable,
+   NotFoundException,
+} from '@nestjs/common'
 import { EVENT_START_RIDE } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
@@ -28,7 +34,7 @@ export class StartService {
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
 
          if (!ride) {
-            throw new Error('Ride not found')
+            throw new NotFoundException('RideNotFound')
          }
 
          const rideData: RideData = JSON.parse(ride)
@@ -37,12 +43,16 @@ export class StartService {
             rideData.status !==
             (RideStatus.DRIVER_ARRIVED || RideStatus.CLIENT_NOT_FOUND)
          ) {
-            throw new Error(
+            // throw new Error(
+            //    'Ride is not in DRIVER_ARRIVED or CLIENT_NOT_FOUND status',
+            // )
+            throw new BadRequestException(
                'Ride is not in DRIVER_ARRIVED or CLIENT_NOT_FOUND status',
             )
          }
          if (rideData.driverProfileId !== driverProfileId) {
-            throw new Error('Driver is not the driver of the ride')
+            // throw new Error('Driver is not the driver of the ride')
+            throw new ForbiddenException('Driver is not the driver of the ride')
          }
 
          const {
@@ -85,7 +95,8 @@ export class StartService {
 
          return { ...rideDataUpdated }
       } catch (error) {
-         throw error
+         // throw error
+         throw new HttpException(error.message, error.status)
       }
    }
 }

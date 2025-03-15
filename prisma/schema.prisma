@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Enum
+
 enum GenderType {
   MALE
   FEMALE
@@ -19,24 +21,18 @@ enum VehicleType {
   PREMIUM_CAR
 }
 
-enum TransactionType {
-  DEPOSIT
-  TRANSFERT
-  RETRAIT
-}
-
 enum ProfileStatus {
-  ACTIVE // Compte actif et opérationnel
-  PENDING // En attente de validation ou d'activation
-  INACTIVE // Compte désactivé temporairement
-  SUSPENDED // Compte suspendu pour enquête ou violation des règles
-  LOCKED // Compte verrouillé après des tentatives de connexion échouées
-  ARCHIVED // Compte désactivé définitivement, mais les données sont conservées
-  DEACTIVATED // Compte volontairement désactivé par l'utilisateur ou l'admin
-  CLOSED // Compte fermé définitivement et données supprimées
-  UNDER_REVIEW // Compte en cours d'examen pour des raisons administratives
-  UNVERIFIED // Compte non vérifié (e-mail ou téléphone non confirmé)
-  BANNED // Compte interdit d'accès définitivement
+  ACTIVE             // Compte actif et opérationnel
+  PENDING            // En attente de validation ou d'activation
+  INACTIVE           // Compte désactivé temporairement
+  SUSPENDED          // Compte suspendu pour enquête ou violation des règles
+  LOCKED             // Compte verrouillé après des tentatives de connexion échouées 
+  ARCHIVED           // Compte désactivé définitivement, mais les données sont conservées
+  DEACTIVATED        // Compte volontairement désactivé par l'utilisateur ou l'admin
+  CLOSED             // Compte fermé définitivement et données supprimées
+  UNDER_REVIEW       // Compte en cours d'examen pour des raisons administratives
+  UNVERIFIED         // Compte non vérifié (e-mail ou téléphone non confirmé)
+  BANNED             // Compte interdit d'accès définitivement
 }
 
 enum InvoiceStatus {
@@ -45,40 +41,41 @@ enum InvoiceStatus {
   FAILED
 }
 
-enum BalanceStatus {
-  ACTIVE // Le solde est utilisable.
-  PENDING // Le solde est en attente d'une confirmation.
-  FROZEN // Le solde est gelé pour une raison donnée.
-  INSUFFICIENT // Le solde est insuffisant pour effectuer des transactions.
-  CLOSED // Le compte ou le solde est clôturé.
+enum RapideWalletStatus {
+  UNDETERMINED
+  ACTIVE              
+  PENDING            
+  FROZEN         
+  CLOSED             
 }
 
 enum UserRole {
-  CLIENT	// Accéder aux services (Food, Mart, Ride, Express), passer des commandes, suivre les livraisons.
-  DRIVER	// Accepter et gérer les courses Ride, Mart, Express.
-  ADMIN	// Gestion complète du système (accès à tout).
-  SUPER_ADMIN	// Accès total avec gestion des administrateurs et des autorisations.
-  RIDE_MANAGER	// Supervise le service Ride (gestion des chauffeurs, suivi des courses).
-  FOOD_MANAGER	// Gère les restaurants partenaires et les commandes Food.
-  MART_MANAGER	// Gère les magasins partenaires et les commandes Mart.
-  EXPRESS_MANAGER	// Gère le service Express (suivi des livraisons, gestion des livreurs).
-  DRIVER_MANAGER	// Supervise les chauffeurs, gère les inscriptions et les suspensions.
-  CUSTOMER_SUPPORT	// Gestion des réclamations et assistance des clients.
-  FINANCE_MANAGER	// Gère les paiements, commissions et remboursements.
-  PROMOTION_MANAGER	// Gère les campagnes promotionnelles, les remises et les offres.
-  FLEET_MANAGER	// Supervise la flotte de véhicules (maintenance, attribution).
-  DISPUTE_MANAGER	// Traite les litiges entre clients, chauffeurs et partenaires.
+  CLIENT	            // Accéder aux services (Food, Mart, Ride, Express), passer des commandes, suivre les livraisons.
+  DRIVER	            // Accepter et gérer les courses Ride, Mart, Express.
+  ADMIN	              // Gestion complète du système (accès à tout).
+  SUPER_ADMIN	        // Accès total avec gestion des administrateurs et des autorisations.
+  RIDE_MANAGER	      // Supervise le service Ride (gestion des chauffeurs, suivi des courses).
+  FOOD_MANAGER      	// Gère les restaurants partenaires et les commandes Food.
+  MART_MANAGER	      // Gère les magasins partenaires et les commandes Mart.
+  EXPRESS_MANAGER	    // Gère le service Express (suivi des livraisons, gestion des livreurs).
+  DRIVER_MANAGER	    // Supervise les chauffeurs, gère les inscriptions et les suspensions.
+  CUSTOMER_SUPPORT   	// Gestion des réclamations et assistance des clients.
+  FINANCE_MANAGER    	// Gère les paiements, commissions et remboursements.
+  PROMOTION_MANAGER	  // Gère les campagnes promotionnelles, les remises et les offres.
+  FLEET_MANAGER      	// Supervise la flotte de véhicules (maintenance, attribution).
+  DISPUTE_MANAGER	    // Traite les litiges entre clients, chauffeurs et partenaires.
   OPERATIONS_MANAGER	// Supervise toutes les opérations des services.
-  PARTNER_MANAGER	// Gère les relations avec les restaurants, magasins et partenaires.
+  PARTNER_MANAGER	    // Gère les relations avec les restaurants, magasins et partenaires.
   COMPLIANCE_MANAGER	// Vérifie les documents des chauffeurs, livreurs et partenaires.
-  TECH_SUPPORT	// Gère les problèmes techniques et les bugs du système.
 }
 
-enum PaymentMethodType {
+enum MethodType {
   CASH
   MVOLA
   ORANGE_MONEY
   PROMO
+  RAPIDE_WALLET
+  CARD
 }
 
 enum RideStatus {
@@ -99,18 +96,34 @@ enum RideStatus {
 
 enum RequestFor {
   RIDE
-  FOOT
+  FOOD
   MART
   EXPRESS
 }
 
+enum TransactionType {
+  DEPOSIT
+  TRANSFER
+  RETRAIT
+  PAYMENT
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REJECTED
+}
+
+// Model 
+
 model Profile {
   sub String @id @default(uuid())
 
-  phoneNumber  String?    @unique
+  phoneNumber  String     @unique
   email        String?    @unique
   firstName    String
-  lastName     String?
+  lastName     String
   gender       GenderType
   birthday     DateTime
   role         UserRole   @default(CLIENT)
@@ -128,47 +141,53 @@ model ClientProfile {
   clientProfileId String  @id
   profile         Profile @relation("AuthClientProfile", fields: [clientProfileId], references: [sub], onDelete: Cascade)
 
-  clientAddress  Address[]       @relation("ClientAddress")
-  rideInvoice    RideInvoice[]   @relation("ClientRideInvoice")
-  ride           Ride[]          @relation("ClientRide")
-  accountBalance AccountBalance? @relation("ClientAccountBalance")
+  clientAddress       Address[]            @relation("ClientAddress")
+  rideInvoice         RideInvoice[]        @relation("ClientRideInvoice")
+  ride                Ride[]               @relation("ClientRide")
+  rapideWallet        RapideWallet?        @relation("ClientRapideWallet")
 
-  status         ProfileStatus   @default(ACTIVE)
-  completeRide   Int             @default(0)
-  cancelledRide  Int             @default(0)
+  status              ProfileStatus        @default(ACTIVE)
+  completeRide        Int                  @default(0)
+  cancelledRide       Int                  @default(0)
 
-  clientRequest  ClientRequest[] @relation("ClientRequest")
+  clientRequest       ClientRequest[]      @relation("ClientRequest")
+  transaction         Transaction[]        @relation("ClientTransaction")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
 }
 
 model DriverProfile {
   driverProfileId String  @id
-  profile         Profile @relation("AuthDriverProfile", fields: [driverProfileId], references: [sub], onDelete: Cascade)
+  profile             Profile         @relation("AuthDriverProfile", fields: [driverProfileId], references: [sub], onDelete: Cascade)
 
-  rideInvoice    RideInvoice[]   @relation("DriverRideInvoice")
-  ride           Ride[]          @relation("DriverRide")
-  accountBalance AccountBalance? @relation("DriverAccountBalance")
-  transaction    Transaction[]   @relation("DriverTransaction")
+  rideInvoice         RideInvoice[]   @relation("DriverRideInvoice")
+  ride                Ride[]          @relation("DriverRide")
+  rapideWallet        RapideWallet?   @relation("DriverRapideWallet")
 
-  status       ProfileStatus @default(UNDER_REVIEW)
-  completeRide Int           @default(0)
+  status              ProfileStatus   @default(UNDER_REVIEW)
+  completeRide        Int             @default(0)
+  cancelledRide       Int             @default(0)
 
+  transaction         Transaction[]   @relation("DriverTransaction")
+ 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt 
 }
 
 model AdminProfile {
   adminProfileId String  @id
-  profile        Profile @relation("AuthAdminProfile", fields: [adminProfileId], references: [sub], onDelete: Cascade)
+  profile                      Profile @relation("AuthAdminProfile", fields: [adminProfileId], references: [sub], onDelete: Cascade)
 
-  status    ProfileStatus @default(UNDER_REVIEW)
+  status                       ProfileStatus @default(UNDER_REVIEW)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  transactionPassword          String?
+  isTransactionPasswordDefined Boolean @default(false)
+
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
 }
-
+ 
 model Address {
   addressId String @id @default(uuid())
 
@@ -184,29 +203,32 @@ model Address {
   updatedAt DateTime @updatedAt
 }
 
-model Transaction {
-  transactionId   String          @id @default(uuid())
-  amount          Float
-  transactionType TransactionType @default(TRANSFERT)
+model RapideWallet {
+  rapideWalletId       String              @id @default(uuid())
 
-  driverProfileId String
-  driverProfile   DriverProfile @relation("DriverTransaction", fields: [driverProfileId], references: [driverProfileId])
-  createdAt       DateTime      @default(now())
-}
+  balance              Float               @default(0)
+  status               RapideWalletStatus  @default(UNDETERMINED)
 
-model AccountBalance {
-  accountBalanceId String        @id @default(uuid())
-  balance          Float         @default(0)
-  balanceStatus    BalanceStatus @default(ACTIVE)
+  idCard               String?
+  idCardPhotoRecto     String?
+  idCardPhotoVerso     String?
+  password             String?
+  depositeCount        Int                 @default(0)
+  transferCount        Int                 @default(0)
+  paymentCount         Int                 @default(0)
+  transactionCount     Int                 @default(0)
+  successCount         Int                 @default(0)
+  failedCount          Int                 @default(0)
+  rejectedCount        Int                 @default(0)
 
-  clientProfileId String?        @unique
-  clientProfile   ClientProfile? @relation("ClientAccountBalance", fields: [clientProfileId], references: [clientProfileId])
+  clientProfileId      String?             @unique
+  clientProfile        ClientProfile?      @relation("ClientRapideWallet", fields: [clientProfileId], references: [clientProfileId])
+  
+  driverProfileId      String?             @unique
+  driverProfile        DriverProfile?      @relation("DriverRapideWallet", fields: [driverProfileId], references: [driverProfileId])
 
-  driverProfileId String?        @unique
-  driverProfile   DriverProfile? @relation("DriverAccountBalance", fields: [driverProfileId], references: [driverProfileId])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
 }
 
 model RapideBalance {
@@ -223,51 +245,53 @@ model RapideBalance {
 }
 
 model RideInvoice {
-  rideInvoiceId String @id @default(uuid())
+  rideInvoiceId       String @id @default(uuid())
 
-  clientProfileId String?
-  clientProfile   ClientProfile? @relation("ClientRideInvoice", fields: [clientProfileId], references: [clientProfileId])
+  clientProfileId     String?
+  clientProfile       ClientProfile? @relation("ClientRideInvoice", fields: [clientProfileId], references: [clientProfileId])
 
-  driverProfileId String?
-  driverProfile   DriverProfile? @relation("DriverRideInvoice", fields: [driverProfileId], references: [driverProfileId])
+  driverProfileId     String?
+  driverProfile       DriverProfile? @relation("DriverRideInvoice", fields: [driverProfileId], references: [driverProfileId])
 
-  vehicleType VehicleType
-  vehicleId   String?
+  vehicleType         VehicleType
+  vehicleId           String?
 
-  paymentMethodType   PaymentMethodType
+  status              RideStatus?
+  methodType          MethodType
+
   pickUpLatitude      Float
   pickUpLongitude     Float
   dropOffLatitude     Float
-  dropOffLongitude    Float
-  encodedPolyline     String
+  dropOffLongitude    Float 
   distanceMeters      Float
-  estimatedDuration   Float
-  estimatedPriceLower Float
-  estimatedPriceUpper Float
+
   realDuration        Float?
   realPrice           Float?
-  status              RideStatus?
-  note                Float?
-  review              String?
+
   startTime           Float?
   endTime             Float?
 
-  createdAt String?
-  updatedAt  String?
+  clientExpoToken     String?
+  driverExpoToken     String?
+
+  transaction         Transaction? @relation("RideTransaction")
+
+  createdAt           String?
+  updatedAt           String?
 }
 
 model Ride {
-  rideId String @id @default(uuid())
+  rideId            String @id @default(uuid())
 
-  clientProfileId String?
-  clientProfile   ClientProfile? @relation("ClientRide", fields: [clientProfileId], references: [clientProfileId])
+  clientProfileId   String?
+  clientProfile     ClientProfile? @relation("ClientRide", fields: [clientProfileId], references: [clientProfileId])
 
-  driverProfileId String?
-  driverProfile   DriverProfile? @relation("DriverRide", fields: [driverProfileId], references: [driverProfileId])
+  driverProfileId   String?
+  driverProfile     DriverProfile? @relation("DriverRide", fields: [driverProfileId], references: [driverProfileId])
 
   vehicleType       VehicleType
   vehicleId         String?
-  paymentMethodType PaymentMethodType
+  methodType        MethodType
   pickUpLocation    String
   dropOffLocation   String
   encodedPolyline   String
@@ -281,19 +305,21 @@ model Ride {
   review            String?
   startTime         Float?
   endTime           Float?
+  clientExpoToken   String?
+  driverExpoToken   String?
 
-  createdAt DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model Home {
-  homeId       String @id @default(uuid())
-  name         String @default("Home")
-  phoneNumber  String?
-  latitude     Float
-  longitude    Float
-  motoCount    Int    @default(0)
-  carCount     Int    @default(0)
+  homeId        String @id @default(uuid())
+  name          String @default("Home")
+  phoneNumber   String?
+  latitude      Float
+  longitude     Float
+  motoCount     Int    @default(0)
+  carCount      Int    @default(0)
 }
 
 model ClientRequest {
@@ -309,4 +335,32 @@ model ClientRequest {
 
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+}
+
+model Transaction {
+  transactionId         String            @id       @default(uuid())
+  reference             Int               @unique   @default(autoincrement())
+  otherReference        String?
+
+  amount                Float
+  fees                  Float             @default(0)
+  description           String?
+
+  method                MethodType
+  type                  TransactionType
+  status                TransactionStatus
+
+  from                  String
+  to                    String
+
+  clientProfileId       String?
+  clientProfile         ClientProfile?     @relation("ClientTransaction", fields: [clientProfileId], references: [clientProfileId])
+  driverProfileId       String?
+  driverProfile         DriverProfile?     @relation("DriverTransaction", fields: [driverProfileId], references: [driverProfileId])
+
+  rideInvoiceId         String?            @unique
+  rideInvoice           RideInvoice?       @relation("RideTransaction", fields: [rideInvoiceId], references: [rideInvoiceId])
+
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
 }
