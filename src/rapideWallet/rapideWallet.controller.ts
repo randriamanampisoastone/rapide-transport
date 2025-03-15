@@ -81,21 +81,21 @@ export class RapideWalletController {
       )
    }
 
-   @Patch('validate-information')
+   @Post('set-rapide-wallet-info')
    @SetMetadata('allowedRole', ['DRIVER', 'CLIENT'])
    @UseGuards(RolesGuard)
    async validateInformation(
       @GetUser('sub') profileId: string,
-      @Query('code') code: string,
       @GetUser('role') userRole: UserRole,
       @GetUser('status') status: ProfileStatus,
+      @Body() data: { code: string },
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
       return await this.rapideWalletService.validateInformation(
          profileId,
-         code,
+         data.code,
          userRole,
       )
    }
