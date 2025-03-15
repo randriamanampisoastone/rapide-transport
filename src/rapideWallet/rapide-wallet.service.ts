@@ -7,19 +7,31 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { SetRapideWalletInfoDto } from './dto/set-rapide-wallet-info.dto'
 import * as bcrypt from 'bcrypt'
 import * as speakeasy from 'speakeasy'
+import * as jwt from 'jsonwebtoken'
 import { GenderType, RapideWalletStatus, UserRole } from '@prisma/client'
 import { RedisService } from 'src/redis/redis.service'
 import { SmsService } from 'src/sms/sms.service'
 import { RAPIDE_WALLET_VALIDATION } from 'constants/redis.constant'
 import { SetRapideWalletInfoValidationInterface } from 'interfaces/set.rapide.wallet.info.validation.interface'
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export class RapideWalletService {
+   private JWT_SECRET_CLIENT = ''
+   private JWT_SECRET_DRIVER = ''
+   private JWT_EXPIRES_IN = ''
    constructor(
       private readonly prismaService: PrismaService,
       private readonly redisService: RedisService,
       private readonly smsService: SmsService,
-   ) {}
+      private readonly configService: ConfigService,
+   ) {
+      this.JWT_SECRET_CLIENT =
+         this.configService.get<string>('JWT_SECRET_CLIENT')
+      this.JWT_SECRET_DRIVER =
+         this.configService.get<string>('JWT_SECRET_DRIVER')
+      this.JWT_EXPIRES_IN = this.configService.get<string>('JWT_EXPIRES_IN')
+   }
 
    async setInformation(
       profileId: string,
@@ -104,18 +116,51 @@ export class RapideWalletService {
             userRole === UserRole.CLIENT
                ? { clientProfileId: profileId }
                : { driverProfileId: profileId }
-         await this.prismaService.rapideWallet.update({
+         const rapideWallet = await this.prismaService.rapideWallet.update({
             where: condition,
             data: {
                idCard: rapideWalletInfo.idCard,
                idCardPhotoRecto: rapideWalletInfo.idCardPhotoRecto,
                idCardPhotoVerso: rapideWalletInfo.idCardPhotoVerso,
                password: hashedPassword,
+               status: RapideWalletStatus.PENDING,
+            },
+            select: {
+               driverProfile: {
+                  select: {
+                     status: true,
+                  },
+               },
+               clientProfile: {
+                  select: {
+                     status: true,
+                  },
+               },
+               status: true,
             },
          })
          await this.redisService.remove(
             `${RAPIDE_WALLET_VALIDATION}-${profileId}`,
          )
+         const updateUserProfile = {
+            sub: profileId,
+            role: userRole,
+            status:
+               userRole === UserRole.CLIENT
+                  ? rapideWallet.clientProfile.status
+                  : rapideWallet.driverProfile.status,
+            rapideWalletStatus: rapideWallet.status,
+         }
+         const token = jwt.sign(
+            updateUserProfile,
+            userRole === UserRole.CLIENT
+               ? this.JWT_SECRET_CLIENT
+               : this.JWT_SECRET_DRIVER,
+            {
+               expiresIn: this.JWT_EXPIRES_IN,
+            },
+         )
+         return { token }
       } catch (error) {
          throw error
       }

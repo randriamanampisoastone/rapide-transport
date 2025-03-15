@@ -13,6 +13,7 @@ import { PasswordController } from './password.controller'
 import { PasswordService } from './password.service'
 import { SmsService } from 'src/sms/sms.service'
 import { RapideWalletService } from './rapide-wallet.service'
+import { ConfigService } from '@nestjs/config'
 
 @Module({
    imports: [],
@@ -29,6 +30,7 @@ import { RapideWalletService } from './rapide-wallet.service'
       PasswordService,
       SmsService,
       RapideWalletService,
+      ConfigService,
    ],
    controllers: [RapideWalletController, PasswordController],
 })
