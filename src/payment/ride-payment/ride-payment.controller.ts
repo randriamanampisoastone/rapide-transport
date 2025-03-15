@@ -34,4 +34,18 @@ export class RidePaymentController {
          initRapideWalletPayment,
       )
    }
+
+   @Post('validate-rapide-wallet-payment')
+   //    @SetMetadata('allowedRole', ['CLIENT'])
+   //    @UseGuards(RolesGuard)
+   async validateRapideWalletPayment(
+      @Query('sub') clientProfileId: string,
+      // @GetUser('sub') clientProfileId: string,
+      @Query('code') code: string,
+   ) {
+      return await this.ridePaymentService.validateRapideWalletPayment(
+         clientProfileId,
+         code,
+      )
+   }
 }

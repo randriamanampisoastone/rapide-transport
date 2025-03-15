@@ -11,7 +11,8 @@ import { PasswordService } from './password.service'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { ProfileStatus } from '@prisma/client'
-import { ChangePasswordDto } from './dto/changePassword.dto' 
+import { ChangePasswordDto } from './dto/changePassword.dto'
+import { ResetClientPasswordDto } from './dto/reset-client-password.dto'
 
 @Controller('password')
 export class PasswordController {
@@ -46,6 +47,22 @@ export class PasswordController {
          clientProfileId,
          changePasswordDto.oldWalletPassword,
          changePasswordDto.newWalletPassword,
+      )
+   }
+
+   @Patch('reset-client-password')
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
+   @UseGuards(RolesGuard)
+   async resetClientPassword(
+      @Body() resetClientPasswordDto: ResetClientPasswordDto,
+      @GetUser('status') status: ProfileStatus,
+   ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('Account is not activate')
+      }
+      return this.passwordService.resetClientPassword(
+         resetClientPasswordDto.clientProfileId,
+         resetClientPasswordDto.newPassword,
       )
    }
 }

@@ -1,8 +1,12 @@
-import { IsNotEmpty, IsString, Matches, MinLength } from 'class-validator'
+import { IsNotEmpty, IsNumber, IsString, Matches, MinLength } from 'class-validator'
 
 export class InitRapideWalletPayment {
    @IsNotEmpty()
    @IsString()
    @MinLength(4)
-   walletPassword: string
+   password: string
+
+   @IsNotEmpty()
+   @IsNumber()
+   upperPrice: number
 }

@@ -95,18 +95,20 @@ export class PaymentController {
    @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
    @UseGuards(RolesGuard)
    async getUserTransactionsByAdmin(
-      @Body() setClientTransactionByAdminDto: GetClientTransactionByAdminDto,
+      @Query('profileId') profileId: string,
+      @Query('method') method: MethodType,
+      @Query('status') status: TransactionStatus,
       @Query('page') page: number,
       @Query('pageSize') pageSize: number,
-      @GetUser('status') status: ProfileStatus,
+      @GetUser('status') profileStatus: ProfileStatus,
    ) {
-      if (status !== ProfileStatus.ACTIVE) {
+      if (profileStatus !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
       return await this.getTransactionService.getUserTransactoins(
-         setClientTransactionByAdminDto.profileId,
-         setClientTransactionByAdminDto.method,
-         setClientTransactionByAdminDto.status,
+         profileId,
+         method,
+         status,
          page || 1,
          pageSize || 10,
       )

@@ -29,7 +29,7 @@ export class ResetBalanceServce {
                await this.getRapideBalanceService.getRapidebalance()
             await prisma.transaction.create({
                data: {
-                  amount: rapideWallet.balance,
+                  amount: Math.abs(rapideWallet.balance),
                   status: TransactionStatus.SUCCESS,
                   from: rapideWallet.driverProfileId,
                   to: 'RAPIDE BALANCE',
@@ -43,11 +43,11 @@ export class ResetBalanceServce {
                   rapideBalanceId: rapideBalance.rapideBalance.rapideBalanceId,
                },
                data: {
-                  ride: rapideBalance.rapideBalance.ride + rapideWallet.balance,
+                  ride: rapideBalance.rapideBalance.ride + Math.abs(rapideWallet.balance),
                },
             })
             await this.redisService.upsertDailyRedisBalance(
-               rapideWallet.balance,
+               Math.abs(rapideWallet.balance),
             )
          })
       } catch (error) {

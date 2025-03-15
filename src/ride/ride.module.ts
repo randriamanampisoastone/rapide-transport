@@ -29,6 +29,8 @@ import { ReviewRideService } from './review-ride.service'
 import { DeleteRideService } from './delete-ride.service'
 import { NotificationModule } from 'src/notification/notification.module'
 import { NotificationService } from 'src/notification/notification.service'
+import { RidePaymentService } from 'src/payment/ride-payment/ride-payment.service'
+import { SmsService } from 'src/sms/sms.service'
 
 @Module({
    imports: [GatewayModule, NotificationModule],
@@ -66,6 +68,10 @@ import { NotificationService } from 'src/notification/notification.service'
       DeleteRideService,
 
       NotificationService,
+
+      //For payment
+      RidePaymentService,
+      SmsService,
    ],
 })
 export class RideModule {}
