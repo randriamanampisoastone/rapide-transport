@@ -128,4 +128,18 @@ export class RapideWalletController {
          updateRapideWalletStatusDto.status,
       )
    }
+
+   @Get('get-rapide-wallet')
+   @SetMetadata('allowedRole', ['CLIENT', 'DRIVER'])
+   @UseGuards(RolesGuard)
+   async getRapideWallete(
+      @GetUser('sub') profileId: string,
+      @GetUser('role') userRole: UserRole,
+      @GetUser('status') status: ProfileStatus,
+   ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('UserNotActive')
+      }
+      return await this.rapideWalletService.getRapideWallet(profileId, userRole)
+   }
 }
