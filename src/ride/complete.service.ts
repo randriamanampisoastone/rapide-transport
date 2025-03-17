@@ -92,18 +92,7 @@ export class CompleteService {
          //    Math.round(rideData.realPrice),
          // )
 
-         if (rideData.methodType === MethodType.CASH) {
-            await this.ridePaymentService.cashPayment(
-               rideData.clientProfileId,
-               rideData.driverProfileId,
-               Math.round(rideData.realPrice),
-            )
-         } else if (rideData.methodType === MethodType.RAPIDE_WALLET) {
-            await this.ridePaymentService.processPaymentWithRapideWallet(
-               rideData.clientProfileId,
-               Math.round(rideData.realPrice),
-            )
-         }
+         
 
          const {
             pickUpLocation,
@@ -116,7 +105,7 @@ export class CompleteService {
             clientProfileId,
             ...rideDataRest
          } = rideData
-         await this.prismaService.rideInvoice.create({
+         const rideInvoice = await this.prismaService.rideInvoice.create({
             data: {
                rideInvoiceId,
                ...rideDataRest,
@@ -128,6 +117,22 @@ export class CompleteService {
                endTime: updatedRideData.endTime,
             },
          })
+
+         // Payment
+
+         if (rideData.methodType === MethodType.CASH) {
+            await this.ridePaymentService.cashPayment(
+               rideData.clientProfileId,
+               rideData.driverProfileId,
+               Math.round(rideData.realPrice),
+            )
+         } else if (rideData.methodType === MethodType.RAPIDE_WALLET) {
+            await this.ridePaymentService.processPaymentWithRapideWallet(
+               rideInvoice.rideInvoiceId,
+               rideData.clientProfileId,
+               Math.round(rideData.realPrice),
+            )
+         }
 
          const dailyRideComplet = await this.redisService.newDailyRideComplet(
             rideData.rideId,

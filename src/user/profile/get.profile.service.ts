@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { UserRole } from 'enums/profile.enum'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
 
@@ -131,7 +132,7 @@ export class GetProfileService {
             profilePhoto: adminProfile.profilePhoto,
             role: adminProfile.role,
             status: adminProfile.adminProfile.status,
-            transactionPassword: adminProfile.adminProfile.transactionPassword
+            transactionPassword: adminProfile.adminProfile.transactionPassword,
          }
       } catch (error) {
          throw error
@@ -475,9 +476,8 @@ export class GetProfileService {
       try {
          const [data, totalCount] = await Promise.all([
             await this.prismaService.adminProfile.findMany({
-               include: {
-                  profile: true,
-               },
+               where: { profile: { role: { not: UserRole.SUPER_ADMIN } } },
+               include: { profile: true },
                skip: (page - 1) * pageSize,
                take: pageSize,
             }),
