@@ -12,7 +12,10 @@ export class PasswordService {
          const hashedPassword = await bcrypt.hash(password, salt)
          await this.prismaService.adminProfile.update({
             where: { adminProfileId },
-            data: { transactionPassword: hashedPassword },
+            data: {
+               transactionPassword: hashedPassword,
+               isTransactionPasswordDefined: true,
+            },
          })
       } catch (error) {
          throw error

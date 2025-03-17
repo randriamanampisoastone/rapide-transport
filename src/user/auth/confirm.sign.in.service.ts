@@ -144,7 +144,10 @@ export class ConfirmSignInService {
                },
             )
             return { token }
-         } else if (restSignInDto.role === UserRole.ADMIN) {
+         } else if (
+            restSignInDto.role === UserRole.ADMIN ||
+            restSignInDto.role === UserRole.SUPER_ADMIN
+         ) {
             const adminProfile = await this.prismaService.profile.findUnique({
                where: { phoneNumber: signInDto.phoneNumber },
                select: {
