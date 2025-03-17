@@ -17,6 +17,8 @@ import { DeleteProfileService } from './delete.profile.service'
 import { ProfileStatus } from '@prisma/client'
 import { UpdateProfileDto } from './dto/update.profile.dto'
 import { UserRole } from 'enums/profile.enum'
+import { UpdateAdminStatusDto } from './dto/update.admin.status.dto'
+import { UpdateAdminRoleDto } from './dto/update.admin.role.dto'
 
 @Controller('profile')
 export class ProfileController {
@@ -43,14 +45,8 @@ export class ProfileController {
    @UseGuards(RolesGuard)
    @Get('getDriverProfile')
    async getDriverProfile(
-      @GetUser('sub') sub: string,
-      @GetUser('status') status: ProfileStatus,
+      @GetUser('sub') sub: string
    ) {
-      if (status !== ProfileStatus.ACTIVE) {
-         throw new ForbiddenException('UserNotActive')
-      }
-      console.log('sub', sub)
-
       return await this.getProfileService.getDriverProfile(sub)
    }
 
@@ -253,12 +249,11 @@ export class ProfileController {
    @SetMetadata('allowedRole', ['SUPER_ADMIN'])
    @UseGuards(RolesGuard)
    async updateAdminStatus(
-      @Query('adminProfileId') adminProfileId: string,
-      @Query('status') status: ProfileStatus,
+      @Body() data: UpdateAdminStatusDto
    ) {
       return await this.updateProfileService.updateAdminStatus(
-         adminProfileId,
-         status,
+         data.adminProfileId,
+         data.status,
       )
    }
 
@@ -266,12 +261,11 @@ export class ProfileController {
    @SetMetadata('allowedRole', ['SUPER_ADMIN'])
    @UseGuards(RolesGuard)
    async updateAdminRole(
-      @Query('adminProfileId') adminProfileId: string,
-      @Query('role') role: UserRole,
+      @Body() data: UpdateAdminRoleDto,
    ) {
       return await this.updateProfileService.updateAdminRole(
-         adminProfileId,
-         role,
+         data.adminProfileId,
+         data.role,
       )
    }
 }

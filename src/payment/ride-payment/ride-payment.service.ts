@@ -49,7 +49,7 @@ export class RidePaymentService {
             })
 
          if (
-            initRapideWalletPayment.upperPrice <
+            initRapideWalletPayment.upperPrice >
             clientProfile.rapideWallet.balance
          ) {
             throw new BadRequestException('Insufficient balance')
@@ -73,7 +73,6 @@ export class RidePaymentService {
             code: confirmationCode,
             from: clientProfileId,
             to: '',
-            rideId: '',
             isValided: false,
             attempt: 3,
          }
@@ -135,12 +134,7 @@ export class RidePaymentService {
       }
    }
 
-   async setReceiverAndRideId(
-      clientProfileId: string,
-      to: string,
-      rideId: string,
-      ttl: number,
-   ) {
+   async setReceiverAndTtl(clientProfileId: string, to: string, ttl: number) {
       try {
          const paymentValidation: PaymentRideWalletInterface = JSON.parse(
             await this.redisService.get(
@@ -151,7 +145,6 @@ export class RidePaymentService {
             throw new BadRequestException('Payment not validated')
          }
          paymentValidation.to = to
-         paymentValidation.rideId = rideId
          await this.redisService.set(
             `${PAYMENT_VALIDATION}-${clientProfileId}`,
             JSON.stringify(paymentValidation),
@@ -163,6 +156,7 @@ export class RidePaymentService {
    }
 
    async processPaymentWithRapideWallet(
+      rideInvoiceId: string,
       clientProfileId: string,
       realPrice: number,
    ) {
@@ -232,7 +226,7 @@ export class RidePaymentService {
                      status: TransactionStatus.SUCCESS,
                      type: TransactionType.PAYMENT,
                      method: MethodType.RAPIDE_WALLET,
-                     rideInvoiceId: paymentValidation.rideId,
+                     rideInvoiceId,
                   },
                })
                const clientProfile = clientRapideWallet.clientProfile.profile

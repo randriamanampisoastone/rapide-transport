@@ -18,17 +18,16 @@ export class RidePaymentController {
    constructor(private readonly ridePaymentService: RidePaymentService) {}
 
    @Post('init-rapide-wallet-payment')
-   //    @SetMetadata('allowedRole', ['CLIENT'])
-   //    @UseGuards(RolesGuard)
+   @SetMetadata('allowedRole', ['CLIENT'])
+   @UseGuards(RolesGuard)
    async initRapideWalletPayment(
-      @Query('sub') clientProfileId: string,
-      //   @GetUser('sub') clientProfileId: string,
+      @GetUser('sub') clientProfileId: string,
       @Body() initRapideWalletPayment: InitRapideWalletPayment,
-      //   @GetUser('status') status: ProfileStatus,
+      @GetUser('status') status: ProfileStatus,
    ) {
-      //   if (status !== ProfileStatus.ACTIVE) {
-      //      throw new ForbiddenException('Account is not activate')
-      //   }
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('Account is not activate')
+      }
       return await this.ridePaymentService.initRapideWalletPayment(
          clientProfileId,
          initRapideWalletPayment,
@@ -36,12 +35,11 @@ export class RidePaymentController {
    }
 
    @Post('validate-rapide-wallet-payment')
-   //    @SetMetadata('allowedRole', ['CLIENT'])
-   //    @UseGuards(RolesGuard)
+   @SetMetadata('allowedRole', ['CLIENT'])
+   @UseGuards(RolesGuard)
    async validateRapideWalletPayment(
-      @Query('sub') clientProfileId: string,
-      // @GetUser('sub') clientProfileId: string,
-      @Query('code') code: string,
+      @GetUser('sub') clientProfileId: string,
+      @Body('code') code: string,
    ) {
       return await this.ridePaymentService.validateRapideWalletPayment(
          clientProfileId,
