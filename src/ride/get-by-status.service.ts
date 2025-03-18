@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { RideStatus } from 'enums/ride.enum'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { parseRidePostgresDataForRideData } from 'utils/rideDataParser.util'
+import { parseRideData } from 'utils/rideDataParser.util'
 
 @Injectable()
 export class GetByStatusService {
@@ -14,7 +14,7 @@ export class GetByStatusService {
             },
          })
          return {
-            data: rides.map((item) => parseRidePostgresDataForRideData(item)),
+            data: rides.map((item) => parseRideData(item)),
             count: rides.length,
          }
       } catch (error) {

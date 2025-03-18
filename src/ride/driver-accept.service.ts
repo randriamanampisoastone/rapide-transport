@@ -11,8 +11,7 @@ import { RedisService } from 'src/redis/redis.service'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { EVENT_ACCEPTED_RIDE } from 'constants/event.constant'
-import { parseRidePostgresDataForRideData } from 'utils/rideDataParser.util'
-import { ProfileStatus } from '@prisma/client'
+import { parseRideData } from 'utils/rideDataParser.util'
 import { NotificationService } from 'src/notification/notification.service'
 
 export interface DriverAcceptDto {
@@ -104,7 +103,7 @@ export class DriverAcceptService {
          )
 
          this.gateway.sendNotificationToAdmin(EVENT_ACCEPTED_RIDE, {
-            ...parseRidePostgresDataForRideData(rideDataUpdatedOnDb),
+            ...parseRideData(rideDataUpdatedOnDb),
          })
 
          return { ...rideDataUpdated }

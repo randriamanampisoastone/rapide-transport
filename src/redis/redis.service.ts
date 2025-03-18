@@ -1,8 +1,10 @@
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import {
+   CLIENT_EXPO_PUSH_TOKEN_PREFIX,
    DAILY_RAPIDE_BALANCE,
    DAILY_RAPIDE_RIDE_COMPLET,
+   DRIVER_EXPO_PUSH_TOKEN_PREFIX,
    DRIVER_LOCATION_PREFIX,
    NEW_CLIENT,
    RIDE_PREFIX,
@@ -289,5 +291,29 @@ export class RedisService implements OnModuleInit {
       } catch (error) {
          throw error
       }
+   }
+
+   async setClientExpoPushToken(
+      clientProfileId: string,
+      expoPushToken: string,
+   ): Promise<void> {
+      await this.client.set(
+         `${CLIENT_EXPO_PUSH_TOKEN_PREFIX + clientProfileId}`,
+         expoPushToken,
+         'EX',
+         24 * 3600,
+      )
+   }
+
+   async setDriverExpoPushToken(
+      driverProfileId: string,
+      expoPushToken: string,
+   ): Promise<void> {
+      await this.client.set(
+         `${DRIVER_EXPO_PUSH_TOKEN_PREFIX + driverProfileId}`,
+         expoPushToken,
+         'EX',
+         24 * 3600,
+      )
    }
 }

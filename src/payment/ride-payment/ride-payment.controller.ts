@@ -40,6 +40,7 @@ export class RidePaymentController {
    async validateRapideWalletPayment(
       @GetUser('sub') clientProfileId: string,
       @Body('code') code: string,
+ 
    ) {
       return await this.ridePaymentService.validateRapideWalletPayment(
          clientProfileId,

@@ -3,7 +3,6 @@ import {
    Injectable,
    InternalServerErrorException,
    HttpException,
-   ForbiddenException,
 } from '@nestjs/common'
 import { RedisService } from 'src/redis/redis.service'
 import { CreateItineraryService } from './create-itinerary.service'
@@ -17,11 +16,7 @@ import { MethodType } from 'enums/payment.enum'
 import { LatLng } from 'interfaces/location.interface'
 import { FindDriverService } from './find-driver.service'
 import { PrismaService } from 'src/prisma/prisma.service'
-import {
-   parseRideDataForPostgres,
-   parseRidePostgresDataForRideData,
-} from 'utils/rideDataParser.util'
-import { ProfileStatus } from '@prisma/client'
+import { stringifyRideData, parseRideData } from 'utils/rideDataParser.util'
 
 export interface CreateRideDto {
    clientProfileId: string
@@ -29,8 +24,7 @@ export interface CreateRideDto {
    dropOffLocation: LatLng
    vehicleType: VehicleType
    methodType: MethodType
-   clientExpoToken: string
-}
+} 
 
 @Injectable()
 export class CreateRideService {
@@ -68,12 +62,14 @@ export class CreateRideService {
       try {
          const createdRide = await this.prismaService.ride.create({
             data: {
-               ...parseRideDataForPostgres(data),
+               ...stringifyRideData(data),
             },
          })
 
-         return parseRidePostgresDataForRideData(createdRide)
+         return parseRideData(createdRide)
       } catch (error) {
+         console.log(error)
+
          throw new InternalServerErrorException(
             'Error occurred on sending data',
          )
@@ -113,7 +109,6 @@ export class CreateRideService {
          const dropOffLocation = createRideDto.dropOffLocation
          const vehicleType = createRideDto.vehicleType
          const methodType = createRideDto.methodType
-         const clientExpoToken = createRideDto.clientExpoToken
 
          const itinerary = await this.redisService.get(
             `${ITINERARY_PREFIX + clientProfileId}`,
@@ -142,18 +137,13 @@ export class CreateRideService {
                estimatedPrice,
                status: RideStatus.FINDING_DRIVER,
                createdAt: new Date().toISOString(),
-               clientExpoToken,
             }
             await this.redisService.remove(
                `${ITINERARY_PREFIX + clientProfileId}`,
             )
          } else {
-            const {
-               pickUpLocation,
-               dropOffLocation,
-               vehicleType,
-               methodType,
-            } = createRideDto
+            const { pickUpLocation, dropOffLocation, vehicleType, methodType } =
+               createRideDto
 
             const newItinerary =
                await this.createItineraryService.createItinerary({
@@ -180,7 +170,6 @@ export class CreateRideService {
                estimatedPrice,
                status: RideStatus.FINDING_DRIVER,
                createdAt: new Date().toISOString(),
-               clientExpoToken,
             }
          }
 
@@ -189,12 +178,14 @@ export class CreateRideService {
          await this.redisService.set(
             `${RIDE_PREFIX + rideData.rideId}`,
             JSON.stringify(rideData),
-            1800, // 30 minutes
+            900, // 15 minutes
          )
 
          const result = await this.sendRideDataBase(rideData)
          return result
       } catch (error) {
+         console.log('error : ', error)
+
          throw new InternalServerErrorException('Error creating ride')
       }
    }

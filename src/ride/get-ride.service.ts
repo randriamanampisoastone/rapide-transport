@@ -3,7 +3,7 @@ import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideData } from 'interfaces/ride.interface'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
-import { parseRidePostgresDataForRideData } from 'utils/rideDataParser.util'
+import { parseRideData } from 'utils/rideDataParser.util'
 
 @Injectable()
 export class GetRideService {
@@ -17,7 +17,7 @@ export class GetRideService {
          const rideData = await this.prismaService.ride.findUnique({
             where: { rideId },
          })
-         return parseRidePostgresDataForRideData(rideData)
+         return parseRideData(rideData)
       } catch (error) {
          throw new NotFoundException(`No rides found with id: ${rideId}`)
       }

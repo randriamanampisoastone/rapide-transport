@@ -17,17 +17,19 @@ import {
    UpdateDriverLocationInterface,
 } from 'interfaces/location.interface'
 import { InfoOnRideService } from 'src/ride/info-on-ride.service'
-import { CheckRideService } from 'src/ride/check-ride.service'
 import { UserRole } from 'enums/profile.enum'
 import * as jwt from 'jsonwebtoken'
 import { ConfigService } from '@nestjs/config'
 import {
    EVENT_INFO_ON_RIDE_PUSH,
    EVENT_NOTIFY_CLIENT,
+   EVENT_REGISTER_EXPO_PUSH_TOKEN,
    EVENT_SEND_DATA,
    EVENT_UPDATE_CLIENT_LOCATION,
    EVENT_UPDATE_DRIVER_LOCATION,
 } from 'constants/event.constant'
+import { NotificationInterface } from 'interfaces/notification.interface'
+import { NotificationService } from 'src/notification/notification.service'
 
 @Injectable()
 @WebSocketGateway({ cors: true })
@@ -63,8 +65,8 @@ export class Gateway
 
    constructor(
       private readonly locationService: LocationService,
+      private readonly notificationService: NotificationService,
       private readonly infoOnRideService: InfoOnRideService,
-      private readonly checkRideService: CheckRideService,
       private readonly configService: ConfigService,
    ) {}
 
@@ -133,6 +135,11 @@ export class Gateway
 
    handleDisconnect(client: Socket) {
       this.logger.log(`Disconnected : ${client.id}`)
+   }
+
+   @SubscribeMessage(EVENT_REGISTER_EXPO_PUSH_TOKEN)
+   async registerExpoPushToken(@MessageBody() data: NotificationInterface) {
+      await this.notificationService.registerExpoPushToken(data)
    }
 
    @SubscribeMessage(EVENT_UPDATE_DRIVER_LOCATION)

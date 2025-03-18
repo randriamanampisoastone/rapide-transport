@@ -1,6 +1,10 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common'
+import {
+   BadRequestException,
+   ForbiddenException,
+   Injectable,
+} from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { parseRidePostgresDataForRideData } from 'utils/rideDataParser.util'
+import { parseRideData } from 'utils/rideDataParser.util'
 
 export interface ReviewDto {
    note: number
@@ -17,7 +21,7 @@ export class ReviewService {
          const clientProfileId = reviewDto.clientProfileId
          const rideId = reviewDto.rideId
 
-         const ride = parseRidePostgresDataForRideData(
+         const ride = parseRideData(
             await this.prismaService.ride.findUnique({
                where: { rideId },
             }),
