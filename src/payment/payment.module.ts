@@ -15,13 +15,10 @@ import { RidePaymentController } from './ride-payment/ride-payment.controller'
 import { RidePaymentService } from './ride-payment/ride-payment.service'
 import { PaymentController } from './payment.controller'
 import { GetTransactionService } from './get-transacation.service'
+import { NotificationService } from 'src/notification/notification.service'
 
 @Module({
-   controllers: [
-      PaymentController,
-      TransferController,
-      RidePaymentController,
-   ],
+   controllers: [PaymentController, TransferController, RidePaymentController],
    providers: [
       DepositeService,
       PrismaService,
@@ -29,11 +26,12 @@ import { GetTransactionService } from './get-transacation.service'
       RedisService,
       Gateway,
       LocationService,
+      NotificationService,
       InfoOnRideService,
       CheckRideService,
       TransferService,
       RidePaymentService,
-      GetTransactionService
+      GetTransactionService,
    ],
 })
 export class PaymentModule {}

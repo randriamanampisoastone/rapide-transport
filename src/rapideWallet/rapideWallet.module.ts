@@ -14,6 +14,7 @@ import { PasswordService } from './password.service'
 import { SmsService } from 'src/sms/sms.service'
 import { RapideWalletService } from './rapide-wallet.service'
 import { ConfigService } from '@nestjs/config'
+import { NotificationService } from 'src/notification/notification.service'
 
 @Module({
    imports: [],
@@ -25,6 +26,7 @@ import { ConfigService } from '@nestjs/config'
       DriverBalanceService,
       Gateway,
       LocationService,
+      NotificationService,
       InfoOnRideService,
       CheckRideService,
       PasswordService,

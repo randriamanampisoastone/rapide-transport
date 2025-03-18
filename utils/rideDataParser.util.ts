@@ -1,6 +1,6 @@
 import { RideData } from 'interfaces/ride.interface'
 
-export const parseRideDataForPostgres = (rideData: RideData) => {
+export const stringifyRideData = (rideData: RideData) => {
    const { pickUpLocation, dropOffLocation, estimatedPrice, ...dataRest } =
       rideData
    const data = {
@@ -12,9 +12,7 @@ export const parseRideDataForPostgres = (rideData: RideData) => {
    return data
 }
 
-export const parseRidePostgresDataForRideData = (
-   rideDataFromPostgres,
-): RideData => {
+export const parseRideData = (rideDataFromPostgres): RideData => {
    const { pickUpLocation, dropOffLocation, estimatedPrice, ...dataRest } =
       rideDataFromPostgres
    const data: RideData = {

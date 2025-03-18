@@ -5,12 +5,14 @@ import { LocationService } from './location/location.service'
 import { InfoOnRideService } from 'src/ride/info-on-ride.service'
 import { CheckRideService } from 'src/ride/check-ride.service'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { NotificationService } from 'src/notification/notification.service'
 
 @Module({
    imports: [],
    providers: [
       Gateway,
       LocationService,
+      NotificationService,
       RedisService,
       LocationService,
       InfoOnRideService,
