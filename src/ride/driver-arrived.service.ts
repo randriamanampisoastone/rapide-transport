@@ -94,10 +94,9 @@ export class DriverArrivedService {
             const rideTtl = await this.redisService.ttl(
                `${RIDE_PREFIX + rideId}`,
             )
-            await this.ridePaymentService.setReceiverAndRideId(
+            await this.ridePaymentService.setReceiverAndTtl(
                rideData.clientProfileId,
                driverProfileId,
-               rideData.rideId,
                rideTtl,
             )
          }

@@ -39,7 +39,8 @@ export class RidePaymentController {
    @UseGuards(RolesGuard)
    async validateRapideWalletPayment(
       @GetUser('sub') clientProfileId: string,
-      @Query('code') code: string,
+      @Body('code') code: string,
+ 
    ) {
       return await this.ridePaymentService.validateRapideWalletPayment(
          clientProfileId,
