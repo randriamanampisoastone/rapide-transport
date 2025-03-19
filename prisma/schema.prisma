@@ -247,7 +247,6 @@ model RideInvoice {
   driverProfile       DriverProfile? @relation("DriverRideInvoice", fields: [driverProfileId], references: [driverProfileId])
 
   vehicleType         VehicleType
-  vehicleId           String?
 
   status              RideStatus?
   methodType          MethodType
@@ -263,9 +262,6 @@ model RideInvoice {
 
   startTime           Float?
   endTime             Float?
-
-  clientExpoToken     String?
-  driverExpoToken     String?
 
   transaction         Transaction? @relation("RideTransaction")
 
