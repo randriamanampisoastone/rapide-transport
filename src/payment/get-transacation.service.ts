@@ -21,6 +21,18 @@ export class GetTransactionService {
                orderBy: {
                   createdAt: 'desc',
                },
+               include: {
+                  clientProfiles: {
+                     include: {
+                        profile: true,
+                     },
+                  },
+                  driverProfile: {
+                     include: {
+                        profile: true,
+                     },
+                  },
+               },
                skip: (page - 1) * pageSize,
                take: pageSize,
             }),
@@ -55,6 +67,23 @@ export class GetTransactionService {
                   OR: [{ from: profileId }, { to: profileId }],
                   AND: [method_condition, status_condition],
                },
+               orderBy: {
+                  createdAt: 'desc',
+               },
+               include: {
+                  clientProfiles: {
+                     include: {
+                        profile: true,
+                     },
+                  },
+                  driverProfile: {
+                     include: {
+                        profile: true,
+                     },
+                  },
+               },
+               skip: (page - 1) * pageSize,
+               take: pageSize,
             }),
             await this.prismaService.transaction.count({
                where: {
@@ -82,6 +111,18 @@ export class GetTransactionService {
                   { OR: [{ from: profileId }, { to: profileId }] },
                   { reference },
                ],
+            },
+            include: {
+               clientProfiles: {
+                  include: {
+                     profile: true,
+                  },
+               },
+               driverProfile: {
+                  include: {
+                     profile: true,
+                  },
+               },
             },
          })
       } catch (error) {
