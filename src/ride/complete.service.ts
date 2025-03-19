@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
    BadRequestException,
    ForbiddenException,
@@ -92,8 +93,6 @@ export class CompleteService {
          //    Math.round(rideData.realPrice),
          // )
 
-         
-
          const {
             pickUpLocation,
             dropOffLocation,
@@ -120,19 +119,19 @@ export class CompleteService {
 
          // Payment
 
-         if (rideData.methodType === MethodType.CASH) {
-            await this.ridePaymentService.cashPayment(
-               rideData.clientProfileId,
-               rideData.driverProfileId,
-               Math.round(rideData.realPrice),
-            )
-         } else if (rideData.methodType === MethodType.RAPIDE_WALLET) {
-            await this.ridePaymentService.processPaymentWithRapideWallet(
-               rideInvoice.rideInvoiceId,
-               rideData.clientProfileId,
-               Math.round(rideData.realPrice),
-            )
-         }
+         // if (rideData.methodType === MethodType.CASH) {
+         //    await this.ridePaymentService.cashPayment(
+         //       rideData.clientProfileId,
+         //       rideData.driverProfileId,
+         //       Math.round(rideData.realPrice),
+         //    )
+         // } else if (rideData.methodType === MethodType.RAPIDE_WALLET) {
+         //    await this.ridePaymentService.processPaymentWithRapideWallet(
+         //       rideInvoice.rideInvoiceId,
+         //       rideData.clientProfileId,
+         //       Math.round(rideData.realPrice),
+         //    )
+         // }
 
          const dailyRideComplet = await this.redisService.newDailyRideComplet(
             rideData.rideId,
@@ -143,7 +142,6 @@ export class CompleteService {
          })
 
          await this.redisService.remove(`${RIDE_PREFIX + rideId}`)
-         console.log('Ride completed successfully')
 
          return { ...rideData }
       } catch (error) {

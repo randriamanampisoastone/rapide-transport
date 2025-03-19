@@ -84,8 +84,8 @@ export class DriverArrivedService {
          })
          const clientProfileId = rideDataUpdated.clientProfileId
 
-         await this.notificationService.sendPushNotification(
-            rideDataUpdated.clientExpoToken,
+         await this.notificationService.sendNotificationPushClient(
+            clientProfileId,
             'Driver arrived !',
             'Your driver has arrived',
          )

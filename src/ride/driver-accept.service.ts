@@ -13,6 +13,10 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { EVENT_ACCEPTED_RIDE } from 'constants/event.constant'
 import { parseRideData } from 'utils/rideDataParser.util'
 import { NotificationService } from 'src/notification/notification.service'
+import {
+   ERROR_RIDE_NOT_FINDING_DRIVER,
+   ERROR_RIDE_NOT_FOUND,
+} from 'constants/error.constant'
 
 export interface DriverAcceptDto {
    driverProfileId: string
@@ -36,12 +40,12 @@ export class DriverAcceptService {
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
 
          if (!ride) {
-            throw new NotFoundException('RideNotFound')
+            throw new NotFoundException(ERROR_RIDE_NOT_FOUND)
          }
          const rideData: RideData = JSON.parse(ride)
 
          if (rideData.status !== RideStatus.FINDING_DRIVER) {
-            throw new BadRequestException('RideNotInFindingDriverStatus')
+            throw new BadRequestException(ERROR_RIDE_NOT_FINDING_DRIVER)
          }
 
          const {
@@ -88,8 +92,8 @@ export class DriverAcceptService {
 
          const clientProfileId = rideDataUpdated.clientProfileId
 
-         await this.notificationService.sendPushNotification(
-            rideDataUpdated.clientExpoToken,
+         await this.notificationService.sendNotificationPushClient(
+            clientProfileId,
             'Driver accepted !',
             'Your driver has accepted your ride',
          )

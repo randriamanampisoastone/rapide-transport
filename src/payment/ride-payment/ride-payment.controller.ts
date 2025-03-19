@@ -3,7 +3,6 @@ import {
    Controller,
    ForbiddenException,
    Post,
-   Query,
    SetMetadata,
    UseGuards,
 } from '@nestjs/common'
@@ -40,7 +39,6 @@ export class RidePaymentController {
    async validateRapideWalletPayment(
       @GetUser('sub') clientProfileId: string,
       @Body('code') code: string,
- 
    ) {
       return await this.ridePaymentService.validateRapideWalletPayment(
          clientProfileId,

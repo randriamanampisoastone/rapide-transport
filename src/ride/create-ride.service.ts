@@ -24,7 +24,7 @@ export interface CreateRideDto {
    dropOffLocation: LatLng
    vehicleType: VehicleType
    methodType: MethodType
-} 
+}
 
 @Injectable()
 export class CreateRideService {
@@ -182,6 +182,8 @@ export class CreateRideService {
          )
 
          const result = await this.sendRideDataBase(rideData)
+         console.log('result : ', result)
+
          return result
       } catch (error) {
          console.log('error : ', error)

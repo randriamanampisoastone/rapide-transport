@@ -1,4 +1,9 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common'
+import {
+   BadRequestException,
+   Injectable,
+   Logger,
+   UnauthorizedException,
+} from '@nestjs/common'
 import {
    MessageBody,
    OnGatewayConnection,
@@ -30,6 +35,10 @@ import {
 } from 'constants/event.constant'
 import { NotificationInterface } from 'interfaces/notification.interface'
 import { NotificationService } from 'src/notification/notification.service'
+import {
+   ERROR_TOKEN_NOT_FOUND,
+   ERROR_UNAUTHORIZED,
+} from 'constants/error.constant'
 
 @Injectable()
 @WebSocketGateway({ cors: true })
@@ -74,19 +83,15 @@ export class Gateway
       server.use(async (socket: Socket, next) => {
          const token = socket.handshake.auth.token
          if (!token) {
-            return next(new Error('TokenNotFound'))
+            return next(new BadRequestException(ERROR_TOKEN_NOT_FOUND))
          }
 
          try {
-            // Décoder le token sans vérification pour extraire le rôle
             const decodedHeader: any = jwt.decode(token)
             if (!decodedHeader || !decodedHeader.role) {
-               throw new UnauthorizedException(
-                  'Rôle non spécifié dans le token',
-               )
+               throw new UnauthorizedException(ERROR_UNAUTHORIZED)
             }
 
-            // Sélectionner la clé secrète en fonction du rôle
             let secretKey: string
             switch (decodedHeader.role) {
                case UserRole.CLIENT:
@@ -120,7 +125,7 @@ export class Gateway
             next()
          } catch (error) {
             this.logger.error(`Authentication failed: ${error.message}`)
-            return next(new Error('TokenNotInvalid'))
+            return next(new BadRequestException(ERROR_UNAUTHORIZED))
          }
       })
 
