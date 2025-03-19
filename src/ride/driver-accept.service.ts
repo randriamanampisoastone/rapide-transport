@@ -92,11 +92,11 @@ export class DriverAcceptService {
 
          const clientProfileId = rideDataUpdated.clientProfileId
 
-         await this.notificationService.sendNotificationPushClient(
-            clientProfileId,
-            'Driver accepted !',
-            'Your driver has accepted your ride',
-         )
+         // await this.notificationService.sendNotificationPushClient(
+         //    clientProfileId,
+         //    'Driver accepted !',
+         //    'Your driver has accepted your ride',
+         // )
 
          this.gateway.sendNotificationToClient(
             clientProfileId,
