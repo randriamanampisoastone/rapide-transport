@@ -54,19 +54,12 @@ enum UserRole {
   DRIVER	            // Accepter et gérer les courses Ride, Mart, Express.
   ADMIN	              // Gestion complète du système (accès à tout).
   SUPER_ADMIN	        // Accès total avec gestion des administrateurs et des autorisations.
-  RIDE_MANAGER	      // Supervise le service Ride (gestion des chauffeurs, suivi des courses).
   FOOD_MANAGER      	// Gère les restaurants partenaires et les commandes Food.
   MART_MANAGER	      // Gère les magasins partenaires et les commandes Mart.
-  EXPRESS_MANAGER	    // Gère le service Express (suivi des livraisons, gestion des livreurs).
-  DRIVER_MANAGER	    // Supervise les chauffeurs, gère les inscriptions et les suspensions.
-  CUSTOMER_SUPPORT   	// Gestion des réclamations et assistance des clients.
-  FINANCE_MANAGER    	// Gère les paiements, commissions et remboursements.
-  PROMOTION_MANAGER	  // Gère les campagnes promotionnelles, les remises et les offres.
+  HUMAN_RESOURCES   	// Gère la relation entre rapide et l'exterieure
+  FINANCE_MANAGER    	// Gère les paiements, commissions
   FLEET_MANAGER      	// Supervise la flotte de véhicules (maintenance, attribution).
-  DISPUTE_MANAGER	    // Traite les litiges entre clients, chauffeurs et partenaires.
-  OPERATIONS_MANAGER	// Supervise toutes les opérations des services.
-  PARTNER_MANAGER	    // Gère les relations avec les restaurants, magasins et partenaires.
-  COMPLIANCE_MANAGER	// Vérifie les documents des chauffeurs, livreurs et partenaires.
+  ORDER_MANAGER       // Gérer les commandes et les livraisons. Assure la bonne fonctinnaliter des commandes.
 }
 
 enum MethodType {

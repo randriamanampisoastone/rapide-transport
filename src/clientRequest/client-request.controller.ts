@@ -47,7 +47,7 @@ export class ClientRequestController {
       'CLIENT',
       'ADMIN',
       'SUPER_ADMIN',
-      'CUSTOMER_SUPPORT',
+      'HUMAN_RESOURCES',
    ])
    @UseGuards(RolesGuard)
    async answerRequest(
@@ -67,7 +67,7 @@ export class ClientRequestController {
    }
 
    @Get()
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'CUSTOMER_SUPPORT'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'HUMAN_RESOURCES'])
    @UseGuards(RolesGuard)
    async getAllCientRequest(
       @Query('requestFor') requestFor: RequestFor,
@@ -85,7 +85,7 @@ export class ClientRequestController {
    @SetMetadata('allowedRole', [
       'ADMIN',
       'SUPER_ADMIN',
-      'CUSTOMER_SUPPORT',
+      'HUMAN_RESOURCES',
       'CLIENT',
    ])
    @UseGuards(RolesGuard)
@@ -124,7 +124,7 @@ export class ClientRequestController {
    @SetMetadata('allowedRole', [
       'ADMIN',
       'SUPER_ADMIN',
-      'CUSTOMER_SUPPORT',
+      'HUMAN_RESOURCES',
       'CLIENT',
    ])
    @UseGuards(RolesGuard)

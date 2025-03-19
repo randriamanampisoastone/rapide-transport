@@ -22,7 +22,7 @@ export class HomeController {
    @SetMetadata('allowedRole', [
       'ADMIN',
       'SUPER_ADMIN',
-      'RIDE_MANAGER',
+      'FLEET_MANAGER',
       'CLIENT',
       'DRIVER',
    ])
@@ -32,21 +32,21 @@ export class HomeController {
    }
 
    @Post()
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'RIDE_MANAGER'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FLEET_MANAGER'])
    @UseGuards(RolesGuard)
    async addNewHome(@Body() createHomeDto: CreateHomeDto) {
       return await this.homeService.addNewHome(createHomeDto)
    }
 
    @Delete()
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'RIDE_MANAGER'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FLEET_MANAGER'])
    @UseGuards(RolesGuard)
    async removeHome(@Query('homeId') homeId: string) {
       return await this.homeService.removeHome(homeId)
    }
 
    @Patch()
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'RIDE_MANAGER'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FLEET_MANAGER'])
    @UseGuards(RolesGuard)
    async updateHome(
       @Query('homeId') homeId: string,
