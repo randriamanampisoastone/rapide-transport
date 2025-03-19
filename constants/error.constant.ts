@@ -1,0 +1,7 @@
+export const ERROR_RIDE_NOT_FOUND = 'RideNotFound'
+export const ERROR_RIDE_NOT_FINDING_DRIVER = 'RideNotFoundingDriver'
+export const ERROR_CLIENT_FORBIDDEN = 'ClientForbidden'
+export const ERROR_DRIVER_FORBIDDEN = 'DriverForbidden'
+export const ERROR_UNAUTHORIZED = 'Unauthorized'
+export const ERROR_INTERNAL_SERVER_ERROR = 'InternalServerError'
+export const ERROR_TOKEN_NOT_FOUND = 'TokenNotFound'

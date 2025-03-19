@@ -305,6 +305,12 @@ export class RedisService implements OnModuleInit {
       )
    }
 
+   async getClientExpoPushToken(clientProfileId: string): Promise<string> {
+      return await this.get(
+         `${CLIENT_EXPO_PUSH_TOKEN_PREFIX + clientProfileId}`,
+      )
+   }
+
    async setDriverExpoPushToken(
       driverProfileId: string,
       expoPushToken: string,
@@ -314,6 +320,12 @@ export class RedisService implements OnModuleInit {
          expoPushToken,
          'EX',
          24 * 3600,
+      )
+   }
+
+   async getDriverExpoPushToken(clientProfileId: string): Promise<string> {
+      return await this.get(
+         `${DRIVER_EXPO_PUSH_TOKEN_PREFIX + clientProfileId}`,
       )
    }
 }

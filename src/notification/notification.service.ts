@@ -61,6 +61,19 @@ export class NotificationService {
       }
    }
 
+   async sendNotificationPushClient(
+      clientProfileId: string,
+      title: string,
+      body: string,
+   ) {
+      const clientExpoPushToken =
+         await this.redisService.getClientExpoPushToken(clientProfileId)
+
+      if (clientExpoPushToken) {
+         await this.sendPushNotification(clientExpoPushToken, title, body)
+      }
+   }
+
    async registerExpoPushToken(data: NotificationInterface) {
       const userProfileId = data.userProfileId
       const expoPushToken = data.expoPushToken
@@ -82,6 +95,19 @@ export class NotificationService {
                expoPushToken,
             )
          }
+      }
+   }
+
+   async sendNotificationPushDriver(
+      driverProfileId: string,
+      title: string,
+      body: string,
+   ) {
+      const driverExpoPushToken =
+         await this.redisService.getDriverExpoPushToken(driverProfileId)
+
+      if (driverExpoPushToken) {
+         await this.sendPushNotification(driverExpoPushToken, title, body)
       }
    }
 }
