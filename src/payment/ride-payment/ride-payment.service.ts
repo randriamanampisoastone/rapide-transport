@@ -221,7 +221,7 @@ export class RidePaymentService {
                      from: clientProfileId,
                      to: paymentValidation.to,
                      amount: realPrice,
-                     clientProfileId,
+                     clientProfiles: { connect: { clientProfileId } },
                      driverProfileId: paymentValidation.to,
                      status: TransactionStatus.SUCCESS,
                      type: TransactionType.PAYMENT,
@@ -253,6 +253,7 @@ export class RidePaymentService {
    async cashPayment(
       clientProfileId: string,
       driverProfileId: string,
+      rideInvoiceId: string,
       amount: number,
    ) {
       try {
@@ -268,10 +269,11 @@ export class RidePaymentService {
                })
                const transaction = await prisma.transaction.create({
                   data: {
+                     rideInvoiceId,
                      from: clientProfileId,
                      to: driverProfileId,
                      amount,
-                     clientProfileId,
+                     clientProfiles: { connect: { clientProfileId } },
                      driverProfileId,
                      status: TransactionStatus.SUCCESS,
                      type: TransactionType.PAYMENT,

@@ -20,6 +20,7 @@ import { TRANSFER_VALIDATION } from 'constants/redis.constant'
 import { Gateway } from 'src/gateway/gateway'
 import { EVENT_TRANSFER } from 'constants/event.constant'
 import { TransferRedisDataInterface } from 'interfaces/transfer.redis.data.interface'
+import { connect } from 'http2'
 
 @Injectable()
 export class TransferService {
@@ -222,7 +223,12 @@ export class TransferService {
                      amount: transferInfo.amount,
                      from: transferInfo.from,
                      to: transferInfo.to,
-                     clientProfileId: transferInfo.from,
+                     clientProfiles: {
+                        connect: [
+                           { clientProfileId: transferInfo.from },
+                           { clientProfileId: transferInfo.to },
+                        ],
+                     },
                      method: MethodType.RAPIDE_WALLET,
                      status: TransactionStatus.SUCCESS,
                      type: TransactionType.TRANSFER,

@@ -340,8 +340,9 @@ model Transaction {
   from                  String
   to                    String
 
-  clientProfileId       String?
-  clientProfile         ClientProfile?     @relation("ClientTransaction", fields: [clientProfileId], references: [clientProfileId])
+  // clientProfileId       String?
+  // clientProfile         ClientProfile?     @relation("ClientTransaction", fields: [clientProfileId], references: [clientProfileId])
+  clientProfiles        ClientProfile[]    @relation("ClientTransaction")
   driverProfileId       String?
   driverProfile         DriverProfile?     @relation("DriverTransaction", fields: [driverProfileId], references: [driverProfileId])
 
