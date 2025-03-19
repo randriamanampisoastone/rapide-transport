@@ -3,6 +3,8 @@ import {
    Injectable,
    InternalServerErrorException,
    HttpException,
+   BadRequestException,
+   Logger,
 } from '@nestjs/common'
 import { RedisService } from 'src/redis/redis.service'
 import { CreateItineraryService } from './create-itinerary.service'
@@ -17,6 +19,11 @@ import { LatLng } from 'interfaces/location.interface'
 import { FindDriverService } from './find-driver.service'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { stringifyRideData, parseRideData } from 'utils/rideDataParser.util'
+import {
+   ERROR_INTERNAL_SERVER_ERROR,
+   ERROR_INVALID_VEHICLE,
+   ERROR_REDIS_SET_FAILED,
+} from 'constants/error.constant'
 
 export interface CreateRideDto {
    clientProfileId: string
@@ -28,6 +35,8 @@ export interface CreateRideDto {
 
 @Injectable()
 export class CreateRideService {
+   private readonly logger = new Logger(CreateRideService.name)
+
    constructor(
       private readonly createItineraryService: CreateItineraryService,
       private readonly redisService: RedisService,
@@ -54,7 +63,7 @@ export class CreateRideService {
                ? itineraryData.prices.premiumCar
                : newItinerary.prices.premiumCar
          default:
-            throw new HttpException('Invalid vehicle type', 400)
+            throw new BadRequestException(ERROR_INVALID_VEHICLE)
       }
    }
 
@@ -175,20 +184,25 @@ export class CreateRideService {
 
          await this.FindDriverService.notifyDrivers(rideData)
 
-         await this.redisService.set(
-            `${RIDE_PREFIX + rideData.rideId}`,
-            JSON.stringify(rideData),
-            900, // 15 minutes
-         )
+         try {
+            await this.redisService.set(
+               `${RIDE_PREFIX + rideData.rideId}`,
+               JSON.stringify(rideData),
+               900,
+            )
+         } catch (error) {
+            this.logger.error(
+               `Redis SET failed for ride: ${error.message}`,
+               error.stack,
+            )
+            throw new InternalServerErrorException(ERROR_REDIS_SET_FAILED)
+         }
 
          const result = await this.sendRideDataBase(rideData)
-         console.log('result : ', result)
 
          return result
       } catch (error) {
-         console.log('error : ', error)
-
-         throw new InternalServerErrorException('Error creating ride')
+         throw new InternalServerErrorException(ERROR_INTERNAL_SERVER_ERROR)
       }
    }
 }

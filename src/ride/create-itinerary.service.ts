@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import { getRouteGoogleMap } from 'api/route.googlemap.api'
 import { RedisService } from 'src/redis/redis.service'
@@ -6,6 +7,7 @@ import { calculateEstimatedPrices } from 'utils/price.util'
 import { parseDuration } from 'utils/time.util'
 import { ITINERARY_PREFIX } from 'constants/redis.constant'
 import { LatLng } from 'interfaces/location.interface'
+import { ERROR_INTERNAL_SERVER_ERROR } from 'constants/error.constant'
 
 export interface CreateItineraryDto {
    clientProfileId: string
@@ -53,8 +55,7 @@ export class CreateItineraryService {
 
          return itineraryData
       } catch (error) {
-         // throw error
-         throw new InternalServerErrorException('A problem occurred while creating the itinerary.')
+         throw new InternalServerErrorException(ERROR_INTERNAL_SERVER_ERROR)
       }
    }
 }

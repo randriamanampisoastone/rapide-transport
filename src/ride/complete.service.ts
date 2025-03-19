@@ -138,7 +138,6 @@ export class CompleteService {
 
          await this.redisService.remove(`${RIDE_PREFIX + rideId}`)
 
-         console.log('ici')
          return { ...rideData }
       } catch (error) {
          throw new InternalServerErrorException('Error completing ride')
