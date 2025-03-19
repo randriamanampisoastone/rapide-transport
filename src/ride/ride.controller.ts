@@ -313,7 +313,7 @@ export class RideController {
    }
 
    @Patch('assign-ride-to-driver')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'RIDE_MANAGER'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FLEET_MANAGER'])
    @UseGuards(RolesGuard)
    assignRideToDriver(
       @Query('driverProfileId') driverProfileId: string,
@@ -351,7 +351,7 @@ export class RideController {
    }
 
    @Delete('delete-ride')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'RIDE_MANAGER'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FLEET_MANAGER'])
    @UseGuards(RolesGuard)
    deleteRide(@Query('rideId') rideId: string) {
       return this.deleteRideService.deleteRide(rideId)

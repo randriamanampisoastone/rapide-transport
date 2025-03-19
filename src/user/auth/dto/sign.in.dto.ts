@@ -13,5 +13,5 @@ export class SignInDto {
       message:
          'User Role must be one of the following values: CLIENT, DRIVER, ADMIN',
    })
-   role: string
+   role: UserRole
 }
