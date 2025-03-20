@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
    BadRequestException,
    ForbiddenException,
@@ -92,27 +93,20 @@ export class CompleteService {
          //    Math.round(rideData.realPrice),
          // )
 
-         
-
-         const {
-            pickUpLocation,
-            dropOffLocation,
-            estimatedPrice,
-            rideId: rideInvoiceId,
-            estimatedDuration,
-            review,
-            note,
-            clientProfileId,
-            ...rideDataRest
-         } = rideData
          const rideInvoice = await this.prismaService.rideInvoice.create({
             data: {
-               rideInvoiceId,
-               ...rideDataRest,
-               pickUpLatitude: pickUpLocation.latitude,
-               pickUpLongitude: pickUpLocation.longitude,
-               dropOffLatitude: dropOffLocation.latitude,
-               dropOffLongitude: dropOffLocation.longitude,
+               distanceMeters: rideData.distanceMeters,
+               methodType: rideData.methodType,
+               vehicleType: rideData.vehicleType,
+               driverProfileId: rideData.driverProfileId,
+               clientProfileId: rideData.clientProfileId,
+               realPrice: rideData.realPrice,
+               realDuration: rideData.realDuration,
+               startTime: rideData.startTime,
+               pickUpLatitude: rideData.pickUpLocation.latitude,
+               pickUpLongitude: rideData.pickUpLocation.longitude,
+               dropOffLatitude: rideData.dropOffLocation.latitude,
+               dropOffLongitude: rideData.dropOffLocation.longitude,
                status: RideStatus.COMPLETED,
                endTime: updatedRideData.endTime,
             },
@@ -124,6 +118,7 @@ export class CompleteService {
             await this.ridePaymentService.cashPayment(
                rideData.clientProfileId,
                rideData.driverProfileId,
+               rideInvoice.rideInvoiceId,
                Math.round(rideData.realPrice),
             )
          } else if (rideData.methodType === MethodType.RAPIDE_WALLET) {
@@ -143,11 +138,9 @@ export class CompleteService {
          })
 
          await this.redisService.remove(`${RIDE_PREFIX + rideId}`)
-         console.log('Ride completed successfully')
 
          return { ...rideData }
       } catch (error) {
-         // console.log('Error completing ride:', error)
          throw new InternalServerErrorException('Error completing ride')
       }
    }

@@ -1,10 +1,19 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+   BadRequestException,
    ForbiddenException,
    HttpException,
    HttpStatus,
    Injectable,
+   InternalServerErrorException,
    NotFoundException,
 } from '@nestjs/common'
+import {
+   ERROR_CLIENT_FORBIDDEN,
+   ERROR_INTERNAL_SERVER_ERROR,
+   ERROR_RIDE_NOT_FINDING_DRIVER,
+   ERROR_RIDE_NOT_FOUND,
+} from 'constants/error.constant'
 import { EVENT_CANCELLED_RIDE } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
@@ -12,7 +21,7 @@ import { RideData } from 'interfaces/ride.interface'
 import { Gateway } from 'src/gateway/gateway'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
-import { parseRidePostgresDataForRideData } from 'utils/rideDataParser.util'
+import { parseRideData } from 'utils/rideDataParser.util'
 
 export interface CancelledDto {
    clientProfileId: string
@@ -34,7 +43,7 @@ export class CancelledService {
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
 
          if (!ride) {
-            throw new NotFoundException('RideNotFound')
+            throw new NotFoundException(ERROR_RIDE_NOT_FOUND)
          }
 
          const rideData: RideData = JSON.parse(ride)
@@ -51,14 +60,10 @@ export class CancelledService {
          })
 
          if (rideData.status !== RideStatus.FINDING_DRIVER) {
-            throw new HttpException(
-               'Not finding driver status',
-               HttpStatus.BAD_REQUEST,
-            )
+            throw new BadRequestException(ERROR_RIDE_NOT_FINDING_DRIVER)
          }
          if (rideData.clientProfileId !== clientProfileId) {
-            // throw new Error('Client is not the client of the ride')
-            throw new ForbiddenException('Client is not the client of the ride')
+            throw new ForbiddenException(ERROR_CLIENT_FORBIDDEN)
          }
 
          const pickUpLocation = rideData.pickUpLocation
@@ -74,7 +79,7 @@ export class CancelledService {
             drivers.map((driver) =>
                this.gateway.sendNotificationToDriver(
                   driver.driverProfileId,
-                  'cancelledRide',
+                  EVENT_CANCELLED_RIDE,
                   rideId,
                ),
             ),
@@ -91,13 +96,10 @@ export class CancelledService {
             },
          })
          this.gateway.sendNotificationToAdmin(EVENT_CANCELLED_RIDE, {
-            ...parseRidePostgresDataForRideData(rideUpdated),
+            ...parseRideData(rideUpdated),
          })
       } catch (error) {
-         throw new HttpException(
-            error.message,
-            HttpStatus.INTERNAL_SERVER_ERROR,
-         )
+         throw error
       }
    }
 }

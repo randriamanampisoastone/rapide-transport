@@ -41,7 +41,9 @@ export class CheckRideService {
          // throw new Error(
          //    'Une erreur est survenue lors de la vérification de la course.',
          // )
-         throw new NotFoundException('An error occurred while checking the ride.')
+         throw new NotFoundException(
+            'An error occurred while checking the ride.',
+         )
       }
    }
 
@@ -75,7 +77,9 @@ export class CheckRideService {
          // throw new Error(
          //    'Une erreur est survenue lors de la vérification de la course.',
          // )
-         throw new NotFoundException('An error occurred while checking the ride.')
+         throw new NotFoundException(
+            'An error occurred while checking the ride.',
+         )
       }
    }
 }

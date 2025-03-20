@@ -3,7 +3,6 @@ import {
    Controller,
    ForbiddenException,
    Post,
-   Query,
    SetMetadata,
    UseGuards,
 } from '@nestjs/common'

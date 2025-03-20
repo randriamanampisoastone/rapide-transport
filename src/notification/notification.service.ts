@@ -1,13 +1,19 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import axios, { AxiosError } from 'axios'
+import { UserRole } from 'enums/profile.enum'
+import { NotificationInterface } from 'interfaces/notification.interface'
+import { RedisService } from 'src/redis/redis.service'
 
 @Injectable()
 export class NotificationService {
    private readonly logger = new Logger(NotificationService.name)
    private EXPO_PUSH_URL = ''
 
-   constructor(private readonly configService: ConfigService) {
+   constructor(
+      private readonly configService: ConfigService,
+      private readonly redisService: RedisService,
+   ) {
       this.EXPO_PUSH_URL = this.configService.get('EXPO_PUSH_URL')
    }
 
@@ -52,6 +58,56 @@ export class NotificationService {
          }
 
          throw new Error('Failed to send push notification')
+      }
+   }
+
+   async sendNotificationPushClient(
+      clientProfileId: string,
+      title: string,
+      body: string,
+   ) {
+      const clientExpoPushToken =
+         await this.redisService.getClientExpoPushToken(clientProfileId)
+
+      if (clientExpoPushToken) {
+         await this.sendPushNotification(clientExpoPushToken, title, body)
+      }
+   }
+
+   async registerExpoPushToken(data: NotificationInterface) {
+      const userProfileId = data.userProfileId
+      const expoPushToken = data.expoPushToken
+      const role = data.role
+
+      console.log('userProfileId : ', userProfileId)
+      console.log('expoPushToken : ', expoPushToken)
+      console.log('role : ', role)
+
+      if (userProfileId && expoPushToken && role) {
+         if (role === UserRole.CLIENT) {
+            this.redisService.setClientExpoPushToken(
+               userProfileId,
+               expoPushToken,
+            )
+         } else if (role === UserRole.DRIVER) {
+            this.redisService.setDriverExpoPushToken(
+               userProfileId,
+               expoPushToken,
+            )
+         }
+      }
+   }
+
+   async sendNotificationPushDriver(
+      driverProfileId: string,
+      title: string,
+      body: string,
+   ) {
+      const driverExpoPushToken =
+         await this.redisService.getDriverExpoPushToken(driverProfileId)
+
+      if (driverExpoPushToken) {
+         await this.sendPushNotification(driverExpoPushToken, title, body)
       }
    }
 }

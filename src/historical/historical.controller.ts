@@ -17,7 +17,7 @@ export class HistoricalController {
    constructor(private readonly historicalService: HistoricalService) {}
 
    @Get('getAllHistorical')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'HUMAN_RESOURCES'])
    @UseGuards(RolesGuard)
    async getAllHistorical(
       @Query('status') status: RideStatus,
@@ -53,7 +53,7 @@ export class HistoricalController {
    }
 
    @Get('getClientHistoricalByAdmin')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'HUMAN_RESOURCES'])
    @UseGuards(RolesGuard)
    async getClientHistoricalByAdmin(
       @Query('clientProfileId') clientProfileId: string,
@@ -91,7 +91,7 @@ export class HistoricalController {
    }
 
    @Get('getDriverHistoricalByAdmin')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
+   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'HUMAN_RESOURCES'])
    @UseGuards(RolesGuard)
    async getDriverHistoricalByAdmin(
       @Query('driverProfileId') driverProfileId: string,

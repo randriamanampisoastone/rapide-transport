@@ -10,6 +10,7 @@ import { SmsService } from 'src/sms/sms.service'
 import { RedisService } from 'src/redis/redis.service'
 import { ConfigService } from '@nestjs/config'
 import { AUTH_SIGN_IN_PREFIX } from 'constants/redis.constant'
+import { UserRole } from 'enums/profile.enum'
 
 @Injectable()
 export class SignInService {
@@ -37,8 +38,11 @@ export class SignInService {
                `User with this phone number doesn't exists`,
             )
          }
-         if (existingUser.role !== signInDto.role) {
+         if (signInDto.role !== UserRole.ADMIN && existingUser.role !== signInDto.role) {
             throw new UnauthorizedException(`User role doesn't match`)
+         }
+         if (!Object.values(UserRole).includes(signInDto.role)) {
+            throw new UnauthorizedException('User role not allowed')
          }
 
          const secret = speakeasy.generateSecret({ length: 20 })

@@ -71,7 +71,7 @@ export class DepositeService {
                   method: depositeDto.methodType,
                   status: TransactionStatus.SUCCESS,
                   type: TransactionType.DEPOSIT,
-                  clientProfileId: clientProfileId,
+                  clientProfiles: { connect: { clientProfileId } },
                },
             })
 

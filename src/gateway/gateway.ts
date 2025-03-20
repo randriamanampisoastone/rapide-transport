@@ -1,4 +1,9 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common'
+import {
+   BadRequestException,
+   Injectable,
+   Logger,
+   UnauthorizedException,
+} from '@nestjs/common'
 import {
    MessageBody,
    OnGatewayConnection,
@@ -17,17 +22,23 @@ import {
    UpdateDriverLocationInterface,
 } from 'interfaces/location.interface'
 import { InfoOnRideService } from 'src/ride/info-on-ride.service'
-import { CheckRideService } from 'src/ride/check-ride.service'
 import { UserRole } from 'enums/profile.enum'
 import * as jwt from 'jsonwebtoken'
 import { ConfigService } from '@nestjs/config'
 import {
    EVENT_INFO_ON_RIDE_PUSH,
    EVENT_NOTIFY_CLIENT,
+   EVENT_REGISTER_EXPO_PUSH_TOKEN,
    EVENT_SEND_DATA,
    EVENT_UPDATE_CLIENT_LOCATION,
    EVENT_UPDATE_DRIVER_LOCATION,
 } from 'constants/event.constant'
+import { NotificationInterface } from 'interfaces/notification.interface'
+import { NotificationService } from 'src/notification/notification.service'
+import {
+   ERROR_TOKEN_NOT_FOUND,
+   ERROR_UNAUTHORIZED,
+} from 'constants/error.constant'
 
 @Injectable()
 @WebSocketGateway({ cors: true })
@@ -63,8 +74,8 @@ export class Gateway
 
    constructor(
       private readonly locationService: LocationService,
+      private readonly notificationService: NotificationService,
       private readonly infoOnRideService: InfoOnRideService,
-      private readonly checkRideService: CheckRideService,
       private readonly configService: ConfigService,
    ) {}
 
@@ -72,19 +83,15 @@ export class Gateway
       server.use(async (socket: Socket, next) => {
          const token = socket.handshake.auth.token
          if (!token) {
-            return next(new Error('TokenNotFound'))
+            return next(new BadRequestException(ERROR_TOKEN_NOT_FOUND))
          }
 
          try {
-            // Décoder le token sans vérification pour extraire le rôle
             const decodedHeader: any = jwt.decode(token)
             if (!decodedHeader || !decodedHeader.role) {
-               throw new UnauthorizedException(
-                  'Rôle non spécifié dans le token',
-               )
+               throw new UnauthorizedException(ERROR_UNAUTHORIZED)
             }
 
-            // Sélectionner la clé secrète en fonction du rôle
             let secretKey: string
             switch (decodedHeader.role) {
                case UserRole.CLIENT:
@@ -97,6 +104,11 @@ export class Gateway
                   break
                case UserRole.ADMIN:
                case UserRole.SUPER_ADMIN:
+               case UserRole.FINANCE_MANAGER:
+               case UserRole.FLEET_MANAGER:
+               case UserRole.FOOD_MANAGER:
+               case UserRole.MART_MANAGER:
+               case UserRole.HUMAN_RESOURCES:
                   secretKey = this.configService.get<string>('JWT_SECRET_ADMIN')
                   break
                default:
@@ -113,7 +125,7 @@ export class Gateway
             next()
          } catch (error) {
             this.logger.error(`Authentication failed: ${error.message}`)
-            return next(new Error('TokenNotInvalid'))
+            return next(new BadRequestException(ERROR_UNAUTHORIZED))
          }
       })
 
@@ -133,6 +145,11 @@ export class Gateway
 
    handleDisconnect(client: Socket) {
       this.logger.log(`Disconnected : ${client.id}`)
+   }
+
+   @SubscribeMessage(EVENT_REGISTER_EXPO_PUSH_TOKEN)
+   async registerExpoPushToken(@MessageBody() data: NotificationInterface) {
+      await this.notificationService.registerExpoPushToken(data)
    }
 
    @SubscribeMessage(EVENT_UPDATE_DRIVER_LOCATION)
