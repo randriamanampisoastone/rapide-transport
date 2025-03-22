@@ -171,8 +171,9 @@ export class ProductsController {
     @ApiOperation({summary: 'Get product infos'})
     async getInfoProduct(
         @Param('id') id: string,
+        @GetUser('sub') user: string,
     ) {
-        return this.searchProductService.getInfoProduct(id);
+        return this.searchProductService.getInfoProduct(id, user);
     }
 
 //----// ### Favorite part

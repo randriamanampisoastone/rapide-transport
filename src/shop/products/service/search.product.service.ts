@@ -152,7 +152,7 @@ export class SearchProductService extends ProductsService {
         };
     }
 
-    async getInfoProduct(id: string) {
+    async getInfoProduct(id: string, user: string) {
         const products = await this.prismaService.product.findMany({
             where: {
                 id: id
@@ -167,12 +167,16 @@ export class SearchProductService extends ProductsService {
             }
         });
 
-        // Transform products to include full category objects
-        return products.map(product => ({
+        // Transform products and await async operations
+        const transformedProducts = await Promise.all(products.map(async product => ({
             ...product,
+            rating: await this.reviewService.getAverageRating(product.id),
+            isFavorite: user ? await this.favoriteService.isFavorite(user, product.id) : false,
             price: Number(product.price.toString()),
             categories: product.categories.map(c => c.category)
-        }));
+        })));
+
+        return transformedProducts;
     }
 
 }
