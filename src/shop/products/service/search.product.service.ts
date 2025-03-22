@@ -1,17 +1,24 @@
 import {ProductsService} from "../products.service";
 import {UploadAwsService} from "../../Common/upload-aws/upload-aws.service";
 import {PrismaService} from "../../../prisma/prisma.service";
+import {ReviewService} from "./reviews/review.service";
+import {Injectable} from "@nestjs/common";
+import {FavoriteService} from "./favorites/favorites.service";
 
+@Injectable()
 export class SearchProductService extends ProductsService {
     constructor(
         uploadAwsService: UploadAwsService,
-        prismaService: PrismaService
+        prismaService: PrismaService,
+        private readonly reviewService: ReviewService,
+        private readonly favoriteService: FavoriteService
     ) {
         super(uploadAwsService, prismaService);
     }
 
     async getProducts(
         productFor: string,
+        user: string,
         page?: number,
         itemsPerPage?: number,
         name?: string,
@@ -89,14 +96,16 @@ export class SearchProductService extends ProductsService {
             select: {
                 id: true,
                 name: true,
+                description: true,
                 price: true,
                 inventory: true,
+                toWear: true,
                 seller: {
-                  select: {
-                      sub: true,
-                      firstName: true,
-                      lastName: true,
-                  }
+                    select: {
+                        sub: true,
+                        firstName: true,
+                        lastName: true,
+                    }
                 },
                 images: {
                     select: {
@@ -119,11 +128,17 @@ export class SearchProductService extends ProductsService {
             }
         });
 
-        // Transform products to include full category objects
-        const transformedProducts = products.map(product => ({
-            ...product,
-            price: Number(product.price.toString()),
-            categories: product.categories.map(c => c.category)
+        // Transform products and add ratings
+        const transformedProducts = await Promise.all(products.map(async product => {
+            const rating = await this.reviewService.getAverageRating(product.id);
+            const favorite = user ? await this.favoriteService.isFavorite(user, product.id) : false;
+            return {
+                ...product,
+                price: Number(product.price.toString()),
+                isFavorite: favorite,
+                categories: product.categories.map(c => c.category),
+                rating
+            };
         }));
 
         return {

@@ -144,16 +144,18 @@ export class ProductsController {
     @ApiQuery({name: 'productFor', required: false, type: String})
     async getAllProducts(
         @Query('productFor') productFor: string,
+        @GetUser('sub') user: string,
         @Query('page') page?: number,
         @Query('itemsPerPage') itemsPerPage?: number,
         @Query('name') name?: string,
         @Query('minPrice') minPrice?: number,
         @Query('maxPrice') maxPrice?: number,
         @Query('categories') categories?: string | string[],
-        @Query('shop') shop?: string,
+        @Query('shop') shop?: string
     ) {
         return this.searchProductService.getProducts(
             productFor,
+            user,
             page,
             itemsPerPage,
             name,

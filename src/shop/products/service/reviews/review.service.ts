@@ -60,4 +60,23 @@ export class ReviewService {
         });
     }
 
+
+    async getAverageRating(productId: string): Promise<number> {
+        const reviews = await this.prismaService.review.findMany({
+            where: {
+                productId,
+            },
+            select: {
+                rating: true,
+            },
+        });
+
+        if (reviews.length === 0) {
+            return 0;
+        }
+
+        const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+        return totalRating / reviews.length;
+    }
+
 }

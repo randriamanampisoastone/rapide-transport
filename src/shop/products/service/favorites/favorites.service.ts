@@ -4,8 +4,9 @@ import {Injectable} from "@nestjs/common";
 @Injectable()
 export class FavoriteService {
     constructor(
-        private readonly prismaService : PrismaService,
-    ) { }
+        private readonly prismaService: PrismaService,
+    ) {
+    }
 
     async addToFavorites(userId: string, productId: string) {
         return this.prismaService.favorite.create({
@@ -31,10 +32,10 @@ export class FavoriteService {
         const favorite = await this.prismaService.favorite.findUnique({
             where: {
                 userId_productId: {
-                    userId,
-                    productId,
-                },
-            },
+                    userId: userId,
+                    productId: productId
+                }
+            }
         });
 
         return !!favorite;

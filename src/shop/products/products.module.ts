@@ -19,6 +19,6 @@ import {ReviewService} from "./service/reviews/review.service";
         FavoriteService,
         ReviewService
     ],
-    exports: [ProductsService]
+    exports: [SearchProductService, ProductsService]
 })
 export class ProductsModule {}
