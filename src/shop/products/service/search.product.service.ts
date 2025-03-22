@@ -91,6 +91,13 @@ export class SearchProductService extends ProductsService {
                 name: true,
                 price: true,
                 inventory: true,
+                seller: {
+                  select: {
+                      sub: true,
+                      firstName: true,
+                      lastName: true,
+                  }
+                },
                 images: {
                     select: {
                         id: true,

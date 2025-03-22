@@ -1,9 +1,5 @@
 import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
-import {
-    ERROR_CREATING_PRODUCT,
-    PRODUCT_NOT_FOUND,
-    SAME_PRODUCT_ON_A_CUSTOMER
-} from "../../../../constants/response.constant";
+import {ERROR_CREATING_PRODUCT, PRODUCT_NOT_FOUND} from "../../../../constants/response.constant";
 import {UploadAwsService} from "../../Common/upload-aws/upload-aws.service";
 import {PrismaService} from "../../../prisma/prisma.service";
 import {ProductsService} from "../products.service";
