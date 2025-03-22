@@ -13,10 +13,8 @@ import { GetProfileService } from './get.profile.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { UpdateProfileService } from './update.profile.service'
-import { DeleteProfileService } from './delete.profile.service'
 import { ProfileStatus } from '@prisma/client'
 import { UpdateProfileDto } from './dto/update.profile.dto'
-import { UserRole } from 'enums/profile.enum'
 import { UpdateAdminStatusDto } from './dto/update.admin.status.dto'
 import { UpdateAdminRoleDto } from './dto/update.admin.role.dto'
 
@@ -25,7 +23,6 @@ export class ProfileController {
    constructor(
       private readonly getProfileService: GetProfileService,
       private readonly updateProfileService: UpdateProfileService,
-      private readonly deleteProfileService: DeleteProfileService,
    ) {}
 
    @SetMetadata('allowedRole', ['CLIENT'])
@@ -168,13 +165,6 @@ export class ProfileController {
    @UseGuards(RolesGuard)
    async getDriverByIds(@Query('driverProfileIds') driverProfileIds: string[]) {
       return await this.getProfileService.getDriverByIds(driverProfileIds)
-   }
-
-   @Delete('deleteProfile')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
-   @UseGuards(RolesGuard)
-   async deleteProfile(@Query('sub') sub: string) {
-      return await this.deleteProfileService.deleteClientProfile(sub)
    }
 
    @Patch('updateProfile')
