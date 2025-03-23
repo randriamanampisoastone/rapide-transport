@@ -169,6 +169,8 @@ export class CategoriesController {
             }
         }
     })
+    @ApiQuery({name: 'name', required: false, description: 'Filter categories by name (case insensitive)'})
+    @ApiQuery({name: 'for', required: false, enum: ['MART', 'FOOD']})
     async searchCategory(
         @Query('name') name: string,
         @Query('for') forType: string,

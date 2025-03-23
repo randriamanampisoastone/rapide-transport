@@ -141,7 +141,7 @@ export class ProductsController {
     @ApiQuery({name: 'maxPrice', required: false, type: Number})
     @ApiQuery({name: 'categories', required: false, type: String, isArray: true})
     @ApiQuery({name: 'shop', required: false, type: String})
-    @ApiQuery({name: 'productFor', required: false, type: String})
+    @ApiQuery({name: 'productFor', required: false, type: String, enum: ['MART', 'FOOD']})
     async getAllProducts(
         @Query('productFor') productFor: string,
         @GetUser('sub') user: string,
