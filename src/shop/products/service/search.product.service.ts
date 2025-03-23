@@ -163,7 +163,8 @@ export class SearchProductService extends ProductsService {
                     include: {
                         category: true
                     }
-                }
+                },
+                variants: true,
             }
         });
 

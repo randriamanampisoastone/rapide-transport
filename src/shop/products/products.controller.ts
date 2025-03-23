@@ -44,21 +44,66 @@ export class ProductsController {
     private transformData(rawData: any, files: any) {
         // Reshape the form data with optional fields
         const data: any = {};
+        console.log(rawData);
 
         // Check and assign each field only if it exists in rawData
         if (rawData.name !== undefined) data.name = rawData.name;
         if (rawData.description !== undefined) data.description = rawData.description;
         if (rawData.price !== undefined) data.price = Number(rawData.price);
         if (rawData.inventory !== undefined) data.inventory = Number(rawData.inventory);
-        if (rawData.isClothes !== undefined) data.isClothes = rawData.isClothes === 'true';
-        if (rawData.color !== undefined) data.color = rawData.color;
-        if (rawData.size !== undefined) data.size = rawData.size;
+        if (rawData.toWear !== undefined) data.toWear = rawData.toWear === 'true';
 
         // Handle categories if present
         if (rawData.categories) {
             data.categories = Array.isArray(rawData.categories)
                 ? rawData.categories
                 : [rawData.categories];
+        }
+
+        // Process variants
+        const variants = [];
+        const variantKeys = Object.keys(rawData).filter(key => key.match(/variants\[\d+\]|variants\d+\]/));
+
+        if(variantKeys) {
+            // Find all unique variant indices
+            const variantIndices = new Set();
+            variantKeys.forEach(key => {
+                // Handle both correct 'variants[1]size' and incorrect 'variants1]size' formats
+                const match = key.match(/variants\[(\d+)\]|variants(\d+)\]/);
+                if (match) {
+                    variantIndices.add(match[1] || match[2]);
+                }
+            });
+
+            // Process each variant
+            variantIndices.forEach(index => {
+                const variant: any = {};
+
+                // Check both possible formats for each property
+                const correctFormat = `variants[${index}]`;
+                const incorrectFormat = `variants${index}]`;
+
+                // Check for color
+                const colorKey = Object.keys(rawData).find(k =>
+                    k === `${correctFormat}color` || k === `${incorrectFormat}color`);
+                if (colorKey) variant.color = rawData[colorKey];
+
+                // Check for size
+                const sizeKey = Object.keys(rawData).find(k =>
+                    k === `${correctFormat}size` || k === `${incorrectFormat}size`);
+                if (sizeKey) variant.size = rawData[sizeKey];
+
+                // Check for stock
+                const stockKey = Object.keys(rawData).find(k =>
+                    k === `${correctFormat}stock` || k === `${incorrectFormat}stock`);
+                if (stockKey) variant.stock = Number(rawData[stockKey]);
+
+                variants.push(variant);
+            });
+
+            if (variants.length > 0) {
+                data.variants = variants;
+            }
         }
 
         // Process only the files that were actually sent

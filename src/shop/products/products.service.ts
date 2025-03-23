@@ -34,6 +34,17 @@ export class ProductsService {
         });
     }
 
+    protected createVariantProduct(id: any, variant: any) {
+        return this.prismaService.productVariant.create({
+            data: {
+                productId: id,
+                color: variant.color,
+                size: variant.size,
+                stock: variant.stock
+            }
+        });
+    }
+
     protected async checkProductExist(productData: any, userConnected: string) {
         const existingProduct = await this.prismaService.product.findFirst({
             where: {
@@ -64,7 +75,8 @@ export class ProductsService {
                     include: {
                         category: true
                     }
-                }
+                },
+                variants: true,
             }
         });
 

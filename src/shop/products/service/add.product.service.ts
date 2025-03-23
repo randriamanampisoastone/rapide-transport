@@ -16,7 +16,7 @@ export class AddProductService extends ProductsService {
 
     async createProduct(createProductDto: any, userConnected: string) {
         try {
-            const {images, categories, ...productData} = createProductDto;
+            const {images, categories, variants, ...productData} = createProductDto;
 
             // Check if the user already has a product with the same name
             await this.checkProductExist(productData, userConnected);
@@ -34,13 +34,18 @@ export class AddProductService extends ProductsService {
                 this.handleImageUpload(image, product.id)
             ) ?? [];
 
+            // Process variants if they exist
+            const variantPromises = variants?.map(async variant => {
+                await this.createVariantProduct(product.id, variant);
+                }) ?? [];
+
             /// Process categories if they exist
             const categoryPromises = categories?.map(async categoryId => {
                 await this.attachCategoriesToProduct(product, categoryId)
             }) ?? [];
 
             // Wait for all async operations to complete
-            await Promise.all([...imagePromises, ...categoryPromises]);
+            await Promise.all([...imagePromises, ...categoryPromises, ...variantPromises]);
 
             // Return the complete product with relations
            return this.returnDataOnFlush(product);
@@ -51,6 +56,4 @@ export class AddProductService extends ProductsService {
             }, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
 }
