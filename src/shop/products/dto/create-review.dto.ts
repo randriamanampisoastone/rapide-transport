@@ -14,6 +14,6 @@ export class CreateReviewDto {
 
     @ApiProperty({example: 'Product very interesting', description: 'Comment of the rate'})
     @IsOptional()
-    @IsNumber()
+    @IsString()
     comment: string;
 }

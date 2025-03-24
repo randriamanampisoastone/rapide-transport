@@ -14,7 +14,7 @@ export class ProductsService {
     }
 
     protected async handleImageUpload(image: any, productId: string) {
-        const imageUrl = await this.uploadAwsService.uploadFile(image.file);
+        const imageUrl = await this.uploadAwsService.uploadFile(image.file, 'product');
         return this.prismaService.image.create({
             data: {
                 url: imageUrl,

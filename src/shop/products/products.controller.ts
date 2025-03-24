@@ -26,6 +26,9 @@ import {SearchProductService} from "./service/search.product.service";
 import {FavoriteService} from "./service/favorites/favorites.service";
 import {CreateReviewDto} from "./dto/create-review.dto";
 import {ReviewService} from "./service/reviews/review.service";
+import {VariantService} from "./service/variants/variant.service";
+import {AddVariantDto} from "./dto/add.variant.dto";
+import {EditVariantDto} from "./dto/edit.variant.dto";
 
 
 @Controller('products')
@@ -36,7 +39,8 @@ export class ProductsController {
         private readonly productService: ProductsService,
         private readonly searchProductService: SearchProductService,
         private readonly favoriteService: FavoriteService,
-        private readonly reviewService: ReviewService
+        private readonly reviewService: ReviewService,
+        private readonly variantService: VariantService
     ) {
     }
 
@@ -64,7 +68,7 @@ export class ProductsController {
         const variants = [];
         const variantKeys = Object.keys(rawData).filter(key => key.match(/variants\[\d+\]|variants\d+\]/));
 
-        if(variantKeys) {
+        if (variantKeys) {
             // Find all unique variant indices
             const variantIndices = new Set();
             variantKeys.forEach(key => {
@@ -289,21 +293,45 @@ export class ProductsController {
     @UseGuards(RolesGuard)
     @ApiOperation({summary: 'Delete a review user on a product'})
     @ApiBody({type: CreateReviewDto})
-    @Delete('review:reviewId')
+    @Delete('review/:reviewId')
     async deleteReview(
-        @Param('productId') reviewId: string,
+        @Param('reviewId') reviewId: string,
         @GetUser('sub') userId: string
-    ){
-        return this.reviewService.deleteReview(reviewId);
+    ) {
+        return this.reviewService.deleteReview(userId, reviewId);
     }
 
     @ApiOperation({summary: 'Delete a review user on a product'})
-    @ApiBody({type: CreateReviewDto})
-    @Delete('review:reviewId')
+    @Get('review/:productId')
     async getProductReviews(
-        @Param('productId') reviewId: string
-    ){
-        return this.reviewService.getProductReviews(reviewId);
+        @Param('productId') productId: string
+    ) {
+        return this.reviewService.getProductReviews(productId);
     }
 
+    @SetMetadata('allowedRole', [UserRole.SELLER])
+    @UseGuards(RolesGuard)
+    @ApiOperation({summary: 'Add a variant to a product when update it'})
+    @ApiBody({type: AddVariantDto})
+    @Post('variant/:productId')
+    async addProductVariant(
+        @GetUser('sub') userId: string,
+        @Param('productId') productId: string,
+        @Body() data: AddVariantDto
+    ) {
+        return this.variantService.createVariant(userId, productId, data);
+    }
+
+    @SetMetadata('allowedRole', [UserRole.SELLER])
+    @UseGuards(RolesGuard)
+    @ApiOperation({summary: 'Edit a variant to a product when update it'})
+    @ApiBody({type: EditVariantDto})
+    @Patch('variant/:productId')
+    async editProductVariant(
+        @GetUser('sub') userId: string,
+        @Param('productId') productId: string,
+        @Body() data: EditVariantDto
+    ) {
+        return this.variantService.updateVariant(userId, productId, data);
+    }
 }

@@ -7,6 +7,7 @@ import {ProductsService} from "./products.service";
 import {SearchProductService} from "./service/search.product.service";
 import {FavoriteService} from "./service/favorites/favorites.service";
 import {ReviewService} from "./service/reviews/review.service";
+import {VariantService} from "./service/variants/variant.service";
 
 @Module({
     controllers: [ProductsController],
@@ -17,7 +18,8 @@ import {ReviewService} from "./service/reviews/review.service";
         UploadAwsService,
         SearchProductService,
         FavoriteService,
-        ReviewService
+        ReviewService,
+        VariantService
     ],
     exports: [SearchProductService, ProductsService]
 })
