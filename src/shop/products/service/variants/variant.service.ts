@@ -1,7 +1,6 @@
 import {PrismaService} from "../../../../prisma/prisma.service";
-import {AddVariantDto} from "../../dto/add.variant.dto";
-import {EditVariantDto} from "../../dto/edit.variant.dto";
 import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
+import {AddVariantDto, EditVariantDto} from "../../dto/variant.dto";
 import {
     ALREADY_EXIST,
     NOT_OWNER_OF_THE_PRODUCT

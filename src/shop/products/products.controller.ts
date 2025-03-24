@@ -27,9 +27,7 @@ import {FavoriteService} from "./service/favorites/favorites.service";
 import {CreateReviewDto} from "./dto/create-review.dto";
 import {ReviewService} from "./service/reviews/review.service";
 import {VariantService} from "./service/variants/variant.service";
-import {AddVariantDto} from "./dto/add.variant.dto";
-import {EditVariantDto} from "./dto/edit.variant.dto";
-
+import {AddVariantDto, EditVariantDto} from "./dto/variant.dto";
 
 @Controller('products')
 export class ProductsController {
@@ -312,7 +310,6 @@ export class ProductsController {
     @SetMetadata('allowedRole', [UserRole.SELLER])
     @UseGuards(RolesGuard)
     @ApiOperation({summary: 'Add a variant to a product when update it'})
-    @ApiBody({type: AddVariantDto})
     @Post('variant/:productId')
     async addProductVariant(
         @GetUser('sub') userId: string,
@@ -325,7 +322,6 @@ export class ProductsController {
     @SetMetadata('allowedRole', [UserRole.SELLER])
     @UseGuards(RolesGuard)
     @ApiOperation({summary: 'Edit a variant to a product when update it'})
-    @ApiBody({type: EditVariantDto})
     @Patch('variant/:productId')
     async editProductVariant(
         @GetUser('sub') userId: string,

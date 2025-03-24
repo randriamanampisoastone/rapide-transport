@@ -1,0 +1,1 @@
+export const MIN_AMOUNT_PURCHASED = 30000;
