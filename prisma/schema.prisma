@@ -280,7 +280,7 @@ model Home {
   carCount    Int     @default(0)
 }
 
-// MART && FOOD SECTION
+//****************** MART && FOOD SECTION  ***********************//
 enum OrderStatus {
   PENDING
   PAID
@@ -325,6 +325,7 @@ model Product {
   categories  ProductCategory[]
   variants    ProductVariant[]
   favorites   Favorite[]
+  discounts   ProductDiscount[]
   sellerId    String
   seller      Profile           @relation(fields: [sellerId], references: [sub])
 
@@ -374,6 +375,42 @@ model Favorite {
   productId String
 
   @@id([userId, productId])
+}
+
+//*************** DISCOUNT PART ON MART & FOOD
+// Add this enum to your schema
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+// Add this model to your schema
+model Discount {
+  id                String            @id @default(uuid())
+  name              String
+  description       String?
+  type              DiscountType // enum: PERCENTAGE, FIXED_AMOUNT
+  value             Decimal // percentage or fixed amount
+  startDate         DateTime?
+  endDate           DateTime?
+  active            Boolean           @default(true)
+  minPurchaseAmount Decimal? // minimum purchase required
+  maxUses           Int?
+  currentUses       Int               @default(0)
+  couponCode        String?           @unique
+  products          ProductDiscount[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProductDiscount {
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  String
+  discount   Discount @relation(fields: [discountId], references: [id])
+  discountId String
+
+  @@id([productId, discountId])
 }
 
 model Order {
@@ -483,3 +520,5 @@ model AuditLog {
   performedBy String? // User ID who performed the action
   createdAt   DateTime @default(now())
 }
+
+//****************** end of MART && FOOD SECTION  ***********************//
