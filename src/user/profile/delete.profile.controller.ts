@@ -36,9 +36,9 @@ export class DeleteProfileController {
    }
 
    @Post('send-delete-code-confirnation')
-   async sendConfirmationCodeForDelete(@Body('profileId') profileId: string) {
+   async sendConfirmationCodeForDelete(@Body('clientProfileId') clientProfileId: string) {
       return await this.deleteProfileService.sendConfirmationCodeForDelete(
-         profileId,
+         clientProfileId,
       )
    }
 
@@ -52,7 +52,7 @@ export class DeleteProfileController {
    }
 
    @Post('resend-code')
-   async resendCode(@Body('profileId') profileId: string) {
-      return await this.deleteProfileService.resendCode(profileId)
+   async resendCode(@Body('clientProfileId') clientProfileId: string) {
+      return await this.deleteProfileService.resendCode(clientProfileId)
    }
 }
