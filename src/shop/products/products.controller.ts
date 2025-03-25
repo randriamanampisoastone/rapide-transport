@@ -46,7 +46,6 @@ export class ProductsController {
     private transformData(rawData: any, files: any) {
         // Reshape the form data with optional fields
         const data: any = {};
-        console.log(rawData);
 
         // Check and assign each field only if it exists in rawData
         if (rawData.name !== undefined) data.name = rawData.name;

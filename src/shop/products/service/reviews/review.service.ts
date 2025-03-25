@@ -1,7 +1,7 @@
 import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
 import {PrismaService} from "../../../../prisma/prisma.service";
 import {CreateReviewDto} from "../../dto/create-review.dto";
-import {NOT_OWNER_OF_THE_PRODUCT} from "../../../../../constants/response.constant";
+import {ALREADY_HAVE_REVIEW} from "../../../../../constants/response.constant";
 
 @Injectable()
 export class ReviewService {
@@ -11,28 +11,28 @@ export class ReviewService {
     }
 
     async createReview(userId: string, reviewDto: CreateReviewDto) {
-        const userReview = this.prismaService.review.findFirst({
-            where: {
-                productId: reviewDto.productId,
-                userId: userId
-            }
-        })
+            const userReview = await this.prismaService.review.findFirst({
+                where: {
+                    productId: reviewDto.productId,
+                    userId: userId
+                }
+            });
 
-        if(userReview){
-            throw new HttpException({
-                error: NOT_OWNER_OF_THE_PRODUCT
-            }, HttpStatus.BAD_REQUEST);
+            if(userReview){
+                throw new HttpException({
+                    error: ALREADY_HAVE_REVIEW
+                }, HttpStatus.BAD_REQUEST);
+            }
+
+            return this.prismaService.review.create({
+                data: {
+                    productId: reviewDto.productId,
+                    rating: reviewDto.rating,
+                    comment: reviewDto.comment,
+                    userId: userId
+                }
+            });
         }
-
-        return this.prismaService.review.create({
-            data: {
-                productId: reviewDto.productId,
-                rating: parseInt(reviewDto.rating),
-                comment: reviewDto.comment,
-                userId: userId
-            }
-        });
-    }
 
     async updateReview(reviewId: string, rating: number, comment?: string) {
         return this.prismaService.review.update({

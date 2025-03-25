@@ -24,3 +24,6 @@ export const PBM_IN_ADDING_FAVORITE = 'PBM_IN_ADDING_FAVORITE'
 // ## Error response
 export const INVALID_PARAMS = 'INVALID_PARAMS'
 export const ALREADY_EXIST = 'ALREADY_EXIST'
+
+// ## review
+export const ALREADY_HAVE_REVIEW = 'ALREADY_HAVE_REVIEW'
