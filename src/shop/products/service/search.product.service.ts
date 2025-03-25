@@ -124,9 +124,20 @@ export class SearchProductService extends ProductsService {
                             }
                         }
                     }
-                }
+                },
+                discounts: {
+                    select: {
+                        discount: {
+                           select: {
+                               type: true,
+                               value: true
+                           }
+                        }
+                    }
+                },
             }
         });
+
 
         // Transform products and add ratings
         const transformedProducts = await Promise.all(products.map(async product => {
@@ -165,6 +176,11 @@ export class SearchProductService extends ProductsService {
                     }
                 },
                 variants: true,
+                discounts: {
+                    include: {
+                        discount: true
+                    }
+                }
             }
         });
 

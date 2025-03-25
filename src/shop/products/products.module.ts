@@ -8,6 +8,8 @@ import {SearchProductService} from "./service/search.product.service";
 import {FavoriteService} from "./service/favorites/favorites.service";
 import {ReviewService} from "./service/reviews/review.service";
 import {VariantService} from "./service/variants/variant.service";
+import {DiscountService} from "./service/discount/discount.service";
+import {DiscountUtils} from "../Common/utils/discount";
 
 @Module({
     controllers: [ProductsController],
@@ -19,7 +21,9 @@ import {VariantService} from "./service/variants/variant.service";
         SearchProductService,
         FavoriteService,
         ReviewService,
-        VariantService
+        VariantService,
+        DiscountService,
+        DiscountUtils
     ],
     exports: [SearchProductService, ProductsService]
 })

@@ -28,6 +28,8 @@ import {CreateReviewDto} from "./dto/create-review.dto";
 import {ReviewService} from "./service/reviews/review.service";
 import {VariantService} from "./service/variants/variant.service";
 import {AddVariantDto, EditVariantDto} from "./dto/variant.dto";
+import {DiscountService} from "./service/discount/discount.service";
+import {AddDiscountDTO} from "./dto/discount.dto";
 
 @Controller('products')
 export class ProductsController {
@@ -38,7 +40,8 @@ export class ProductsController {
         private readonly searchProductService: SearchProductService,
         private readonly favoriteService: FavoriteService,
         private readonly reviewService: ReviewService,
-        private readonly variantService: VariantService
+        private readonly variantService: VariantService,
+        private readonly discountService: DiscountService
     ) {
     }
 
@@ -328,5 +331,16 @@ export class ProductsController {
         @Body() data: EditVariantDto
     ) {
         return this.variantService.updateVariant(userId, productId, data);
+    }
+
+    @SetMetadata('allowedRole', [UserRole.SELLER])
+    @UseGuards(RolesGuard)
+    @ApiOperation({summary: 'Add a discount ot a product'})
+    @Post('discount')
+    async addDiscountToProduct(
+        @GetUser('sub') userId: string,
+        @Body() data: AddDiscountDTO
+    ){
+        return this.discountService.createDiscount(data);
     }
 }
