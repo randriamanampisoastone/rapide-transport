@@ -100,6 +100,7 @@ export class SearchProductService extends ProductsService {
                 price: true,
                 inventory: true,
                 toWear: true,
+                createdAt: true,
                 seller: {
                     select: {
                         sub: true,
