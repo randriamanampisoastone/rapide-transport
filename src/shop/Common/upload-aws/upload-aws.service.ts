@@ -1,21 +1,26 @@
 import { Injectable } from '@nestjs/common'
-import * as AWS from 'aws-sdk'
+import {
+   S3Client,
+   PutObjectCommand,
+   DeleteObjectCommand
+} from '@aws-sdk/client-s3'
 import { ConfigService } from '@nestjs/config'
 import { PrismaService } from '../../../prisma/prisma.service'
 
-
 @Injectable()
 export class UploadAwsService {
-   private readonly s3: AWS.S3
+   private readonly s3Client: S3Client
 
    constructor(
-      private readonly prisma: PrismaService,
-      private readonly configService: ConfigService,
+       private readonly prisma: PrismaService,
+       private readonly configService: ConfigService,
    ) {
-      this.s3 = new AWS.S3({
-         accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID'),
-         secretAccessKey: this.configService.get('AWS_SECRET_ACCESS_KEY'),
+      this.s3Client = new S3Client({
          region: this.configService.get('AWS_REGION'),
+         credentials: {
+            accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID'),
+            secretAccessKey: this.configService.get('AWS_SECRET_ACCESS_KEY'),
+         }
       })
    }
 
@@ -29,19 +34,26 @@ export class UploadAwsService {
          Key: fileName,
          Body: file.buffer,
          ContentType: file.mimetype,
-         // ACL: 'public-read',
+         //ACL: 'public-read'
       }
 
-      const uploadResult = await this.s3.upload(params).promise()
-      return uploadResult.Location;
+      try {
+         const command = new PutObjectCommand(params)
+         await this.s3Client.send(command)
+
+         // Construct URL manually since SDK v3 doesn't return upload location
+         return `https://${params.Bucket}.s3.${this.configService.get('AWS_REGION')}.amazonaws.com/${fileName}`
+      } catch (error) {
+         console.error('Error uploading file to S3:', error)
+         throw error
+      }
    }
 
    async deleteFile(fileUrl: string) {
-      try{
-      // Extract the key from the URL
-      // // URL format is typically: https://s3.region.amazonaws.com/bucket-name/key
-      const urlParts = fileUrl.split('/');
-      let key = '';
+      try {
+         // Extract the key from the URL
+         const urlParts = fileUrl.split('/');
+         let key = '';
 
          // Handle different S3 URL formats
          if (fileUrl.includes('amazonaws.com')) {
@@ -67,14 +79,12 @@ export class UploadAwsService {
             Key: key
          };
 
-         await this.s3.deleteObject(params).promise();
-         return true;
+         const command = new DeleteObjectCommand(params)
+         await this.s3Client.send(command)
+         return true
       } catch (error) {
          console.error('Error deleting file from S3:', error);
          throw error;
       }
-
    }
-
-
 }

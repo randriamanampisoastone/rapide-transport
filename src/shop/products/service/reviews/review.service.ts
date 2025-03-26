@@ -75,6 +75,14 @@ export class ReviewService {
         });
     }
 
+    async getProductReviewCount(productId: string): Promise<number> {
+        return this.prismaService.review.count({
+            where: {
+                productId,
+            },
+        });
+    }
+
 
     async getAverageRating(productId: string): Promise<number> {
         const reviews = await this.prismaService.review.findMany({

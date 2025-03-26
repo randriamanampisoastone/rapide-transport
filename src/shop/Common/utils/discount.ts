@@ -1,7 +1,9 @@
 import {Discount, DiscountType, Product, ProductDiscount} from '@prisma/client';
 import {Decimal} from '@prisma/client/runtime/library';
 import {PrismaService} from "../../../prisma/prisma.service";
+import {Injectable} from "@nestjs/common";
 
+@Injectable()
 export class DiscountUtils {
     constructor(
         private readonly prismaService: PrismaService

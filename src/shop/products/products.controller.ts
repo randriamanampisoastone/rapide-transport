@@ -301,7 +301,7 @@ export class ProductsController {
         return this.reviewService.deleteReview(userId, reviewId);
     }
 
-    @ApiOperation({summary: 'Delete a review user on a product'})
+    @ApiOperation({summary: 'Get reviews of a product'})
     @Get('review/:productId')
     async getProductReviews(
         @Param('productId') productId: string

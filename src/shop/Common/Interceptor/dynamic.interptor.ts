@@ -1,7 +1,6 @@
-import {int} from "aws-sdk/clients/datapipeline";
-import {FileFieldsInterceptor} from "@nestjs/platform-express";
+import { FileFieldsInterceptor } from "@nestjs/platform-express";
 
-export const createDynamicFileInterceptor = (maxImages: int = 10) => {
+export const createDynamicFileInterceptor = (maxImages: number = 10) => {
     const fileFields = [];
 
     for (let i = 0; i < maxImages; i++) {

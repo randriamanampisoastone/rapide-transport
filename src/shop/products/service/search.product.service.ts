@@ -148,7 +148,12 @@ export class SearchProductService extends ProductsService {
                 price: Number(product.price.toString()),
                 isFavorite: favorite,
                 categories: product.categories.map(c => c.category),
-                rating
+                discounts: product.discounts.map(d => ({
+                    ...d.discount,
+                    value: Number(d.discount.value.toString())
+                })),
+                rating,
+                reviewsCount: await this.reviewService.getProductReviewCount(product.id),
             };
         }));
 
@@ -188,9 +193,14 @@ export class SearchProductService extends ProductsService {
         const transformedProducts = await Promise.all(products.map(async product => ({
             ...product,
             rating: await this.reviewService.getAverageRating(product.id),
+            reviewsCount: await this.reviewService.getProductReviewCount(product.id),
             isFavorite: user ? await this.favoriteService.isFavorite(user, product.id) : false,
             price: Number(product.price.toString()),
-            categories: product.categories.map(c => c.category)
+            categories: product.categories.map(c => c.category),
+            discounts: product.discounts.map(d => ({
+                ...d.discount,
+                value: Number(d.discount.value.toString())
+            })),
         })));
 
         return transformedProducts;
