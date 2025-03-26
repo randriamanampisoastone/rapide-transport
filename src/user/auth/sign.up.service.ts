@@ -44,10 +44,20 @@ export class SignUpService implements OnModuleInit {
             encoding: 'base32',
          })
 
-         await this.smsService.sendSMS(
-            [signUpDto.phoneNumber],
-            `Your Rapide App OTP Code is : ${confirmationCode}`,
-         )
+         let message: string = ''
+
+         if (signUpDto.locale === 'fr') {
+            message = ` Votre code OTP pour la connexion est : ${confirmationCode}`
+         } else if (signUpDto.locale === 'mg') {
+            message = ` Indro ny kaody OTP afahanao miditra : ${confirmationCode}`
+         } else if (signUpDto.locale === 'en') {
+            message = `Your OTP code for sign in is : ${confirmationCode}`
+         } else if (signUpDto.locale === 'zh') {
+            message = `您的登录 OTP 验证码是 : ${confirmationCode}`
+         }
+
+         await this.smsService.sendSMS([signUpDto.phoneNumber], message)
+
          const updateSignUpDto = {
             attempt: 0,
             confirmationCode,
