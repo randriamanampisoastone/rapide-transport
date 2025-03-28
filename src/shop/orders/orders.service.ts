@@ -1,19 +1,21 @@
 // src/orders/orders.service.ts
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import {PrismaService} from "../../prisma/prisma.service";
-import {CreateOrderDto} from "./dto/create-order.dto";
 import {AuditService} from "../audit/audit.service";
 import {OrderStatus} from "@prisma/client";
+import {AddOrderDto} from "./dto/order.dto";
+import {CartService} from "../cart/cart.service";
 
 
 @Injectable()
 export class OrdersService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly auditService: AuditService
+        private readonly auditService: AuditService,
+        private readonly cartService: CartService
     ) {}
 
-   async create(userId: string, createOrderDto: CreateOrderDto) {
+   async createOder(userId: string, createOrderDto: AddOrderDto) {
         const cart = await this.validateAndGetCart(userId);
         await this.validateStockAvailability(cart.items);
         const { orderItems, totalAmount } = this.calculateOrderDetails(cart.items);
@@ -32,18 +34,9 @@ export class OrdersService {
     }
 
     private async validateAndGetCart(userId: string) {
-        const cart = await this.prisma.cart.findUnique({
-            where: { userId },
-            include: {
-                items: {
-                    include: {
-                        product: true,
-                    },
-                },
-            },
-        });
+        const cart = this.cartService.getCart(userId);
 
-        if (!cart || cart.items.length === 0) {
+        if (!cart || (await cart).items.length === 0) {
             throw new BadRequestException('Cart is empty');
         }
 
@@ -96,7 +89,7 @@ export class OrdersService {
             data: {
                 userId,
                 totalPrice: totalAmount,
-                status: 'PENDING',
+                status: OrderStatus.PENDING,
                 items: {
                     create: orderItems,
                 },

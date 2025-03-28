@@ -27,3 +27,7 @@ export const ALREADY_EXIST = 'ALREADY_EXIST'
 
 // ## review
 export const ALREADY_HAVE_REVIEW = 'ALREADY_HAVE_REVIEW'
+
+// ## Cart response
+export const ERROR_REMOVING_CART = 'ERROR_REMOVING_CART';
+export const CART_NOT_FOUND = 'CART_NOT_FOUND';
