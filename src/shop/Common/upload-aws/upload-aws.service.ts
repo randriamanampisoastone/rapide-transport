@@ -27,7 +27,7 @@ export class UploadAwsService {
    async uploadFile(file: Express.Multer.File, folder: string = 'general') {
       const sanitizedFolder = folder.replace(/[^\w\s-]/g, '').replace(/[-\s]+/g, '-').toLowerCase()
 
-      const fileName = `${sanitizedFolder}/rapid-${file.originalname}-${Date.now()}`
+      const fileName = `${sanitizedFolder}/rapid-${Date.now()}-${file.originalname}`
 
       const params = {
          Bucket: this.configService.get('AWS_S3_BUCKET_NAME'),
