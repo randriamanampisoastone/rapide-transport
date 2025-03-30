@@ -28,7 +28,7 @@ enum ProfileStatus {
   SUSPENDED          // Compte suspendu pour enquête ou violation des règles
   LOCKED             // Compte verrouillé après des tentatives de connexion échouées 
   ARCHIVED           // Compte désactivé définitivement, mais les données sont conservées
-  DEACTIVATED        // Compte volontairement désactivé par l'utilisateur ou l'admin
+  DESACTIVATED       // Compte volontairement désactivé par l'utilisateur ou l'admin
   CLOSED             // Compte fermé définitivement et données supprimées
   UNDER_REVIEW       // Compte en cours d'examen pour des raisons administratives
   UNVERIFIED         // Compte non vérifié (e-mail ou téléphone non confirmé)

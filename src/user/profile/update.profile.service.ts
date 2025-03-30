@@ -75,4 +75,8 @@ export class UpdateProfileService {
          throw error
       }
    }
+
+   async updateAdminProfile(adminProfileId: string, updateProfileDto: UpdateProfileDto) {
+      
+   }
 }
