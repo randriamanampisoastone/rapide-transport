@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
    BadRequestException,
-   HttpException,
    Injectable,
    NotFoundException,
 } from '@nestjs/common'
@@ -20,6 +20,7 @@ import {
 
 export interface DriverAcceptDto {
    driverProfileId: string
+   plateNumber: string
    rideId: string
 }
 
@@ -34,40 +35,26 @@ export class DriverAcceptService {
 
    async driverAccept(driverAcceptDto: DriverAcceptDto) {
       try {
-         const rideId = driverAcceptDto.rideId
-         const driverProfileId = driverAcceptDto.driverProfileId
+         const { rideId, driverProfileId, plateNumber } = driverAcceptDto
 
          const ride = await this.redisService.get(`${RIDE_PREFIX + rideId}`)
+         if (!ride) throw new NotFoundException(ERROR_RIDE_NOT_FOUND)
 
-         if (!ride) {
-            throw new NotFoundException(ERROR_RIDE_NOT_FOUND)
-         }
          const rideData: RideData = JSON.parse(ride)
-
-         if (rideData.status !== RideStatus.FINDING_DRIVER) {
+         if (rideData.status !== RideStatus.FINDING_DRIVER)
             throw new BadRequestException(ERROR_RIDE_NOT_FINDING_DRIVER)
-         }
 
-         const {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            status,
-            ...rideDataRest
-         } = rideData
+         rideData.status = RideStatus.DRIVER_ACCEPTED
+         rideData.driverProfileId = driverProfileId
+         rideData.plateNumber = plateNumber
 
-         const rideDataUpdated = {
-            status: RideStatus.DRIVER_ACCEPTED,
-            driverProfileId,
-            ...rideDataRest,
-         }
-
-         const rideDataUpdatedString = JSON.stringify(rideDataUpdated)
+         const rideDataString = JSON.stringify(rideData)
 
          await this.redisService.set(
             `${RIDE_PREFIX + rideId}`,
-            rideDataUpdatedString,
+            rideDataString,
             1800,
          )
-
          const rideDataUpdatedOnDb = await this.postgresService.ride.update({
             where: {
                rideId,
@@ -89,31 +76,27 @@ export class DriverAcceptService {
                status: RideStatus.DRIVER_ACCEPTED,
             },
          })
+         const { clientProfileId } = rideData
 
-         const clientProfileId = rideDataUpdated.clientProfileId
-
-         // await this.notificationService.sendNotificationPushClient(
-         //    clientProfileId,
-         //    'Driver accepted !',
-         //    'Your driver has accepted your ride',
-         // )
+         await this.notificationService.sendNotificationPushClient(
+            clientProfileId,
+            'Driver accepted !',
+            'Your driver has accepted your ride',
+         )
 
          this.gateway.sendNotificationToClient(
             clientProfileId,
             EVENT_ACCEPTED_RIDE,
-            {
-               ...rideDataUpdated,
-            },
+            rideData,
          )
 
          this.gateway.sendNotificationToAdmin(EVENT_ACCEPTED_RIDE, {
             ...parseRideData(rideDataUpdatedOnDb),
          })
 
-         return { ...rideDataUpdated }
+         return rideData
       } catch (error) {
-         // throw error
-         throw new HttpException(error.message, error.status)
+         throw error
       }
    }
 }

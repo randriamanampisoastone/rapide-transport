@@ -12,26 +12,34 @@ export interface RideDataKey {
 
 export interface RideData {
    rideId: string
+
    clientProfileId: string
    driverProfileId?: string
+
    vehicleType: VehicleType
-   vehicleId?: string
+   plateNumber?: string
+
    methodType: MethodType
+
    pickUpLocation: LatLng
    dropOffLocation: LatLng
    encodedPolyline: string
    distanceMeters: number
+
    estimatedDuration: number
    estimatedPrice: EstimatedPrice
+
    realDuration?: number
    realPrice?: number
+
    status?: RideStatus
+
    note?: number
    review?: string
+
    startTime?: number
    endTime?: number
+
    createdAt?: string
    updateAt?: string
-   clientExpoToken?: string
-   driverExpoToken?: string
 }

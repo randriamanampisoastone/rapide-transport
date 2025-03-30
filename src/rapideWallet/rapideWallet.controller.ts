@@ -15,7 +15,7 @@ import { GetRapideBalanceService } from './get-rapide-balance.service'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { DriverBalanceService } from './driverBalance.service'
 import { ProfileStatus, UserRole } from '@prisma/client'
-import { SetRapideWalletInfoDto } from './dto/set-rapide-wallet-info.dto'
+import { SetRapideWalletInfoDto } from './dto/set-rapide-wallet-information.dto'
 import { RapideWalletService } from './rapide-wallet.service'
 import { UpdateRapideWalletStatusDto } from './dto/update-rapide-wallet-status.dto'
 
@@ -64,7 +64,7 @@ export class RapideWalletController {
       return await this.driverBalanceService.getSold(profileId)
    }
 
-   @Patch('set-rapide-wallet-info')
+   @Patch('set-rapide-wallet-information')
    @SetMetadata('allowedRole', ['DRIVER', 'CLIENT'])
    @UseGuards(RolesGuard)
    async setInformation(
@@ -75,7 +75,7 @@ export class RapideWalletController {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return await this.rapideWalletService.setInformation(
+      return await this.rapideWalletService.setRapideWalletInformation(
          profileId,
          setRapideWalletInfoDto,
       )

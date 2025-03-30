@@ -52,6 +52,8 @@ export class AuthController {
       @Body()
       signInDto: SignInDto,
    ) {
+      console.log('signInDto : ', signInDto)
+
       return await this.signInService.signIn(signInDto)
    }
    @Post('confirmSignIn')
