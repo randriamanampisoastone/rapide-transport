@@ -113,14 +113,20 @@ export class CompleteService {
          })
 
          // Payment
-
+         console.log(rideData.methodType)
          if (rideData.methodType === MethodType.CASH) {
-            await this.ridePaymentService.cashPayment(
+            console.log(
                rideData.clientProfileId,
                rideData.driverProfileId,
                rideInvoice.rideInvoiceId,
                Math.round(rideData.realPrice),
             )
+            // await this.ridePaymentService.cashPayment(
+            //    rideData.clientProfileId,
+            //    rideData.driverProfileId,
+            //    rideInvoice.rideInvoiceId,
+            //    Math.round(rideData.realPrice),
+            // )
          } else if (rideData.methodType === MethodType.RAPIDE_WALLET) {
             await this.ridePaymentService.processPaymentWithRapideWallet(
                rideInvoice.rideInvoiceId,
@@ -139,6 +145,7 @@ export class CompleteService {
 
          await this.redisService.remove(`${RIDE_PREFIX + rideId}`)
 
+         console.log('red completed and successfully deleted')
          return { ...rideData }
       } catch (error) {
          throw new InternalServerErrorException('Error completing ride')

@@ -86,6 +86,7 @@ export class CreateRideService {
    }
 
    async createRide(createRideDto: CreateRideDto) {
+      console.log('create ride dto =>', createRideDto)
       try {
          const rideKeys = await this.redisService.keys(`${RIDE_PREFIX}*`)
          const rideDataList = rideKeys.length

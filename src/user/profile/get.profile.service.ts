@@ -116,7 +116,7 @@ export class GetProfileService {
                adminProfile: {
                   select: {
                      status: true,
-                     transactionPassword: true,
+                     isTransactionPasswordDefined: true,
                   },
                },
             },
@@ -132,7 +132,8 @@ export class GetProfileService {
             profilePhoto: adminProfile.profilePhoto,
             role: adminProfile.role,
             status: adminProfile.adminProfile.status,
-            transactionPassword: adminProfile.adminProfile.transactionPassword,
+            isTransactionPasswordDefined:
+               adminProfile.adminProfile.isTransactionPasswordDefined,
          }
       } catch (error) {
          throw error

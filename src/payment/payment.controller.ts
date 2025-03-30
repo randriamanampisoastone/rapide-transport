@@ -17,9 +17,7 @@ import {
    MethodType,
    ProfileStatus,
    TransactionStatus,
-   UserRole,
 } from '@prisma/client'
-import { GetClientTransactionByAdminDto } from './dto/get-client-transaction-by-admin.dto'
 
 @Controller('payment')
 export class PaymentController {
@@ -131,7 +129,7 @@ export class PaymentController {
       )
    }
 
-   @Get('search-by-reference')
+   @Get('search-transaction-by-reference')
    @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
    @UseGuards(RolesGuard)
    async searchTransactionByReference(

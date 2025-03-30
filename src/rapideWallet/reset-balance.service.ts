@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { GetRapideBalanceService } from './get-rapide-balance.service'
-import { log } from 'console'
 import { RedisService } from 'src/redis/redis.service'
-import { privateDecrypt } from 'crypto'
 import { MethodType, TransactionStatus, TransactionType } from '@prisma/client'
 
 @Injectable()
