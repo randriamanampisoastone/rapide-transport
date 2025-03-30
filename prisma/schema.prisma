@@ -265,8 +265,8 @@ model RideInvoice {
 
   transaction         Transaction? @relation("RideTransaction")
 
-  createdAt           String?
-  updatedAt           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model Ride {
@@ -279,19 +279,26 @@ model Ride {
   driverProfile     DriverProfile? @relation("DriverRide", fields: [driverProfileId], references: [driverProfileId])
 
   vehicleType       VehicleType
-  vehicleId         String?
+  plateNumber       String?
+
   methodType        MethodType
+
   pickUpLocation    String
   dropOffLocation   String
   encodedPolyline   String
   distanceMeters    Float
+
   estimatedDuration Float
   estimatedPrice    String
+
   realDuration      Float?
   realPrice         Float?
+
   status            RideStatus?
+
   note              Float?
   review            String?
+  
   startTime         Float?
   endTime           Float?
 

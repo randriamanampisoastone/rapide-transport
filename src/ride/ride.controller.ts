@@ -122,14 +122,18 @@ export class RideController {
    @SetMetadata('allowedRole', ['DRIVER'])
    @UseGuards(RolesGuard)
    driverAccept(
-      @Body() { rideId }: { rideId: string },
+      @Body() { rideId, plateNumber }: { rideId: string; plateNumber: string },
       @GetUser('sub') driverProfileId: string,
       @GetUser('status') status: ProfileStatus,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return this.driverAcceptService.driverAccept({ driverProfileId, rideId })
+      return this.driverAcceptService.driverAccept({
+         driverProfileId,
+         rideId,
+         plateNumber,
+      })
    }
 
    @Post('driver-on-the-way')

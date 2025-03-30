@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString, Length } from 'class-validator'
 
-export class SetRapideWalletInfoDto {
+export class SetRapideWalletInformationDto {
    @IsString()
    @IsNotEmpty()
    @Length(12)

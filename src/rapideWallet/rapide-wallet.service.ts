@@ -4,7 +4,7 @@ import {
    NotFoundException,
 } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { SetRapideWalletInfoDto } from './dto/set-rapide-wallet-info.dto'
+import { SetRapideWalletInformationDto } from './dto/set-rapide-wallet-information.dto'
 import * as bcrypt from 'bcrypt'
 import * as speakeasy from 'speakeasy'
 import * as jwt from 'jsonwebtoken'
@@ -33,9 +33,9 @@ export class RapideWalletService {
       this.JWT_EXPIRES_IN = this.configService.get<string>('JWT_EXPIRES_IN')
    }
 
-   async setInformation(
+   async setRapideWalletInformation(
       profileId: string,
-      setRapideWalletInfoDto: SetRapideWalletInfoDto,
+      setRapideWalletInfoDto: SetRapideWalletInformationDto,
    ) {
       try {
          const userProfile = await this.prismaService.profile.findUnique({
@@ -266,6 +266,11 @@ export class RapideWalletService {
                : { driverProfileId: profileId }
          return await this.prismaService.rapideWallet.findUnique({
             where: condition,
+            omit: {
+               password: true,
+               idCardPhotoRecto: true,
+               idCardPhotoVerso: true,
+            },
          })
       } catch (error) {
          throw error
