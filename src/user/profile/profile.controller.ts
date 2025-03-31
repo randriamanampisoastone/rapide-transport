@@ -13,11 +13,17 @@ import { GetProfileService } from './get.profile.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { UpdateProfileService } from './update.profile.service'
-import { ProfileStatus } from '@prisma/client'
+import { ProfileStatus, UserRole } from '@prisma/client'
 import { UpdateProfileDto } from './dto/update.profile.dto'
 import { UpdateAdminStatusDto } from './dto/update.admin.status.dto'
 import { UpdateAdminRoleDto } from './dto/update.admin.role.dto'
 import { ROUTE_PROFILE } from 'routes/main-routes'
+import {
+   ROUTE_FIND_CLIENT_PROFILE,
+   ROUTE_GET_ADMIN_PROFILE,
+   ROUTE_GET_CLIENT_PROFILE,
+   ROUTE_GET_DRIVER_PROFILE,
+} from 'routes/secondary-routes'
 
 @Controller(ROUTE_PROFILE)
 export class ProfileController {
@@ -26,9 +32,9 @@ export class ProfileController {
       private readonly updateProfileService: UpdateProfileService,
    ) {}
 
-   @SetMetadata('allowedRole', ['CLIENT'])
+   @SetMetadata('allowedRole', [UserRole.CLIENT])
    @UseGuards(RolesGuard)
-   @Get('getClientProfile')
+   @Get(ROUTE_GET_CLIENT_PROFILE)
    async getClientProfile(
       @GetUser('sub') sub: string,
       @GetUser('status') status: ProfileStatus,
@@ -39,16 +45,23 @@ export class ProfileController {
       return await this.getProfileService.getClientProfile(sub)
    }
 
-   @SetMetadata('allowedRole', ['DRIVER'])
+   @SetMetadata('allowedRole', [UserRole.DRIVER])
    @UseGuards(RolesGuard)
-   @Get('getDriverProfile')
+   @Get(ROUTE_GET_DRIVER_PROFILE)
    async getDriverProfile(@GetUser('sub') sub: string) {
       return await this.getProfileService.getDriverProfile(sub)
    }
 
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
+   @SetMetadata('allowedRole', [
+      UserRole.SUPER_ADMIN,
+      UserRole.TREASURER,
+      UserRole.DEPOSITOR,
+      UserRole.CALL_CENTER,
+      UserRole.MANAGER_HUB,
+      UserRole.RIDER,
+   ])
    @UseGuards(RolesGuard)
-   @Get('getAdminProfile')
+   @Get(ROUTE_GET_ADMIN_PROFILE)
    async getAdminProfile(
       @GetUser('sub') sub: string,
       @GetUser('status') status: ProfileStatus,
@@ -61,7 +74,7 @@ export class ProfileController {
 
    @SetMetadata('allowedRole', ['DRIVER', 'ADMIN', 'SUPER_ADMIN'])
    @UseGuards(RolesGuard)
-   @Get('findClientProfile')
+   @Get(ROUTE_FIND_CLIENT_PROFILE)
    async findClientProfile(
       @Query('clientProfileId')
       clientProfileId: string,

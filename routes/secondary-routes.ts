@@ -48,11 +48,61 @@ export const ROUTE_SET_RAPIDE_WALLET_INFORMATION = 'set-rapide-wallet-informatio
 export const ROUTE_CONFIRM_RAPIDE_WALLET_INFORMATION = 'confirm-rapide-wallet-information'
 export const ROUTE_RESEND_CONFIRM_RAPIDE_WALLET_INFORMATION = 'resend-confirm-rapide-wallet-information'
 export const ROUTE_UPDATE_RAPIDE_WALLET_STATUS = 'update-rapide-wallet-status'
+export const ROUTE_GET_RAPIDE_WALLET = 'get-rapide-wallet'
+
 
 // invoice-ride
+export const ROUTE_GET_CLIENT_INVOICE = 'get-client-invoice'
+
+
 // ride
+export const ROUTE_CREATE_ITINERARY = 'create-itinerary'
+export const ROUTE_CREATE_RIDE = 'create-ride'
+export const ROUTE_CANCELLED = 'cancelled'
+export const ROUTE_DRIVER_ACCEPT = 'driver-accept'
+export const ROUTE_DRIVER_ON_THE_WAY = 'driver-on-the-way'
+export const ROUTE_STOPPED = 'stopped'
+export const ROUTE_DRIVER_ARRIVED = 'driver-arrived'
+export const ROUTE_CLIENT_NOT_FOUND = 'client-not-found'
+export const ROUTE_START = 'start'
+export const ROUTE_CLIENT_GIVE_UP = 'client-give-up'
+export const ROUTE_ARRIVED_DESTINATION = 'arrived-destination'
+export const ROUTE_COMPLETE = 'complete'
+export const ROUTE_REVIEW = 'review'
+export const ROUTE_FIND_RIDE_BY_ID_REDIS = 'find-ride-by-id-redis'
+export const ROUTE_CHECK_CLIENT_RIDE = 'check-client-ride'
+export const ROUTE_CHECK_DRIVER_RIDE = 'check-driver-ride'
+export const ROUTE_ASSIGN_RIDE_TO_DRIVER = 'assign-ride-to-driver'
+export const ROUTE_SEND_REVIEW = 'send-review'
+export const ROUTE_DELETE_RIDE ='delete-ride'
+
+
 // statistic-ride
+export const ROUTE_GET_DRIVER_STATISTIC = 'get-driver-statistic'
+export const ROUTE_GET_GLOBAL_STATISTIC = 'get-global-statistic'
+
+
 // auth
+export const ROUTE_SIGN_UP = 'signUp'
+export const ROUTE_CONFIRM_SIGN_UP = 'confirmSignUp'
+export const ROUTE_RESEND_CONFIRM_SIGN_UP = 'resendConfirmSignUp'
+export const ROUTE_SIGN_IN = 'signIn'
+export const ROUTE_CONFIRM_SIGN_IN = 'confirmSignIn'
+export const ROUTE_RESEND_CONFIRM_SIGN_IN = 'resendConfirmSignIn'
+export const ROUTE_GOOGLE_AUTH = 'googleAuth'
+
+
 // delete-profile
+export const ROUTE_BY_ADMIN = 'by-admin'
+export const ROUTE_BY_CUSTOMER = 'by-customer'
+export const ROUTE_CONFIRM_DELETE_INFORNATION = 'confirm-delete-infornation'
+export const ROUTE_SEND_DELETE_CODE_CONFIRNATION = 'send-delete-code-confirnation'
+export const ROUTE_CONFIRM_DELETE_PROFILE = 'confirm-delete-profile'
+export const ROUTE_RESEND_CODE = 'resend-code'
+
 // profile
+export const ROUTE_GET_CLIENT_PROFILE = 'getClientProfile'
+export const ROUTE_GET_DRIVER_PROFILE = 'getDriverProfile'
+export const ROUTE_GET_ADMIN_PROFILE = 'getAdminProfile'
+export const ROUTE_FIND_CLIENT_PROFILE = 'findClientProfile'
 // vehicle
