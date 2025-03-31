@@ -19,8 +19,8 @@ import {
    TransactionStatus,
 } from '@prisma/client'
 
-@Controller('payment')
-export class PaymentController {
+@Controller('transaction')
+export class TransactionController {
    constructor(
       private readonly depositeService: DepositeService,
       private readonly getTransactionService: GetTransactionService,
