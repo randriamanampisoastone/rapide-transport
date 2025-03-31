@@ -110,7 +110,16 @@ export class ConfirmSignUpService {
             )
 
             return { token }
-         } else if (restSignUpDto.role === UserRole.ADMIN) {
+         } else if (
+            [
+               UserRole.SUPER_ADMIN,
+               UserRole.CALL_CENTER,
+               UserRole.DEPOSITOR,
+               UserRole.MANAGER_HUB,
+               UserRole.RIDER,
+               UserRole.TREASURER,
+            ].includes(restSignUpDto.role)
+         ) {
             const adminProfile = await this.createAdminProfile(restSignUpDto)
             const token = jwt.sign(
                {
@@ -208,7 +217,7 @@ export class ConfirmSignUpService {
                lastName: signUpDto.lastName,
                gender: signUpDto.gender,
                birthday: signUpDto.birthday,
-               role: UserRole.ADMIN,
+               role: signUpDto.role,
                profilePhoto: signUpDto.profilePhoto,
             },
          })

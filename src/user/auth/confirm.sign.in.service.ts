@@ -145,13 +145,12 @@ export class ConfirmSignInService {
             )
             return { token }
          } else if (
-            restSignInDto.role === UserRole.ADMIN ||
             restSignInDto.role === UserRole.SUPER_ADMIN ||
-            restSignInDto.role === UserRole.FINANCE_MANAGER ||
-            restSignInDto.role === UserRole.FLEET_MANAGER ||
-            restSignInDto.role === UserRole.FOOD_MANAGER ||
-            restSignInDto.role === UserRole.MART_MANAGER ||
-            restSignInDto.role === UserRole.HUMAN_RESOURCES
+            restSignInDto.role === UserRole.CALL_CENTER ||
+            restSignInDto.role === UserRole.DEPOSITOR ||
+            restSignInDto.role === UserRole.MANAGER_HUB ||
+            restSignInDto.role === UserRole.RIDER ||
+            restSignInDto.role === UserRole.TREASURER
          ) {
             const adminProfile = await this.prismaService.profile.findUnique({
                where: { phoneNumber: signInDto.phoneNumber },

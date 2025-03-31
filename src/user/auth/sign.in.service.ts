@@ -42,10 +42,7 @@ export class SignInService {
                `User with this phone number doesn't exists`,
             )
          }
-         if (
-            signInDto.role !== UserRole.ADMIN &&
-            existingUser.role !== signInDto.role
-         ) {
+         if (existingUser.role !== signInDto.role) {
             throw new UnauthorizedException(`User role doesn't match`)
          }
          if (!Object.values(UserRole).includes(signInDto.role)) {
@@ -75,6 +72,7 @@ export class SignInService {
 
          if (signInDto.phoneNumber !== SPECIAL_ACCESS_PHONE_NUMBER)
             await this.smsService.sendSMS([signInDto.phoneNumber], message)
+
          const updateSignInDto = {
             attempt: 0,
             confirmationCode,

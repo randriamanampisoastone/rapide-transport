@@ -16,15 +16,23 @@ import { GetUser } from 'src/jwt/get.user.decorator'
 import { AnswerClientRequestDto } from './dto/answer-client-request.dto'
 import { FindClientRequestService } from './find-client-request.service'
 import { ProfileStatus, RequestFor } from '@prisma/client'
+import { ROUTE_CLIENT_REQUEST } from 'routes/main-routes'
+import {
+   ROUTE_ANSWER_CLIENT_REQUEST,
+   ROUTE_GET_CLIENT_REQUESTS,
+   ROUTE_GET_CLIENT_REQUESTS_BY_CLIENT_REQUEST_ID,
+   ROUTE_REMOVE_CLIENT_REQUEST,
+   ROUTE_SEND_CLIENT_REQUEST,
+} from 'routes/secondary-routes'
 
-@Controller('/client-request')
+@Controller(ROUTE_CLIENT_REQUEST)
 export class ClientRequestController {
    constructor(
       private readonly clientRequestSerivice: ClientRequestService,
       private readonly findClientRequestService: FindClientRequestService,
    ) {}
 
-   @Post('send')
+   @Post(ROUTE_SEND_CLIENT_REQUEST)
    @SetMetadata('allowedRole', ['CLIENT'])
    @UseGuards(RolesGuard)
    async sendRequest(
@@ -42,12 +50,12 @@ export class ClientRequestController {
       )
    }
 
-   @Post('answer')
+   @Post(ROUTE_ANSWER_CLIENT_REQUEST)
    @SetMetadata('allowedRole', [
       'CLIENT',
-      'ADMIN',
+      'CALL_CENTER',
+      'MANAGER_HUB',
       'SUPER_ADMIN',
-      'HUMAN_RESOURCES',
    ])
    @UseGuards(RolesGuard)
    async answerRequest(
@@ -67,7 +75,7 @@ export class ClientRequestController {
    }
 
    @Get()
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'HUMAN_RESOURCES'])
+   @SetMetadata('allowedRole', ['CALL_CENTER', 'MANAGER_HUB', 'SUPER_ADMIN'])
    @UseGuards(RolesGuard)
    async getAllCientRequest(
       @Query('requestFor') requestFor: RequestFor,
@@ -81,15 +89,10 @@ export class ClientRequestController {
       )
    }
 
-   @Get('get-requests')
-   @SetMetadata('allowedRole', [
-      'ADMIN',
-      'SUPER_ADMIN',
-      'HUMAN_RESOURCES',
-      'CLIENT',
-   ])
+   @Get(ROUTE_GET_CLIENT_REQUESTS_BY_CLIENT_REQUEST_ID)
+   @SetMetadata('allowedRole', ['CALL_CENTER', 'MANAGER_HUB', 'SUPER_ADMIN'])
    @UseGuards(RolesGuard)
-   async getRequests(
+   async getClientRequestByClientRequestId(
       @Query('clientRequestId') clientRequestId: string,
       @Query('page') page: number,
       @Query('pageSize') pageSize: number,
@@ -101,7 +104,7 @@ export class ClientRequestController {
       )
    }
 
-   @Get('get-client-requests')
+   @Get(ROUTE_GET_CLIENT_REQUESTS)
    @SetMetadata('allowedRole', ['CLIENT'])
    @UseGuards(RolesGuard)
    async getClientRequests(
@@ -120,7 +123,7 @@ export class ClientRequestController {
       )
    }
 
-   @Delete('remove-client-request')
+   @Delete(ROUTE_REMOVE_CLIENT_REQUEST)
    @SetMetadata('allowedRole', [
       'ADMIN',
       'SUPER_ADMIN',

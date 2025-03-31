@@ -17,6 +17,7 @@ import {
    ERROR_RIDE_NOT_FINDING_DRIVER,
    ERROR_RIDE_NOT_FOUND,
 } from 'constants/error.constant'
+import { UserRole } from 'enums/profile.enum'
 
 export interface DriverAcceptDto {
    driverProfileId: string
@@ -90,9 +91,13 @@ export class DriverAcceptService {
             rideData,
          )
 
-         this.gateway.sendNotificationToAdmin(EVENT_ACCEPTED_RIDE, {
-            ...parseRideData(rideDataUpdatedOnDb),
-         })
+         this.gateway.sendNotificationToAdmin(
+            [UserRole.RIDER, UserRole.CALL_CENTER, UserRole.MANAGER_HUB],
+            EVENT_ACCEPTED_RIDE,
+            {
+               ...parseRideData(rideDataUpdatedOnDb),
+            },
+         )
 
          return rideData
       } catch (error) {

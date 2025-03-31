@@ -71,7 +71,7 @@ export class DeleteProfileService {
          })
          await this.smsService.sendSMS(
             [phoneNumber],
-            `Dear ${profile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${profile.lastName} ${profile.firstName}, please enter the code ${confirmationCode} to confirm your account deletion.`,
+            `Please enter the code ${confirmationCode} to confirm your account deletion.`,
          )
          const data: DeleteProfileDto = {
             attempt: 3,
@@ -160,7 +160,9 @@ export class DeleteProfileService {
             ),
          )
          if (!data) {
-            throw new NotFoundException(`Request not found please try again later.`)
+            throw new NotFoundException(
+               `Request not found please try again later.`,
+            )
          }
          const secret = speakeasy.generateSecret({ length: 20 })
          const confirmationCode = speakeasy.totp({
@@ -178,7 +180,7 @@ export class DeleteProfileService {
          )
          await this.smsService.sendSMS(
             [data.phoneNumber],
-            `Dear ${data.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${data.lastName} ${data.firstName}, please enter the code ${confirmationCode} to confirm your account deletion.`,
+            `Please enter the code ${confirmationCode} to confirm your account deletion.`,
          )
       } catch (error) {
          throw error
@@ -238,13 +240,17 @@ export class DeleteProfileService {
          await this.redisService.remove(
             `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.clientProfileId}`,
          )
-         await this.gateWay.sendNotificationToAdmin(EVENT_DELETEE_PROFILE, {
-            firstName: data.firstName,
-            lastName: data.lastName,
-            profilePhoto: data.profilePhoto,
-            gender: data.gender,
-            phoneNumber: data.phoneNumber,
-         })
+         await this.gateWay.sendNotificationToAdmin(
+            [UserRole.RIDER, UserRole.CALL_CENTER, UserRole.MANAGER_HUB],
+            EVENT_DELETEE_PROFILE,
+            {
+               firstName: data.firstName,
+               lastName: data.lastName,
+               profilePhoto: data.profilePhoto,
+               gender: data.gender,
+               phoneNumber: data.phoneNumber,
+            },
+         )
          await this.redisService.remove(
             `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.clientProfileId}`,
          )

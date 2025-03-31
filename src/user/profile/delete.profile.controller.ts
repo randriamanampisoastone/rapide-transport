@@ -9,8 +9,9 @@ import {
 import { DeleteProfileService } from './delete.profile.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { ConfirmDeleteProfileDto } from './dto/confirm.delete.profile.dto'
+import { ROUTE_DELETE_PROFILE } from 'routes/main-routes'
 
-@Controller('delete-profile')
+@Controller(ROUTE_DELETE_PROFILE)
 export class DeleteProfileController {
    constructor(private readonly deleteProfileService: DeleteProfileService) {}
 
@@ -36,7 +37,9 @@ export class DeleteProfileController {
    }
 
    @Post('send-delete-code-confirnation')
-   async sendConfirmationCodeForDelete(@Body('clientProfileId') clientProfileId: string) {
+   async sendConfirmationCodeForDelete(
+      @Body('clientProfileId') clientProfileId: string,
+   ) {
       return await this.deleteProfileService.sendConfirmationCodeForDelete(
          clientProfileId,
       )
