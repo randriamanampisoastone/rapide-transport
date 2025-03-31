@@ -129,10 +129,10 @@ export class SearchProductService extends ProductsService {
                 discounts: {
                     select: {
                         discount: {
-                           select: {
-                               type: true,
-                               value: true
-                           }
+                            select: {
+                                type: true,
+                                value: true
+                            }
                         }
                     }
                 },
@@ -170,7 +170,7 @@ export class SearchProductService extends ProductsService {
     }
 
     async getInfoProduct(id: string, user: string) {
-        const products = await this.prismaService.product.findMany({
+        const product = await this.prismaService.product.findUnique({
             where: {
                 id: id
             },
@@ -190,8 +190,12 @@ export class SearchProductService extends ProductsService {
             }
         });
 
-        // Transform products and await async operations
-        const transformedProducts = await Promise.all(products.map(async product => ({
+        if (!product) {
+            return null;
+        }
+
+        // Transform product and await async operations
+        return {
             ...product,
             rating: await this.reviewService.getAverageRating(product.id),
             reviewsCount: await this.reviewService.getProductReviewCount(product.id),
@@ -201,10 +205,7 @@ export class SearchProductService extends ProductsService {
             discounts: product.discounts.map(d => ({
                 ...d.discount,
                 value: Number(d.discount.value.toString())
-            })),
-        })));
-
-        return transformedProducts;
+            }))
+        };
     }
-
 }
