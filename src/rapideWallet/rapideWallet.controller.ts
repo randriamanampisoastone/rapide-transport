@@ -77,6 +77,7 @@ export class RapideWalletController {
          throw new ForbiddenException('UserNotActive')
       }
       return await this.rapideWalletService.setRapideWalletInformation(
+   
          profileId,
          setRapideWalletInfoDto,
       )

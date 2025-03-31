@@ -20,55 +20,19 @@ export class LocationService {
       server: Server,
       data: UpdateClientLocationInterface,
    ) {
-      const clientProfileId = data.clientProfileId
-      const clientLocation = data.clientLocation
-
-      const driverProfileId = data.driverProfileId
-
-      server.to(driverProfileId).emit(EVENT_CLIENT_LOCATION, {
-         clientProfileId,
-         clientLocation,
-      })
-
-      server.to(UserRole.ADMIN).emit(EVENT_CLIENT_LOCATION, {
-         clientProfileId,
-         clientLocation,
-      })
+      server.to(data.driverProfileId).emit(EVENT_CLIENT_LOCATION, data)
+      server.to(UserRole.ADMIN).emit(EVENT_CLIENT_LOCATION, data)
    }
 
    async handleUpdateDriverLocation(
       server: Server,
       data: UpdateDriverLocationInterface,
    ) {
-      const driverProfileId = data.driverProfileId
-      const driverLocation = data.driverLocation
-      const vehicleType = data.vehicleType
-      const isOnRide = data.isOnRide
-      const driverExpoPushToken = data.driverExpoPushToken
-
-      if (!isOnRide) {
-         await this.redisService.addDriverLocationToRedis(
-            driverProfileId,
-            driverLocation,
-            vehicleType,
-            driverExpoPushToken,
-         )
+      if (!data.isAvailable) {
+         await this.redisService.addDriverLocationToRedis(data)
       } else {
-         const clientProfileId = data.clientProfileId
-
-         server.to(clientProfileId).emit(EVENT_DRIVER_LOCATION, {
-            driverProfileId,
-            driverLocation,
-            vehicleType,
-            driverExpoPushToken,
-         })
+         server.to(data.clientProfileId).emit(EVENT_DRIVER_LOCATION, data)
       }
-
-      server.to(UserRole.ADMIN).emit(EVENT_DRIVER_LOCATION, {
-         driverProfileId,
-         driverLocation,
-         vehicleType,
-         isOnRide,
-      })
+      server.to(UserRole.ADMIN).emit(EVENT_DRIVER_LOCATION, data)
    }
 }

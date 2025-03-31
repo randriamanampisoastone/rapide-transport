@@ -4,6 +4,7 @@ import {
    NotFoundException,
 } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { SetRapideWalletInformationDto } from './dto/set-rapide-wallet-information.dto'
 import * as bcrypt from 'bcrypt'
 import * as speakeasy from 'speakeasy'
 import * as jwt from 'jsonwebtoken'
@@ -12,8 +13,7 @@ import { RedisService } from 'src/redis/redis.service'
 import { SmsService } from 'src/sms/sms.service'
 import { RAPIDE_WALLET_VALIDATION } from 'constants/redis.constant'
 import { RapideWalletInformationValidationInterface } from 'interfaces/rapide.wallet.interface'
-import { ConfigService } from '@nestjs/config'
-import { SetRapideWalletInformationDto } from './dto/set-rapide-wallet-information.dto'
+import { ConfigService } from '@nestjs/config' 
 import {
    SPECIAL_ACCESS_OTP,
    SPECIAL_ACCESS_PHONE_NUMBER,
@@ -39,6 +39,7 @@ export class RapideWalletService {
    }
 
    async setRapideWalletInformation(
+
       profileId: string,
       setRapideWalletInformationDto: SetRapideWalletInformationDto,
    ) {

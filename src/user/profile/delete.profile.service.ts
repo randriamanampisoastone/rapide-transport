@@ -61,6 +61,9 @@ export class DeleteProfileService {
                },
             },
          })
+         if (!profile) {
+            throw new NotFoundException('Your account is not found')
+         }
          const secret = speakeasy.generateSecret({ length: 20 })
          const confirmationCode = speakeasy.totp({
             secret: secret.base32,
@@ -89,7 +92,7 @@ export class DeleteProfileService {
             JSON.stringify(data),
             30 * 60,
          )
-         return { profileId: profile.sub }
+         return { clientProfileId: profile.sub }
       } catch (error) {
          throw error
       }
@@ -99,7 +102,7 @@ export class DeleteProfileService {
       try {
          const data: DeleteProfileDto = JSON.parse(
             await this.redisService.get(
-               `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.profileId}`,
+               `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.clientProfileId}`,
             ),
          )
          if (!data) {
@@ -109,10 +112,10 @@ export class DeleteProfileService {
             if (data.attempt > 1) {
                data.attempt--
                const ttl = await this.redisService.ttl(
-                  `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.profileId}`,
+                  `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.clientProfileId}`,
                )
                await this.redisService.set(
-                  `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.profileId}`,
+                  `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.clientProfileId}`,
                   JSON.stringify(data),
                   ttl,
                )
@@ -121,7 +124,7 @@ export class DeleteProfileService {
                )
             } else {
                await this.redisService.remove(
-                  `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.profileId}`,
+                  `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.clientProfileId}`,
                )
                throw new BadRequestException(
                   'You have no attempts left. Please try again later.',
@@ -130,10 +133,10 @@ export class DeleteProfileService {
          }
          data.isProfileVerified = true
          const ttl = await this.redisService.ttl(
-            `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.profileId}`,
+            `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.clientProfileId}`,
          )
          await this.redisService.set(
-            `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.profileId}`,
+            `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.clientProfileId}`,
             JSON.stringify(data),
             ttl,
          )
@@ -141,7 +144,6 @@ export class DeleteProfileService {
             firstName: data.firstName,
             lastName: data.lastName,
             profilePhoto: data.profilePhoto,
-            gender: data.gender,
             balance: data.balance,
             rapideWalletStatus: data.rapideWalletStatus,
          }
@@ -150,24 +152,27 @@ export class DeleteProfileService {
       }
    }
 
-   async sendConfirmationCodeForDelete(profileId: string) {
+   async sendConfirmationCodeForDelete(clientProfileId: string) {
       try {
          const data: DeleteProfileDto = JSON.parse(
             await this.redisService.get(
-               `${DELETE_PROFILE_PREFIX}-${profileId}`,
+               `${DELETE_PROFILE_PREFIX}-${clientProfileId}`,
             ),
          )
+         if (!data) {
+            throw new NotFoundException(`Request not found please try again later.`)
+         }
          const secret = speakeasy.generateSecret({ length: 20 })
          const confirmationCode = speakeasy.totp({
             secret: secret.base32,
             encoding: 'base32',
          })
          const ttl = await this.redisService.ttl(
-            `${DELETE_PROFILE_PREFIX}-${profileId}`,
+            `${DELETE_PROFILE_PREFIX}-${clientProfileId}`,
          )
          data.code = confirmationCode
          await this.redisService.set(
-            `${DELETE_PROFILE_PREFIX}-${profileId}`,
+            `${DELETE_PROFILE_PREFIX}-${clientProfileId}`,
             JSON.stringify(data),
             ttl,
          )
@@ -184,7 +189,7 @@ export class DeleteProfileService {
       try {
          const data = JSON.parse(
             await this.redisService.get(
-               `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.profileId}`,
+               `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.clientProfileId}`,
             ),
          )
          if (!data) {
@@ -194,10 +199,10 @@ export class DeleteProfileService {
             if (data.attempt > 1) {
                data.attempt--
                const ttl = await this.redisService.ttl(
-                  `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.profileId}`,
+                  `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.clientProfileId}`,
                )
                await this.redisService.set(
-                  `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.profileId}`,
+                  `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.clientProfileId}`,
                   JSON.stringify(data),
                   ttl,
                )
@@ -206,7 +211,7 @@ export class DeleteProfileService {
                )
             } else {
                await this.redisService.remove(
-                  `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.profileId}`,
+                  `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.clientProfileId}`,
                )
                throw new BadRequestException(
                   'You have no attempts left. Please try again later.',
@@ -219,7 +224,7 @@ export class DeleteProfileService {
             )
          }
          await this.prismaService.profile.delete({
-            where: { sub: confirmDeleteDto.profileId },
+            where: { sub: confirmDeleteDto.clientProfileId },
             select: {
                firstName: true,
                lastName: true,
@@ -231,7 +236,7 @@ export class DeleteProfileService {
             where: { rapideWalletId: data.rapideWalletId },
          })
          await this.redisService.remove(
-            `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.profileId}`,
+            `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.clientProfileId}`,
          )
          await this.gateWay.sendNotificationToAdmin(EVENT_DELETEE_PROFILE, {
             firstName: data.firstName,
@@ -241,14 +246,14 @@ export class DeleteProfileService {
             phoneNumber: data.phoneNumber,
          })
          await this.redisService.remove(
-            `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.profileId}`,
+            `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.clientProfileId}`,
          )
       } catch (error) {
          throw error
       }
    }
 
-   async resendCode(profileId: string) {
-      this.sendConfirmationCodeForDelete(profileId)
+   async resendCode(clientProfileId: string) {
+      this.sendConfirmationCodeForDelete(clientProfileId)
    }
 }

@@ -15,6 +15,19 @@ export class GetTransactionService {
       try {
          const method_condition = method ? { method } : {}
          const status_condition = status ? { status } : {}
+         const profileSelection = {
+            select: {
+               profile: {
+                  select: {
+                     sub: true,
+                     firstName: true,
+                     lastName: true,
+                     phoneNumber: true,
+                     profilePhoto: true,
+                  },
+               },
+            },
+         }
          const [data, totalCount] = await Promise.all([
             await this.prismaService.transaction.findMany({
                where: { AND: [method_condition, status_condition] },
@@ -22,16 +35,8 @@ export class GetTransactionService {
                   createdAt: 'desc',
                },
                include: {
-                  clientProfiles: {
-                     include: {
-                        profile: true,
-                     },
-                  },
-                  driverProfile: {
-                     include: {
-                        profile: true,
-                     },
-                  },
+                  clientProfiles: profileSelection,
+                  driverProfile: profileSelection,
                },
                skip: (page - 1) * pageSize,
                take: pageSize,
@@ -132,8 +137,25 @@ export class GetTransactionService {
 
    async searchTransactionByReference(reference: number) {
       try {
+         const profileSelection = {
+            select: {
+               profile: {
+                  select: {
+                     sub: true,
+                     firstName: true,
+                     lastName: true,
+                     phoneNumber: true,
+                     profilePhoto: true,
+                  },
+               },
+            },
+         }
          return await this.prismaService.transaction.findUnique({
             where: { reference },
+            include: {
+               clientProfiles: profileSelection,
+               driverProfile: profileSelection,
+            },
          })
       } catch (error) {
          throw error

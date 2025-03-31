@@ -13,7 +13,11 @@ import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { DepositeDto } from './dto/deposite.dto'
 import { GetTransactionService } from './get-transacation.service'
-import { MethodType, ProfileStatus, TransactionStatus } from '@prisma/client'
+import {
+   MethodType,
+   ProfileStatus,
+   TransactionStatus,
+} from '@prisma/client'
 
 @Controller('transaction')
 export class TransactionController {
@@ -125,7 +129,7 @@ export class TransactionController {
       )
    }
 
-   @Get('search-by-reference')
+   @Get('search-transaction-by-reference')
    @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
    @UseGuards(RolesGuard)
    async searchTransactionByReference(

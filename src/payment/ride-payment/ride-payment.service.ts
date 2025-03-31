@@ -194,35 +194,24 @@ export class RidePaymentService {
                      },
                   },
                })
-               const driverRapideWallet = await prisma.rapideWallet.update({
-                  where: { driverProfileId: paymentValidation.to },
-                  data: {
-                     balance: { decrement: realPrice },
-                     transactionCount: { increment: 1 },
-                     successCount: { increment: 1 },
-                  },
+               const driverProfile = await prisma.profile.findUnique({
+                  where: { sub: paymentValidation.to },
                   select: {
-                     driverProfile: {
-                        select: {
-                           profile: {
-                              select: {
-                                 gender: true,
-                                 phoneNumber: true,
-                                 firstName: true,
-                                 lastName: true,
-                              },
-                           },
-                        },
-                     },
+                     firstName: true,
+                     lastName: true,
+                     gender: true,
+                     phoneNumber: true,
                   },
                })
-               await prisma.transaction.create({
+               await prisma.rapideBalance.updateMany({
+                  data: { ride: { increment: realPrice } },
+               })
+               const transaction = await prisma.transaction.create({
                   data: {
                      from: clientProfileId,
-                     to: paymentValidation.to,
+                     to: 'RAPIDE BALANCE',
                      amount: realPrice,
                      clientProfiles: { connect: { clientProfileId } },
-                     driverProfileId: paymentValidation.to,
                      status: TransactionStatus.SUCCESS,
                      type: TransactionType.PAYMENT,
                      method: MethodType.RAPIDE_WALLET,
@@ -230,14 +219,13 @@ export class RidePaymentService {
                   },
                })
                const clientProfile = clientRapideWallet.clientProfile.profile
-               const driverProfile = driverRapideWallet.driverProfile.profile
                await this.smsService.sendSMS(
                   [clientProfile.phoneNumber],
-                  `${realPrice} has been transfered to ${driverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${driverProfile.lastName} ${driverProfile.firstName}`,
+                  `${realPrice} has been transfered to RAPIDE for this ride with ${driverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${driverProfile.lastName} ${driverProfile.firstName}. The transaction reference is ${transaction.reference.toString().padStart(6, '0')}`,
                )
                await this.smsService.sendSMS(
                   [driverProfile.phoneNumber],
-                  `${clientProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${clientProfile.lastName} ${clientProfile.firstName} transfered you ${realPrice}`,
+                  `${clientProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${clientProfile.lastName} ${clientProfile.firstName}, ${realPrice} Ar has been transfered to RAPIDE for this ride. The transaction reference is ${transaction.reference.toString().padStart(6, '0')}`,
                )
                await this.redisService.remove(
                   `${PAYMENT_VALIDATION}-${clientProfileId}`,

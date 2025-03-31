@@ -1,0 +1,83 @@
+[
+    {
+        "SUPER_ADMIN": [
+            "Can see all things",
+            2
+        ],
+        "TREASURER": [ 
+            "Access financial",
+            "Can see all transaction",
+            "",
+            1
+        ],
+        "DEPOSITOR": [
+            "Deposit",
+            "Take the driver daily Cash incomming",
+            "Can see his transaction",
+            "Manage rapide wallet",
+            6
+        ],
+        "CALL_CENTER": [
+            "Only see all clients and drivers profile",
+            "Resolve clients or drivers issues",
+            "Check all ride in real time",
+            "Customer support",
+            2
+        ],
+        "MANAGER_HUB": [
+            "Manage profile account",
+            "Check map find where is the drivers",
+            6
+        ],
+        "RIDER": [
+            "Monitor the drivers",
+            "Check all ride in real time",
+            "Assign a ride to a driver available if no driver accept",
+            "",
+            6
+        ]
+    },
+    {
+        "SUPER_ADMIN": [
+            "All"
+        ],
+        "TREASURER": [ 
+            {"DASHBOARD":"All Statics"},
+            {"INVOICE":"ALL"},
+            {"SOLD":"ALL"},
+            {"TRANSACTION":"ALL"}
+
+        ],
+        "DEPOSITOR": [
+             
+            {"INVOICE":"ALL"},
+            {"SOL":"ALL"},
+            {"TRANSACTIOND":"only his transaction"}
+        ],
+        "CALL_CENTER": [
+            {"USERS":"Only See"},
+            {"DRIVERS":"Only See"},
+            {"MAP":"ALL"},
+            {"DASHBOARD":"Only Statics is not access"},
+            {"RIDE":"all"}
+        ],
+        "MANAGER_HUB": [
+            {"USERS":"ALL"},
+            {"DRIVERS":"ALL"},
+            {"MAP":"ALL"},
+            {"DASHBOARD":"all"},
+            {"RIDE":"all"}
+        ],
+        "RIDER": [
+            {"MAP":"ALL"},
+            {"DASHBOARD":""},
+            {"DRIVERS":"Only See"},
+            {"RIDE":"all"},
+            "Monitor the drivers",
+            "Check all ride in real time",
+            "Assign a ride to a driver available if no driver accept",
+            "",
+            6
+        ]
+    }
+]

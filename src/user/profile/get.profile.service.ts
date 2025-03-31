@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { BadRequestException, Injectable } from '@nestjs/common'
+import { ERROR_CLIENT_NOT_FOUND } from 'constants/error.constant'
 import { UserRole } from 'enums/profile.enum'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
@@ -8,7 +10,6 @@ export class GetProfileService {
    constructor(
       private readonly prismaService: PrismaService,
       private readonly redisService: RedisService,
-      // private readonly getByStatusService: GetByStatusService,
    ) {}
 
    async getClientProfile(sub: string) {
@@ -51,7 +52,7 @@ export class GetProfileService {
             balance: clientProfile.clientProfile.rapideWallet.balance,
          }
       } catch (error) {
-         throw error
+         throw new BadRequestException(ERROR_CLIENT_NOT_FOUND)
       }
    }
    async getDriverProfile(sub: string) {
@@ -116,7 +117,7 @@ export class GetProfileService {
                adminProfile: {
                   select: {
                      status: true,
-                     transactionPassword: true,
+                     isTransactionPasswordDefined: true,
                   },
                },
             },
@@ -132,7 +133,8 @@ export class GetProfileService {
             profilePhoto: adminProfile.profilePhoto,
             role: adminProfile.role,
             status: adminProfile.adminProfile.status,
-            transactionPassword: adminProfile.adminProfile.transactionPassword,
+            isTransactionPasswordDefined:
+               adminProfile.adminProfile.isTransactionPasswordDefined,
          }
       } catch (error) {
          throw error
