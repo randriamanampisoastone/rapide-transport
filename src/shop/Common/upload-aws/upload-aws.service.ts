@@ -27,15 +27,15 @@ export class UploadAwsService {
    async uploadFile(file: Express.Multer.File, folder: string = 'general') {
       const sanitizedFolder = folder.replace(/[^\w\s-]/g, '').replace(/[-\s]+/g, '-').toLowerCase()
 
-      const fileName = `-rapid-${Date.now()}-${file.originalname}`;
+      const fileName = `rapid-${Date.now()}-${file.originalname}`;
       const fullPath = `${sanitizedFolder}/${fileName}`;
 
       const params = {
          Bucket: this.configService.get('AWS_S3_BUCKET_NAME'),
          Key: fullPath,
          Body: file.buffer,
-         ContentType: file.mimetype,
-         // ACL: 'public-read'
+         ContentType: 'image/jpeg, image/jpg, image/png, image/svg, image/tiff, image/bmp',
+         // ACL:ObjectCannedACL.public_read_write
       }
 
       try {
@@ -43,7 +43,7 @@ export class UploadAwsService {
          await this.s3Client.send(command)
 
          // Construct URL manually since SDK v3 doesn't return upload location
-         return `https://${params.Bucket}.s3.${this.configService.get('AWS_REGION')}.amazonaws.com-${fileName}`
+         return `https://s3.${this.configService.get('AWS_REGION')}.amazonaws.com/${params.Bucket}/${fullPath}`
       } catch (error) {
          console.error('Error uploading file to S3:', error)
          throw error
