@@ -39,7 +39,6 @@ export class RapideWalletService {
    }
 
    async setRapideWalletInformation(
-
       profileId: string,
       setRapideWalletInformationDto: SetRapideWalletInformationDto,
    ) {
@@ -90,7 +89,7 @@ export class RapideWalletService {
       }
    }
 
-   async validateRapideWalletInformation(
+   async confirmRapideWalletInformation(
       profileId: string,
       phoneNumber: string,
       confirmationCode: string,

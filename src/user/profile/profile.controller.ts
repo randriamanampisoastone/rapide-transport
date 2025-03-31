@@ -17,8 +17,9 @@ import { ProfileStatus } from '@prisma/client'
 import { UpdateProfileDto } from './dto/update.profile.dto'
 import { UpdateAdminStatusDto } from './dto/update.admin.status.dto'
 import { UpdateAdminRoleDto } from './dto/update.admin.role.dto'
+import { ROUTE_PROFILE } from 'routes/main-routes'
 
-@Controller('profile')
+@Controller(ROUTE_PROFILE)
 export class ProfileController {
    constructor(
       private readonly getProfileService: GetProfileService,

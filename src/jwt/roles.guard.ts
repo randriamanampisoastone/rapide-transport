@@ -47,13 +47,12 @@ export class RolesGuard implements CanActivate {
             case UserRole.DRIVER:
                secretKey = this.configService.get<string>('JWT_SECRET_DRIVER')
                break
-            case UserRole.ADMIN:
             case UserRole.SUPER_ADMIN:
-            case UserRole.FINANCE_MANAGER:
-            case UserRole.FLEET_MANAGER:
-            case UserRole.FOOD_MANAGER:
-            case UserRole.MART_MANAGER:
-            case UserRole.HUMAN_RESOURCES:
+            case UserRole.CALL_CENTER:
+            case UserRole.DEPOSITOR:
+            case UserRole.MANAGER_HUB:
+            case UserRole.RIDER:
+            case UserRole.TREASURER:
                secretKey = this.configService.get<string>('JWT_SECRET_ADMIN')
                break
             default:

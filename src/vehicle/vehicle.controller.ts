@@ -1,7 +1,8 @@
 import { Controller, Get, Query } from '@nestjs/common'
 import { VehicleService } from './vehicle.service'
+import { ROUTE_VEHICLE } from 'routes/main-routes'
 
-@Controller('vehicle')
+@Controller(ROUTE_VEHICLE)
 export class VehicleController {
    constructor(private readonly vehicleService: VehicleService) {}
 

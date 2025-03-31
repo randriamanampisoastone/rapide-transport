@@ -11,8 +11,9 @@ import { ResendConfirmSignUpService } from './resend.confirm.sign.up.service'
 import { ResendConfirmDto } from './dto/resend.confirm.dto'
 import { GoogleAuthService } from './google.auth.service'
 import { UserRole } from 'enums/profile.enum'
+import { ROUTE_AUTH } from 'routes/main-routes'
 
-@Controller('auth')
+@Controller(ROUTE_AUTH)
 export class AuthController {
    constructor(
       private readonly signUpService: SignUpService,

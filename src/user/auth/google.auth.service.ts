@@ -126,7 +126,14 @@ export class GoogleAuthService {
                },
             )
             return { token, status: 'REGISTERED' }
-         } else if (existingUser.role === UserRole.ADMIN) {
+         } else if (
+            existingUser.role === UserRole.SUPER_ADMIN ||
+            existingUser.role === UserRole.CALL_CENTER ||
+            existingUser.role === UserRole.DEPOSITOR ||
+            existingUser.role === UserRole.MANAGER_HUB ||
+            existingUser.role === UserRole.RIDER ||
+            existingUser.role === UserRole.TREASURER
+         ) {
             const token = jwt.sign(
                {
                   sub: existingUser.sub,

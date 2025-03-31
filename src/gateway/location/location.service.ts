@@ -21,7 +21,13 @@ export class LocationService {
       data: UpdateClientLocationInterface,
    ) {
       server.to(data.driverProfileId).emit(EVENT_CLIENT_LOCATION, data)
-      server.to(UserRole.ADMIN).emit(EVENT_CLIENT_LOCATION, data)
+      for (let ride of [
+         UserRole.RIDER,
+         UserRole.MANAGER_HUB,
+         UserRole.CALL_CENTER,
+         UserRole.SUPER_ADMIN
+      ])
+         server.to(ride).emit(EVENT_CLIENT_LOCATION, data)
    }
 
    async handleUpdateDriverLocation(
@@ -33,6 +39,12 @@ export class LocationService {
       } else {
          server.to(data.clientProfileId).emit(EVENT_DRIVER_LOCATION, data)
       }
-      server.to(UserRole.ADMIN).emit(EVENT_DRIVER_LOCATION, data)
+      for (let ride of [
+         UserRole.RIDER,
+         UserRole.MANAGER_HUB,
+         UserRole.CALL_CENTER,
+         UserRole.SUPER_ADMIN
+      ])
+         server.to(ride).emit(EVENT_DRIVER_LOCATION, data)
    }
 }
