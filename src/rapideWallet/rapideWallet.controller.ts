@@ -77,13 +77,12 @@ export class RapideWalletController {
          throw new ForbiddenException('UserNotActive')
       }
       return await this.rapideWalletService.setRapideWalletInformation(
-   
          profileId,
          setRapideWalletInfoDto,
       )
    }
 
-   @Post('validate-rapide-wallet-info')
+   @Post('validate-rapide-wallet-information')
    @SetMetadata('allowedRole', ['DRIVER', 'CLIENT'])
    @UseGuards(RolesGuard)
    async validateInformation(
@@ -103,7 +102,7 @@ export class RapideWalletController {
       )
    }
 
-   @Post('resend-code')
+   @Post('resend-confirmation-code-rapide-wallet-information')
    @SetMetadata('allowedRole', ['DRIVER', 'CLIENT'])
    @UseGuards(RolesGuard)
    async resendCode(
