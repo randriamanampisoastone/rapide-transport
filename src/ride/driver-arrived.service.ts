@@ -15,6 +15,7 @@ import { EVENT_DRIVER_ARREIVED } from 'constants/event.constant'
 import { NotificationService } from 'src/notification/notification.service'
 import { RidePaymentService } from 'src/payment/ride-payment/ride-payment.service'
 import { MethodType } from '@prisma/client'
+import { UserRole } from 'enums/profile.enum'
 
 export interface DriverArrivedDto {
    driverProfileId: string
@@ -106,9 +107,13 @@ export class DriverArrivedService {
             EVENT_DRIVER_ARREIVED,
             {},
          )
-         this.gateway.sendNotificationToAdmin(EVENT_DRIVER_ARREIVED, {
-            ...rideDataUpdated,
-         })
+         this.gateway.sendNotificationToAdmin(
+            [UserRole.RIDER, UserRole.CALL_CENTER, UserRole.MANAGER_HUB],
+            EVENT_DRIVER_ARREIVED,
+            {
+               ...rideDataUpdated,
+            },
+         )
       } catch (error) {
          // throw error
          throw new HttpException(error.message, error.status)

@@ -22,7 +22,7 @@ export class RidePaymentService {
       private readonly redisService: RedisService,
    ) {}
 
-   async initRapideWalletPayment(
+   async startPaymentWithRapideWallet(
       clientProfileId: string,
       initRapideWalletPayment: InitRapideWalletPayment,
    ) {
@@ -83,7 +83,7 @@ export class RidePaymentService {
          )
          await this.smsService.sendSMS(
             [clientProfile.profile.phoneNumber],
-            `Dear ${clientProfile.profile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${clientProfile.profile.lastName} ${clientProfile.profile.firstName}, your transaction code is : ${confirmationCode}`,
+            `Your transaction code is : ${confirmationCode}`,
          )
       } catch (error) {
          throw error

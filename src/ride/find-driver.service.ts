@@ -16,6 +16,7 @@ import {
    EVENT_INFO_ON_RIDE,
 } from 'constants/event.constant'
 import { NotificationService } from 'src/notification/notification.service'
+import { UserRole } from 'enums/profile.enum'
 
 @Injectable()
 export class FindDriverService implements OnModuleInit, OnModuleDestroy {
@@ -61,11 +62,15 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
             (ride) => ride.clientProfileId,
          )
 
-         this.gateway.sendNotificationToAdmin(EVENT_CLIENT_WAITING, {
-            count: ridesAvailable.length,
-            clientProfileIds,
-            data: ridesAvailable,
-         })
+         this.gateway.sendNotificationToAdmin(
+            [UserRole.RIDER, UserRole.CALL_CENTER, UserRole.MANAGER_HUB],
+            EVENT_CLIENT_WAITING,
+            {
+               count: ridesAvailable.length,
+               clientProfileIds,
+               data: ridesAvailable,
+            },
+         )
 
          await Promise.all(
             ridesAvailable.map((ride) => this.notifyDrivers(ride)),
@@ -89,10 +94,14 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
 
          console.log(`Drivers  ${drivers.length} found`)
 
-         this.gateway.sendNotificationToAdmin(EVENT_DRIVER_AVAILABLE, {
-            count: drivers.length,
-            data: drivers,
-         })
+         this.gateway.sendNotificationToAdmin(
+            [UserRole.RIDER, UserRole.CALL_CENTER, UserRole.MANAGER_HUB],
+            EVENT_DRIVER_AVAILABLE,
+            {
+               count: drivers.length,
+               data: drivers,
+            },
+         )
 
          const rideId = ride.rideId
 
@@ -144,7 +153,11 @@ export class FindDriverService implements OnModuleInit, OnModuleDestroy {
             }),
          )
 
-         this.gateway.sendNotificationToAdmin(EVENT_INFO_ON_RIDE, rideAvailable)
+         this.gateway.sendNotificationToAdmin(
+            [UserRole.RIDER, UserRole.CALL_CENTER, UserRole.MANAGER_HUB],
+            EVENT_INFO_ON_RIDE,
+            rideAvailable,
+         )
       } catch (error) {
          // throw error
          throw new InternalServerErrorException(

@@ -6,6 +6,7 @@ import { AUTH_SIGN_UP_PREFIX } from 'constants/redis.constant'
 import { ConfigService } from '@nestjs/config'
 import { SmsService } from 'src/sms/sms.service'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { SPECIAL_ACCESS_PHONE_NUMBER } from 'constants/access.constant'
 
 @Injectable()
 export class SignUpService implements OnModuleInit {
@@ -40,28 +41,27 @@ export class SignUpService implements OnModuleInit {
 
          const secret = speakeasy.generateSecret({ length: 20 })
          const confirmationCode =
-            signUpDto.phoneNumber === '+261383792924'
+            signUpDto.phoneNumber === SPECIAL_ACCESS_PHONE_NUMBER
                ? '124578'
                : speakeasy.totp({
                     secret: secret.base32,
                     encoding: 'base32',
                  })
 
-         if (signUpDto.phoneNumber !== '+261383792924') {
-            let message: string = ''
+         let message: string = ''
 
-            if (signUpDto.locale === 'fr') {
-               message = ` Votre code OTP pour la connexion est : ${confirmationCode}`
-            } else if (signUpDto.locale === 'mg') {
-               message = ` Indro ny kaody OTP afahanao miditra : ${confirmationCode}`
-            } else if (signUpDto.locale === 'en') {
-               message = `Your OTP code for sign in is : ${confirmationCode}`
-            } else if (signUpDto.locale === 'zh') {
-               message = `您的登录 OTP 验证码是 : ${confirmationCode}`
-            }
-
-            await this.smsService.sendSMS([signUpDto.phoneNumber], message)
+         if (signUpDto.locale === 'fr') {
+            message = ` Votre code OTP pour la création de compte est : ${confirmationCode}`
+         } else if (signUpDto.locale === 'mg') {
+            message = ` Indro ny kaody OTP afahanao misoratra anarana : ${confirmationCode}`
+         } else if (signUpDto.locale === 'en') {
+            message = `Your OTP code for sign up is : ${confirmationCode}`
+         } else if (signUpDto.locale === 'zh') {
+            message = `您的 OTP 验证码 : ${confirmationCode}`
          }
+
+         if (signUpDto.phoneNumber !== SPECIAL_ACCESS_PHONE_NUMBER)
+            await this.smsService.sendSMS([signUpDto.phoneNumber], message)
 
          const updateSignUpDto = {
             attempt: 0,

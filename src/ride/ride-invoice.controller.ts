@@ -10,8 +10,9 @@ import { GetRideInvoiceService } from './get-ride-invoice.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { ProfileStatus } from '@prisma/client'
+import { ROUTE_INVOICE_RIDE } from 'routes/main-routes'
 
-@Controller('ride-invoice')
+@Controller(ROUTE_INVOICE_RIDE)
 export class RideInvoiceController {
    constructor(private readonly getRideInvoiceService: GetRideInvoiceService) {}
 

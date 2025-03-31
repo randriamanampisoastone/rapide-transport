@@ -9,8 +9,9 @@ import { RideStatisticService } from './ride-statistic.service'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { ProfileStatus } from '@prisma/client'
+import { ROUTE_STATISTIC_RIDE } from 'routes/main-routes'
 
-@Controller('ride-statistic')
+@Controller(ROUTE_STATISTIC_RIDE)
 export class RideStatisticController {
    constructor(private readonly rideStatisticService: RideStatisticService) {}
 

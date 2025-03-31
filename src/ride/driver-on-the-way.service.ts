@@ -20,6 +20,7 @@ import {
    EVENT_DRIVER_ON_THE_WAY,
    EVENT_DRIVER_ON_THE_WAY_POLYLINE,
 } from 'constants/event.constant'
+import { UserRole } from 'enums/profile.enum'
 
 export interface DriverOnTheWayDto {
    driverProfileId: string
@@ -122,11 +123,16 @@ export class DriverOnTheWayService implements OnModuleInit {
             },
          )
 
-         this.gateway.sendNotificationToAdmin(EVENT_DRIVER_ON_THE_WAY, {
-            ...rideDataUpdated,
-         })
+         this.gateway.sendNotificationToAdmin(
+            [UserRole.RIDER, UserRole.CALL_CENTER, UserRole.MANAGER_HUB],
+            EVENT_DRIVER_ON_THE_WAY,
+            {
+               ...rideDataUpdated,
+            },
+         )
 
          this.gateway.sendNotificationToAdmin(
+            [UserRole.RIDER, UserRole.CALL_CENTER, UserRole.MANAGER_HUB],
             EVENT_DRIVER_ON_THE_WAY_POLYLINE,
             {
                encodedPolyline,

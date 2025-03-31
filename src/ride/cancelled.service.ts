@@ -16,6 +16,7 @@ import {
 } from 'constants/error.constant'
 import { EVENT_CANCELLED_RIDE } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
+import { UserRole } from 'enums/profile.enum'
 import { RideStatus } from 'enums/ride.enum'
 import { RideData } from 'interfaces/ride.interface'
 import { Gateway } from 'src/gateway/gateway'
@@ -95,9 +96,18 @@ export class CancelledService {
                status: RideStatus.CANCELLED,
             },
          })
-         this.gateway.sendNotificationToAdmin(EVENT_CANCELLED_RIDE, {
-            ...parseRideData(rideUpdated),
-         })
+         this.gateway.sendNotificationToAdmin(
+            [
+               UserRole.RIDER,
+               UserRole.CALL_CENTER,
+               UserRole.MANAGER_HUB,
+               UserRole.SUPER_ADMIN,
+            ],
+            EVENT_CANCELLED_RIDE,
+            {
+               ...parseRideData(rideUpdated),
+            },
+         )
       } catch (error) {
          throw error
       }

@@ -5,6 +5,7 @@ import {
    Injectable,
    NotFoundException,
 } from '@nestjs/common'
+import { UserRole } from 'enums/profile.enum'
 import { EVENT_DRIVER_DESTINATION } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
@@ -87,9 +88,13 @@ export class ArrivedDestinationService {
             },
          )
 
-         this.gateway.sendNotificationToAdmin(EVENT_DRIVER_DESTINATION, {
-            ...rideDataUpdated,
-         })
+         this.gateway.sendNotificationToAdmin(
+            [UserRole.RIDER, UserRole.CALL_CENTER, UserRole.MANAGER_HUB],
+            EVENT_DRIVER_DESTINATION,
+            {
+               ...rideDataUpdated,
+            },
+         )
 
          return { ...rideDataUpdated }
       } catch (error) {

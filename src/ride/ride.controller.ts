@@ -35,8 +35,9 @@ import { AssignRideToDriverService } from './assign-ride-to-driver.service'
 import { ReviewRideService } from './review-ride.service'
 import { DeleteRideService } from './delete-ride.service'
 import { ProfileStatus } from '@prisma/client'
+import { ROUTE_RIDE } from 'routes/main-routes'
 
-@Controller('ride')
+@Controller(ROUTE_RIDE)
 export class RideController {
    constructor(
       private readonly createItineraryService: CreateItineraryService,

@@ -31,7 +31,7 @@ export class TransferService {
       private readonly gateway: Gateway,
    ) {}
 
-   async initTransfer(initTransferDto: InitTransferDto) {
+   async startTransfer(initTransferDto: InitTransferDto) {
       try {
          const transaction = await this.prismaService.$transaction(
             async (prisma) => {
@@ -113,7 +113,7 @@ export class TransferService {
                )
                await this.smsService.sendSMS(
                   [senderClientProfile.phoneNumber],
-                  `Dear ${senderClientProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${senderClientProfile.lastName} ${senderClientProfile.firstName}, your transaction code is : ${confirmationCode}`,
+                  `Your transaction code is : ${confirmationCode}`,
                )
                return {
                   reseiverId: reseiverClientProfile.sub,
@@ -130,7 +130,7 @@ export class TransferService {
       }
    }
 
-   async validationTransfer(clientProfileId: string, code: string) {
+   async confirmTransfer(clientProfileId: string, code: string) {
       try {
          const transferInfo: TransferRedisDataInterface = JSON.parse(
             await this.redisService.get(
@@ -251,7 +251,7 @@ export class TransferService {
                )
                await this.smsService.sendSMS(
                   [reseiverProfile.phoneNumber],
-                  `Dear ${reseiverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${reseiverProfile.lastName} ${reseiverProfile.firstName}, your reseave ${transferInfo.amount} Ar from ${senderProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${senderProfile.lastName} ${senderProfile.firstName}. The transaction code is ${transaction.reference.toString().padStart(6, '0')}`,
+                  `Dear ${reseiverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${reseiverProfile.lastName} ${reseiverProfile.firstName}, your reseave ${transferInfo.amount} Ar from ${senderProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${senderProfile.lastName} ${senderProfile.firstName}. The transaction reference is ${transaction.reference.toString().padStart(6, '0')}`,
                )
                await this.redisService.remove(
                   `${TRANSFER_VALIDATION}-${clientProfileId}`,
@@ -304,7 +304,7 @@ export class TransferService {
             })
          await this.smsService.sendSMS(
             [senderClientProfile.phoneNumber],
-            `Dear ${senderClientProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${senderClientProfile.lastName} ${senderClientProfile.firstName}, your transaction code is : ${transferInfo.code}`,
+            `Your transaction code is : ${transferInfo.code}`,
          )
       } catch (error) {
          throw error
