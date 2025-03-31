@@ -15,9 +15,10 @@ import { GetRapideBalanceService } from './get-rapide-balance.service'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { DriverBalanceService } from './driverBalance.service'
 import { ProfileStatus, UserRole } from '@prisma/client'
-import { SetRapideWalletInfoDto } from './dto/set-rapide-wallet-info.dto'
 import { RapideWalletService } from './rapide-wallet.service'
 import { UpdateRapideWalletStatusDto } from './dto/update-rapide-wallet-status.dto'
+import { SetRapideWalletInformationDto } from './dto/set-rapide-wallet-information.dto'
+import { ResendConfirmationCodeRapideWalletInformationDto } from './dto/resend-confirmation-code-rapide-wallet-information.dto'
 
 @Controller('rapideWallet')
 export class RapideWalletController {
@@ -64,18 +65,18 @@ export class RapideWalletController {
       return await this.driverBalanceService.getSold(profileId)
    }
 
-   @Patch('set-rapide-wallet-info')
+   @Patch('set-rapide-wallet-information')
    @SetMetadata('allowedRole', ['DRIVER', 'CLIENT'])
    @UseGuards(RolesGuard)
    async setInformation(
       @GetUser('sub') profileId: string,
-      @Body() setRapideWalletInfoDto: SetRapideWalletInfoDto,
+      @Body() setRapideWalletInfoDto: SetRapideWalletInformationDto,
       @GetUser('status') status: ProfileStatus,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return await this.rapideWalletService.setInformation(
+      return await this.rapideWalletService.setRapideWalletInformation(
          profileId,
          setRapideWalletInfoDto,
       )
@@ -88,14 +89,15 @@ export class RapideWalletController {
       @GetUser('sub') profileId: string,
       @GetUser('role') userRole: UserRole,
       @GetUser('status') status: ProfileStatus,
-      @Body() data: { code: string },
+      @Body() data: { phoneNumber: string; confirmationCode: string },
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return await this.rapideWalletService.validateInformation(
+      return await this.rapideWalletService.validateRapideWalletInformation(
          profileId,
-         data.code,
+         data.phoneNumber,
+         data.confirmationCode,
          userRole,
       )
    }
@@ -106,11 +108,12 @@ export class RapideWalletController {
    async resendCode(
       @GetUser('sub') profileId: string,
       @GetUser('status') status: ProfileStatus,
+      @Body() data: ResendConfirmationCodeRapideWalletInformationDto,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return await this.rapideWalletService.resendCode(profileId)
+      return await this.rapideWalletService.resendCode(profileId, data)
    }
 
    @Patch('update-status')

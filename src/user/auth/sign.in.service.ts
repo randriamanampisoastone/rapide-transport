@@ -11,6 +11,10 @@ import { RedisService } from 'src/redis/redis.service'
 import { ConfigService } from '@nestjs/config'
 import { AUTH_SIGN_IN_PREFIX } from 'constants/redis.constant'
 import { UserRole } from 'enums/profile.enum'
+import {
+   SPECIAL_ACCESS_OTP,
+   SPECIAL_ACCESS_PHONE_NUMBER,
+} from 'constants/access.constant'
 
 @Injectable()
 export class SignInService {
@@ -49,10 +53,13 @@ export class SignInService {
          }
 
          const secret = speakeasy.generateSecret({ length: 20 })
-         const confirmationCode = speakeasy.totp({
-            secret: secret.base32,
-            encoding: 'base32',
-         })
+         const confirmationCode =
+            signInDto.phoneNumber === SPECIAL_ACCESS_PHONE_NUMBER
+               ? SPECIAL_ACCESS_OTP
+               : speakeasy.totp({
+                    secret: secret.base32,
+                    encoding: 'base32',
+                 })
 
          let message: string = ''
 
@@ -66,7 +73,8 @@ export class SignInService {
             message = `您的登录 OTP 验证码是 : ${confirmationCode}`
          }
 
-         await this.smsService.sendSMS([signInDto.phoneNumber], message)
+         if (signInDto.phoneNumber !== SPECIAL_ACCESS_PHONE_NUMBER)
+            await this.smsService.sendSMS([signInDto.phoneNumber], message)
          const updateSignInDto = {
             attempt: 0,
             confirmationCode,

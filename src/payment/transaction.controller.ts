@@ -13,16 +13,10 @@ import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { DepositeDto } from './dto/deposite.dto'
 import { GetTransactionService } from './get-transacation.service'
-import {
-   MethodType,
-   ProfileStatus,
-   TransactionStatus,
-   UserRole,
-} from '@prisma/client'
-import { GetClientTransactionByAdminDto } from './dto/get-client-transaction-by-admin.dto'
+import { MethodType, ProfileStatus, TransactionStatus } from '@prisma/client'
 
-@Controller('payment')
-export class PaymentController {
+@Controller('transaction')
+export class TransactionController {
    constructor(
       private readonly depositeService: DepositeService,
       private readonly getTransactionService: GetTransactionService,
