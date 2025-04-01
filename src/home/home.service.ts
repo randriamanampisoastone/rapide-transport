@@ -17,7 +17,9 @@ export class HomeService {
 
    async addNewHome(createHomeDto: CreateHomeDto) {
       try {
-         return await this.prismaService.home.create({ data: { ...createHomeDto } })
+         return await this.prismaService.home.create({
+            data: { ...createHomeDto },
+         })
       } catch (error) {
          throw error
       }
