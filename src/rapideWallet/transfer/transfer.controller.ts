@@ -23,42 +23,44 @@ export class TransferController {
    constructor(private readonly transferService: TransferService) {}
 
    @Post(ROUTE_START_TRANSFER)
-   @SetMetadata('allowedRole', [UserRole.CLIENT])
+   @SetMetadata('allowedRole', [UserRole.CLIENT, UserRole.DRIVER])
    @UseGuards(RolesGuard)
    async startTransfer(
       @Body() initTransferDto: InitTransferDto,
       @GetUser('status') status: ProfileStatus,
+      @GetUser('role') role: UserRole,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return await this.transferService.startTransfer(initTransferDto)
+      return await this.transferService.startTransfer(initTransferDto, role)
    }
 
    @Post(ROUTE_CONFIRM_TRANSFER)
-   @SetMetadata('allowedRole', [UserRole.CLIENT])
+   @SetMetadata('allowedRole', [UserRole.CLIENT, UserRole.DRIVER])
    @UseGuards(RolesGuard)
    async confirmTransfer(
-      @GetUser('sub') clientProfileId: string,
+      @GetUser('sub') profileId: string,
       @Body('code') code: string,
       @GetUser('status') status: ProfileStatus,
+      @GetUser('role') role: UserRole,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return await this.transferService.confirmTransfer(clientProfileId, code)
+      return await this.transferService.confirmTransfer(profileId, code, role)
    }
 
    @Post(ROUTE_RESEND_CONFIRM_TRANSFER)
-   @SetMetadata('allowedRole', [UserRole.CLIENT])
+   @SetMetadata('allowedRole', [UserRole.CLIENT, UserRole.DRIVER])
    @UseGuards(RolesGuard)
    async resendCode(
-      @GetUser('sub') clientProfileId: string,
+      @GetUser('sub') profileId: string,
       @GetUser('status') status: ProfileStatus,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return await this.transferService.resendCode(clientProfileId)
+      return await this.transferService.resendCode(profileId)
    }
 }
