@@ -42,6 +42,8 @@ export class RapideWalletService {
       profileId: string,
       setRapideWalletInformationDto: SetRapideWalletInformationDto,
    ) {
+      console.log('ICIIII')
+
       try {
          const secret = speakeasy.generateSecret({ length: 20 })
          const confirmationCode =
