@@ -13,7 +13,7 @@ import { RedisService } from 'src/redis/redis.service'
 import { SmsService } from 'src/sms/sms.service'
 import { RAPIDE_WALLET_VALIDATION } from 'constants/redis.constant'
 import { RapideWalletInformationValidationInterface } from 'interfaces/rapide.wallet.interface'
-import { ConfigService } from '@nestjs/config' 
+import { ConfigService } from '@nestjs/config'
 import {
    SPECIAL_ACCESS_OTP,
    SPECIAL_ACCESS_PHONE_NUMBER,
@@ -316,14 +316,70 @@ export class RapideWalletService {
             userRole === UserRole.CLIENT
                ? { clientProfileId: profileId }
                : { driverProfileId: profileId }
-         return await this.prismaService.rapideWallet.findUnique({
-            where: condition,
-            omit: {
-               password: true,
-               idCardPhotoRecto: true,
-               idCardPhotoVerso: true,
+         const rapideWalletData =
+            await this.prismaService.rapideWallet.findUnique({
+               where: condition,
+               select: {
+                  driverProfile: {
+                     select: {
+                        status: true,
+                     },
+                  },
+                  clientProfile: {
+                     select: {
+                        status: true,
+                     },
+                  },
+                  rapideWalletId: true,
+                  status: true,
+                  balance: true,
+                  depositeCount: true,
+                  transferCount: true,
+                  transactionCount: true,
+                  paymentCount: true,
+                  successCount: true,
+                  failedCount: true,
+                  rejectedCount: true,
+                  idCard: true,
+                  updatedAt: true,
+               },
+            })
+
+         const updateUserProfile = {
+            sub: profileId,
+            role: userRole,
+            status:
+               userRole === UserRole.CLIENT
+                  ? rapideWalletData.clientProfile.status
+                  : rapideWalletData.driverProfile.status,
+            rapideWalletStatus: rapideWalletData.status,
+         }
+         const token = jwt.sign(
+            updateUserProfile,
+            userRole === UserRole.CLIENT
+               ? this.JWT_SECRET_CLIENT
+               : this.JWT_SECRET_DRIVER,
+            {
+               expiresIn: this.JWT_EXPIRES_IN,
             },
-         })
+         )
+         return {
+            rapideWallet: {
+               rapideWalletId: rapideWalletData.rapideWalletId,
+               status: rapideWalletData.status,
+               balance: rapideWalletData.balance,
+               depositeCount: rapideWalletData.depositeCount,
+               transferCount: rapideWalletData.transferCount,
+               transactionCount: rapideWalletData.transactionCount,
+               paymentCount: rapideWalletData.paymentCount,
+               successCount: rapideWalletData.successCount,
+               rejectedCount: rapideWalletData.rejectedCount,
+               failedCount: rapideWalletData.failedCount,
+               idCard: rapideWalletData.idCard,
+               updatedAt: rapideWalletData.updatedAt,
+            },
+            token,
+         }
       } catch (error) {
          throw error
       }

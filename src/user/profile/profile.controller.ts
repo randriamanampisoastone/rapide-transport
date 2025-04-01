@@ -5,7 +5,6 @@ import {
    Query,
    SetMetadata,
    UseGuards,
-   Delete,
    Patch,
    ForbiddenException,
 } from '@nestjs/common'
