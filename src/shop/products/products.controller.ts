@@ -231,8 +231,8 @@ export class ProductsController {
     @ApiOperation({summary: 'Add a product to favorites'})
     @Post('favorite/:productId')
     async addToFavorite(
-        @Param('productId') productId: string,
-        @GetUser('sub') userId: string
+        @GetUser('sub') userId: string,
+        @Param('productId') productId: string
     ) {
         return this.favoriteService.addToFavorites(userId, productId);
     }
@@ -242,8 +242,8 @@ export class ProductsController {
     @ApiOperation({summary: 'Remove a product from favorites'})
     @Delete('favorite/:productId')
     async removeFromFavorites(
-        @Param('productId') productId: string,
-        @GetUser('sub') userId: string
+        @GetUser('sub') userId: string,
+        @Param('productId') productId: string
     ) {
         return this.favoriteService.removeFromFavorite(userId, productId);
     }
