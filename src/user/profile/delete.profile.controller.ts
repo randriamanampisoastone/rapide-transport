@@ -10,24 +10,26 @@ import { DeleteProfileService } from './delete.profile.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { ConfirmDeleteProfileDto } from './dto/confirm.delete.profile.dto'
 import { ROUTE_DELETE_PROFILE } from 'routes/main-routes'
+import { ROUTE_BY_ADMIN, ROUTE_BY_CUSTOMER, ROUTE_CONFIRM_DELETE_INFORNATION, ROUTE_CONFIRM_DELETE_PROFILE, ROUTE_RESEND_CODE, ROUTE_SEND_DELETE_CODE_CONFIRNATION } from 'routes/secondary-routes'
+import { UserRole } from '@prisma/client'
 
 @Controller(ROUTE_DELETE_PROFILE)
 export class DeleteProfileController {
    constructor(private readonly deleteProfileService: DeleteProfileService) {}
 
-   @Delete('by-admin')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
+   @Delete(ROUTE_BY_ADMIN)
+   @SetMetadata('allowedRole', [UserRole.SUPER_ADMIN])
    @UseGuards(RolesGuard)
    async deleteProfileByAdmin(@Body('profileId') sub: string) {
       return await this.deleteProfileService.deleteProfileByAdmin(sub)
    }
 
-   @Post('by-customer')
+   @Post(ROUTE_BY_CUSTOMER)
    async deleteProfile(@Body('phoneNumber') phoneNumber: string) {
       return await this.deleteProfileService.deleteProfile(phoneNumber)
    }
 
-   @Post('confirm-delete-infornation')
+   @Post(ROUTE_CONFIRM_DELETE_INFORNATION)
    async confirmDeleteInformation(
       @Body() confirmDeleteProfileDto: ConfirmDeleteProfileDto,
    ) {
@@ -36,7 +38,7 @@ export class DeleteProfileController {
       )
    }
 
-   @Post('send-delete-code-confirnation')
+   @Post(ROUTE_SEND_DELETE_CODE_CONFIRNATION)
    async sendConfirmationCodeForDelete(
       @Body('clientProfileId') clientProfileId: string,
    ) {
@@ -45,7 +47,7 @@ export class DeleteProfileController {
       )
    }
 
-   @Delete('confirm-delete-profile')
+   @Delete(ROUTE_CONFIRM_DELETE_PROFILE)
    async connfirmDeleteProfile(
       @Body() confirmDeleteDto: ConfirmDeleteProfileDto,
    ) {
@@ -54,7 +56,7 @@ export class DeleteProfileController {
       )
    }
 
-   @Post('resend-code')
+   @Post(ROUTE_RESEND_CODE)
    async resendCode(@Body('clientProfileId') clientProfileId: string) {
       return await this.deleteProfileService.resendCode(clientProfileId)
    }

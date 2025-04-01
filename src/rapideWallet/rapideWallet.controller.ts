@@ -23,6 +23,7 @@ import { ROUTE_RAPIDE_WALLET } from 'routes/main-routes'
 import {
    ROUTE_CONFIRM_RAPIDE_WALLET_INFORMATION,
    ROUTE_GET_RAPIDE_BALANCE,
+   ROUTE_GET_RAPIDE_WALLET,
    ROUTE_GET_SOLDE,
    ROUTE_RESEND_CONFIRM_RAPIDE_WALLET_INFORMATION,
    ROUTE_RESET_DRIVER_BALANCE,
@@ -127,7 +128,11 @@ export class RapideWalletController {
    }
 
    @Patch(ROUTE_UPDATE_RAPIDE_WALLET_STATUS)
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FINANCE_MANAGER'])
+   @SetMetadata('allowedRole', [
+      UserRole.DEPOSITOR,
+      UserRole.SUPER_ADMIN,
+      UserRole.TREASURER,
+   ])
    @UseGuards(RolesGuard)
    async updateStatus(
       @Body() updateRapideWalletStatusDto: UpdateRapideWalletStatusDto,
@@ -142,8 +147,8 @@ export class RapideWalletController {
       )
    }
 
-   @Get('get-rapide-wallet')
-   @SetMetadata('allowedRole', ['CLIENT', 'DRIVER'])
+   @Get(ROUTE_GET_RAPIDE_WALLET)
+   @SetMetadata('allowedRole', [UserRole.DRIVER, UserRole.CLIENT])
    @UseGuards(RolesGuard)
    async getRapideWallete(
       @GetUser('sub') profileId: string,
