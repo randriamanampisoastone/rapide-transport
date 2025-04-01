@@ -1,5 +1,4 @@
 import {PrismaService} from "../../prisma/prisma.service";
-import {Cart} from "@prisma/client";
 import {AddCartItemDto} from "./dto/cart-item.dto";
 import {HttpException, HttpStatus} from "@nestjs/common";
 import {CART_NOT_FOUND, ERROR_REMOVING_CART} from "../../../constants/response.constant";
