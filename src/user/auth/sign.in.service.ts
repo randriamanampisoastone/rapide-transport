@@ -47,10 +47,10 @@ export class SignInService {
             encoding: 'base32',
          })
 
-         // await this.smsService.sendSMS(
-         //    [signInDto.phoneNumber],
-         //    `Your Rapide App OTP Code is : ${confirmationCode}`,
-         // )
+         await this.smsService.sendSMS(
+            [signInDto.phoneNumber],
+            `Your Rapide App OTP Code is : ${confirmationCode}`,
+         )
          const updateSignInDto = {
             attempt: 0,
             confirmationCode,
