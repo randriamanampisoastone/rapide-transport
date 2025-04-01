@@ -15,6 +15,8 @@ import { SmsService } from 'src/sms/sms.service'
 import { RapideWalletService } from './rapide-wallet.service'
 import { ConfigService } from '@nestjs/config'
 import { NotificationService } from 'src/notification/notification.service'
+import { TransferService } from './transfer/transfer.service'
+import { TransferController } from './transfer/transfer.controller'
 
 @Module({
    imports: [],
@@ -33,7 +35,12 @@ import { NotificationService } from 'src/notification/notification.service'
       SmsService,
       RapideWalletService,
       ConfigService,
+      TransferService,
    ],
-   controllers: [RapideWalletController, PasswordController],
+   controllers: [
+      RapideWalletController,
+      PasswordController,
+      TransferController,
+   ],
 })
 export class RapideWalletModule {}
