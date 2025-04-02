@@ -229,23 +229,27 @@ export class ProductsController {
     @SetMetadata('allowedRole', [UserRole.CLIENT])
     @UseGuards(RolesGuard)
     @ApiOperation({summary: 'Add a product to favorites'})
-    @Post('favorite/:productId')
+    @Post('favorite')
     async addToFavorite(
-        @GetUser('sub') userId: string,
-        @Param('productId') productId: string
+        @Body() favoriteDto: {
+            userId: string;
+            productId: string;
+        }
     ) {
-        return this.favoriteService.addToFavorites(userId, productId);
+        return this.favoriteService.addToFavorites(favoriteDto.userId, favoriteDto.productId);
     }
 
     @SetMetadata('allowedRole', [UserRole.CLIENT])
     @UseGuards(RolesGuard)
     @ApiOperation({summary: 'Remove a product from favorites'})
-    @Delete('favorite/:productId')
+    @Delete('favorite')
     async removeFromFavorites(
-        @GetUser('sub') userId: string,
-        @Param('productId') productId: string
+        @Body() favoriteDto: {
+            userId: string;
+            productId: string;
+        }
     ) {
-        return this.favoriteService.removeFromFavorite(userId, productId);
+        return this.favoriteService.removeFromFavorite(favoriteDto.userId, favoriteDto.productId);
     }
 
     @SetMetadata('allowedRole', [UserRole.CLIENT])
