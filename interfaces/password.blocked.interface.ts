@@ -1,4 +1,4 @@
 export interface PasswordBlockedInterface {
-    clientProfileId: string
-    attempt: number
+   clientProfileId: string
+   attempt: number
 }

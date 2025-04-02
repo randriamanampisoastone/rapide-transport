@@ -22,7 +22,7 @@ export class RidePaymentService {
       private readonly redisService: RedisService,
    ) {}
 
-   async initRapideWalletPayment(
+   async startPaymentWithRapideWallet(
       clientProfileId: string,
       initRapideWalletPayment: InitRapideWalletPayment,
    ) {
@@ -79,18 +79,18 @@ export class RidePaymentService {
          await this.redisService.set(
             `${PAYMENT_VALIDATION}-${clientProfileId}`,
             JSON.stringify(paymentValidation),
-            10 * 60,
+            15 * 60, // 15 minutes
          )
          await this.smsService.sendSMS(
             [clientProfile.profile.phoneNumber],
-            `Dear ${clientProfile.profile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${clientProfile.profile.lastName} ${clientProfile.profile.firstName}, your transaction code is : ${confirmationCode}`,
+            `Your transaction code is : ${confirmationCode}`,
          )
       } catch (error) {
          throw error
       }
    }
 
-   async validateRapideWalletPayment(clientProfileId: string, code: string) {
+   async confirmRapideWalletPayment(clientProfileId: string, code: string) {
       try {
          const paymentValidation: PaymentRideWalletInterface = JSON.parse(
             await this.redisService.get(
@@ -128,6 +128,45 @@ export class RidePaymentService {
             `${PAYMENT_VALIDATION}-${clientProfileId}`,
             JSON.stringify(paymentValidation),
             ttl,
+         )
+      } catch (error) {
+         throw error
+      }
+   }
+
+   async resendConfirmRapideWalletPayment(clientProfileId: string) {
+      try {
+         const paymentValidation: PaymentRideWalletInterface = JSON.parse(
+            await this.redisService.get(
+               `${PAYMENT_VALIDATION}-${clientProfileId}`,
+            ),
+         )
+         if (!paymentValidation) {
+            throw new NotFoundException(
+               'Ride payment with rapide wallet not found',
+            )
+         }
+         const secret = speakeasy.generateSecret({ length: 20 })
+         const confirmationCode = speakeasy.totp({
+            secret: secret.base32,
+            encoding: 'base32',
+         })
+         paymentValidation.code = confirmationCode
+         const ttl = await this.redisService.ttl(
+            `${PAYMENT_VALIDATION}-${clientProfileId}`,
+         )
+         await this.redisService.set(
+            `${PAYMENT_VALIDATION}-${clientProfileId}`,
+            JSON.stringify(paymentValidation),
+            ttl,
+         )
+         const clientProfile = await this.prismaService.profile.findUnique({
+            where: { sub: clientProfileId },
+            select: { phoneNumber: true },
+         })
+         await this.smsService.sendSMS(
+            [clientProfile.phoneNumber],
+            `Your transaction code is : ${paymentValidation.code}`,
          )
       } catch (error) {
          throw error
@@ -194,35 +233,24 @@ export class RidePaymentService {
                      },
                   },
                })
-               const driverRapideWallet = await prisma.rapideWallet.update({
-                  where: { driverProfileId: paymentValidation.to },
-                  data: {
-                     balance: { decrement: realPrice },
-                     transactionCount: { increment: 1 },
-                     successCount: { increment: 1 },
-                  },
+               const driverProfile = await prisma.profile.findUnique({
+                  where: { sub: paymentValidation.to },
                   select: {
-                     driverProfile: {
-                        select: {
-                           profile: {
-                              select: {
-                                 gender: true,
-                                 phoneNumber: true,
-                                 firstName: true,
-                                 lastName: true,
-                              },
-                           },
-                        },
-                     },
+                     firstName: true,
+                     lastName: true,
+                     gender: true,
+                     phoneNumber: true,
                   },
                })
-               await prisma.transaction.create({
+               await prisma.rapideBalance.updateMany({
+                  data: { ride: { increment: realPrice } },
+               })
+               const transaction = await prisma.transaction.create({
                   data: {
                      from: clientProfileId,
-                     to: paymentValidation.to,
+                     to: 'RAPIDE BALANCE',
                      amount: realPrice,
                      clientProfiles: { connect: { clientProfileId } },
-                     driverProfileId: paymentValidation.to,
                      status: TransactionStatus.SUCCESS,
                      type: TransactionType.PAYMENT,
                      method: MethodType.RAPIDE_WALLET,
@@ -230,21 +258,22 @@ export class RidePaymentService {
                   },
                })
                const clientProfile = clientRapideWallet.clientProfile.profile
-               const driverProfile = driverRapideWallet.driverProfile.profile
-               await this.smsService.sendSMS(
-                  [clientProfile.phoneNumber],
-                  `${realPrice} has been transfered to ${driverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${driverProfile.lastName} ${driverProfile.firstName}`,
-               )
-               await this.smsService.sendSMS(
-                  [driverProfile.phoneNumber],
-                  `${clientProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${clientProfile.lastName} ${clientProfile.firstName} transfered you ${realPrice}`,
-               )
                await this.redisService.remove(
                   `${PAYMENT_VALIDATION}-${clientProfileId}`,
                )
+               return { transaction, clientProfile, driverProfile }
             },
          )
-         return transaction
+         const { clientProfile, driverProfile, ...response } = transaction
+         await this.smsService.sendSMS(
+            [clientProfile.phoneNumber],
+            `${realPrice} Ar has been transferred to RAPIDE for this ride with ${driverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${driverProfile.lastName} ${driverProfile.firstName}. Your transaction reference is ${response.transaction.reference.toString().padStart(6, '0')}.`,
+         )
+         await this.smsService.sendSMS(
+            [driverProfile.phoneNumber],
+            `Dear ${driverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${driverProfile.lastName} ${driverProfile.firstName}, ${realPrice} Ar has been transferred to RAPIDE for this ride on behalf of ${clientProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${clientProfile.lastName} ${clientProfile.firstName}. The transaction reference is ${response.transaction.reference.toString().padStart(6, '0')}.`,
+         )
+         return response
       } catch (error) {
          throw error
       }

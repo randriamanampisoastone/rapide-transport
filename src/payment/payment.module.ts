@@ -8,17 +8,17 @@ import { LocationService } from 'src/gateway/location/location.service'
 import { InfoOnRideService } from 'src/ride/info-on-ride.service'
 import { CheckRideService } from 'src/ride/check-ride.service'
 
-import { TransferController } from './transfer.controller'
-import { TransferService } from './transfer.service'
-
 import { RidePaymentController } from './ride-payment/ride-payment.controller'
 import { RidePaymentService } from './ride-payment/ride-payment.service'
-import { PaymentController } from './payment.controller'
+import { TransactionController } from './transaction.controller'
 import { GetTransactionService } from './get-transacation.service'
 import { NotificationService } from 'src/notification/notification.service'
 
 @Module({
-   controllers: [PaymentController, TransferController, RidePaymentController],
+   controllers: [
+      TransactionController,
+      RidePaymentController,
+   ],
    providers: [
       DepositeService,
       PrismaService,
@@ -29,7 +29,6 @@ import { NotificationService } from 'src/notification/notification.service'
       NotificationService,
       InfoOnRideService,
       CheckRideService,
-      TransferService,
       RidePaymentService,
       GetTransactionService,
    ],

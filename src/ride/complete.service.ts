@@ -16,6 +16,7 @@ import { Gateway } from 'src/gateway/gateway'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
 import { RidePaymentService } from 'src/payment/ride-payment/ride-payment.service'
+import { UserRole } from 'enums/profile.enum'
 
 export interface CompleteDto {
    driverProfileId: string
@@ -113,8 +114,14 @@ export class CompleteService {
          })
 
          // Payment
-
+         console.log(rideData.methodType)
          if (rideData.methodType === MethodType.CASH) {
+            console.log(
+               rideData.clientProfileId,
+               rideData.driverProfileId,
+               rideInvoice.rideInvoiceId,
+               Math.round(rideData.realPrice),
+            )
             await this.ridePaymentService.cashPayment(
                rideData.clientProfileId,
                rideData.driverProfileId,
@@ -132,13 +139,18 @@ export class CompleteService {
          const dailyRideComplet = await this.redisService.newDailyRideComplet(
             rideData.rideId,
          )
-         this.gateway.sendNotificationToAdmin(EVENT_RIDE_COMPLETED, {
-            rideId: rideData.rideId,
-            ...dailyRideComplet,
-         })
+         this.gateway.sendNotificationToAdmin(
+            [UserRole.RIDER, UserRole.CALL_CENTER, UserRole.MANAGER_HUB],
+            EVENT_RIDE_COMPLETED,
+            {
+               rideId: rideData.rideId,
+               ...dailyRideComplet,
+            },
+         )
 
          await this.redisService.remove(`${RIDE_PREFIX + rideId}`)
 
+         console.log('red completed and successfully deleted')
          return { ...rideData }
       } catch (error) {
          throw new InternalServerErrorException('Error completing ride')

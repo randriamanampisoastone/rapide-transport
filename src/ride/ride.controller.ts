@@ -34,9 +34,31 @@ import { CheckRideService } from './check-ride.service'
 import { AssignRideToDriverService } from './assign-ride-to-driver.service'
 import { ReviewRideService } from './review-ride.service'
 import { DeleteRideService } from './delete-ride.service'
-import { ProfileStatus } from '@prisma/client'
+import { ProfileStatus, UserRole } from '@prisma/client'
+import { ROUTE_RIDE } from 'routes/main-routes'
+import {
+   ROUTE_ARRIVED_DESTINATION,
+   ROUTE_ASSIGN_RIDE_TO_DRIVER,
+   ROUTE_CANCELLED,
+   ROUTE_CHECK_CLIENT_RIDE,
+   ROUTE_CHECK_DRIVER_RIDE,
+   ROUTE_CLIENT_GIVE_UP,
+   ROUTE_CLIENT_NOT_FOUND,
+   ROUTE_COMPLETE,
+   ROUTE_CREATE_ITINERARY,
+   ROUTE_CREATE_RIDE,
+   ROUTE_DELETE_RIDE,
+   ROUTE_DRIVER_ACCEPT,
+   ROUTE_DRIVER_ARRIVED,
+   ROUTE_DRIVER_ON_THE_WAY,
+   ROUTE_FIND_RIDE_BY_ID_REDIS,
+   ROUTE_REVIEW,
+   ROUTE_SEND_REVIEW,
+   ROUTE_START,
+   ROUTE_STOPPED,
+} from 'routes/secondary-routes'
 
-@Controller('ride')
+@Controller(ROUTE_RIDE)
 export class RideController {
    constructor(
       private readonly createItineraryService: CreateItineraryService,
@@ -62,8 +84,8 @@ export class RideController {
       private readonly deleteRideService: DeleteRideService,
    ) {}
 
-   @Post('create-itinerary')
-   @SetMetadata('allowedRole', ['CLIENT'])
+   @Post(ROUTE_CREATE_ITINERARY)
+   @SetMetadata('allowedRole', [UserRole.CLIENT])
    @UseGuards(RolesGuard)
    createItinerary(
       @Body()
@@ -80,8 +102,8 @@ export class RideController {
       })
    }
 
-   @Post('create-ride')
-   @SetMetadata('allowedRole', ['CLIENT'])
+   @Post(ROUTE_CREATE_RIDE)
+   @SetMetadata('allowedRole', [UserRole.CLIENT])
    @UseGuards(RolesGuard)
    createRide(
       @Body()
@@ -104,8 +126,8 @@ export class RideController {
       })
    }
 
-   @Post('cancelled')
-   @SetMetadata('allowedRole', ['CLIENT'])
+   @Post(ROUTE_CANCELLED)
+   @SetMetadata('allowedRole', [UserRole.CLIENT])
    @UseGuards(RolesGuard)
    cancelled(
       @Body() { rideId }: { rideId: string },
@@ -118,22 +140,26 @@ export class RideController {
       return this.cancelledService.cancelled({ rideId, clientProfileId })
    }
 
-   @Post('driver-accept')
-   @SetMetadata('allowedRole', ['DRIVER'])
+   @Post(ROUTE_DRIVER_ACCEPT)
+   @SetMetadata('allowedRole', [UserRole.DRIVER])
    @UseGuards(RolesGuard)
    driverAccept(
-      @Body() { rideId }: { rideId: string },
+      @Body() { rideId, plateNumber }: { rideId: string; plateNumber: string },
       @GetUser('sub') driverProfileId: string,
       @GetUser('status') status: ProfileStatus,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return this.driverAcceptService.driverAccept({ driverProfileId, rideId })
+      return this.driverAcceptService.driverAccept({
+         driverProfileId,
+         rideId,
+         plateNumber,
+      })
    }
 
-   @Post('driver-on-the-way')
-   @SetMetadata('allowedRole', ['DRIVER'])
+   @Post(ROUTE_DRIVER_ON_THE_WAY)
+   @SetMetadata('allowedRole', [UserRole.DRIVER])
    @UseGuards(RolesGuard)
    driverOnTheWay(
       @Body() data: { rideId: string; driverLocation: LatLng },
@@ -149,8 +175,8 @@ export class RideController {
       })
    }
 
-   @Post('stopped')
-   @SetMetadata('allowedRole', ['CLIENT'])
+   @Post(ROUTE_STOPPED)
+   @SetMetadata('allowedRole', [UserRole.CLIENT])
    @UseGuards(RolesGuard)
    stopped(
       @Body() { rideId }: { rideId: string },
@@ -163,8 +189,8 @@ export class RideController {
       return this.stoppedService.clientStopped({ rideId, clientProfileId })
    }
 
-   @Post('driver-arrived')
-   @SetMetadata('allowedRole', ['DRIVER'])
+   @Post(ROUTE_DRIVER_ARRIVED)
+   @SetMetadata('allowedRole', [UserRole.DRIVER])
    @UseGuards(RolesGuard)
    drivertArrived(
       @Body() { rideId }: { rideId: string },
@@ -180,8 +206,8 @@ export class RideController {
       })
    }
 
-   @Post('client-not-found')
-   @SetMetadata('allowedRole', ['DRIVER'])
+   @Post(ROUTE_CLIENT_NOT_FOUND)
+   @SetMetadata('allowedRole', [UserRole.DRIVER])
    @UseGuards(RolesGuard)
    clientNotFound(
       @Body() { rideId }: { rideId: string },
@@ -197,8 +223,8 @@ export class RideController {
       })
    }
 
-   @Post('start')
-   @SetMetadata('allowedRole', ['DRIVER'])
+   @Post(ROUTE_START)
+   @SetMetadata('allowedRole', [UserRole.DRIVER])
    @UseGuards(RolesGuard)
    start(
       @Body() { rideId }: { rideId: string },
@@ -214,8 +240,8 @@ export class RideController {
       })
    }
 
-   @Post('client-give-up')
-   @SetMetadata('allowedRole', ['CLIENT'])
+   @Post(ROUTE_CLIENT_GIVE_UP)
+   @SetMetadata('allowedRole', [UserRole.CLIENT])
    @UseGuards(RolesGuard)
    clientGiveUp(
       @Body() { rideId }: { rideId: string },
@@ -228,8 +254,8 @@ export class RideController {
       return this.clientGiveUpService.clientGiveUp({ rideId, clientProfileId })
    }
 
-   @Post('arrived-destination')
-   @SetMetadata('allowedRole', ['DRIVER'])
+   @Post(ROUTE_ARRIVED_DESTINATION)
+   @SetMetadata('allowedRole', [UserRole.DRIVER])
    @UseGuards(RolesGuard)
    arrivedDestination(
       @Body() { rideId }: { rideId: string },
@@ -245,8 +271,8 @@ export class RideController {
       })
    }
 
-   @Post('complete')
-   @SetMetadata('allowedRole', ['DRIVER'])
+   @Post(ROUTE_COMPLETE)
+   @SetMetadata('allowedRole', [UserRole.DRIVER])
    @UseGuards(RolesGuard)
    complete(
       @Body() { rideId }: { rideId: string },
@@ -262,8 +288,8 @@ export class RideController {
       })
    }
 
-   @Post('review')
-   @SetMetadata('allowedRole', ['CLIENT'])
+   @Post(ROUTE_REVIEW)
+   @SetMetadata('allowedRole', [UserRole.CLIENT])
    @UseGuards(RolesGuard)
    review(
       @Body()
@@ -280,14 +306,15 @@ export class RideController {
       }
       return this.reviewService.review({ clientProfileId, ...data })
    }
-   @Get('find-ride-by-id-redis')
+
+   @Get(ROUTE_FIND_RIDE_BY_ID_REDIS)
    @UseGuards(RolesGuard)
    findRide(@Query('rideId') rideId: string) {
       return this.getRideService.getRideRedis(rideId)
    }
 
-   @Get('check-client-ride')
-   @SetMetadata('allowedRole', ['CLIENT'])
+   @Get(ROUTE_CHECK_CLIENT_RIDE)
+   @SetMetadata('allowedRole', [UserRole.CLIENT])
    @UseGuards(RolesGuard)
    checkClientRide(
       @GetUser('sub') clientProfileId: string,
@@ -299,8 +326,8 @@ export class RideController {
       return this.checkRideService.checkClientRide(clientProfileId)
    }
 
-   @Get('check-driver-ride')
-   @SetMetadata('allowedRole', ['DRIVER'])
+   @Get(ROUTE_CHECK_DRIVER_RIDE)
+   @SetMetadata('allowedRole', [UserRole.DRIVER])
    @UseGuards(RolesGuard)
    checkDriverRide(
       @GetUser('sub') driverProfileId: string,
@@ -312,8 +339,13 @@ export class RideController {
       return this.checkRideService.checkDriverRide(driverProfileId)
    }
 
-   @Patch('assign-ride-to-driver')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FLEET_MANAGER'])
+   @Patch(ROUTE_ASSIGN_RIDE_TO_DRIVER)
+   @SetMetadata('allowedRole', [
+      UserRole.RIDER,
+      UserRole.SUPER_ADMIN,
+      UserRole.MANAGER_HUB,
+      UserRole.CALL_CENTER,
+   ])
    @UseGuards(RolesGuard)
    assignRideToDriver(
       @Query('driverProfileId') driverProfileId: string,
@@ -325,8 +357,8 @@ export class RideController {
       )
    }
 
-   @Patch('send-review')
-   @SetMetadata('allowedRole', ['CLIENT'])
+   @Patch(ROUTE_SEND_REVIEW)
+   @SetMetadata('allowedRole', [UserRole.CLIENT])
    @UseGuards(RolesGuard)
    reviewRide(
       @GetUser('sub') clientProfileId: string,
@@ -350,8 +382,13 @@ export class RideController {
       )
    }
 
-   @Delete('delete-ride')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FLEET_MANAGER'])
+   @Delete(ROUTE_DELETE_RIDE)
+   @SetMetadata('allowedRole', [
+      UserRole.RIDER,
+      UserRole.SUPER_ADMIN,
+      UserRole.MANAGER_HUB,
+      UserRole.CALL_CENTER,
+   ])
    @UseGuards(RolesGuard)
    deleteRide(@Query('rideId') rideId: string) {
       return this.deleteRideService.deleteRide(rideId)

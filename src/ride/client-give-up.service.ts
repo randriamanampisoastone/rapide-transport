@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common'
 import { EVENT_CLIENT_GIVE_UP } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
+import { UserRole } from 'enums/profile.enum'
 import { RideStatus } from 'enums/ride.enum'
 import { RideData } from 'interfaces/ride.interface'
 import { Gateway } from 'src/gateway/gateway'
@@ -81,9 +82,18 @@ export class ClientGiveUpService {
             EVENT_CLIENT_GIVE_UP,
             {},
          )
-         this.gateway.sendNotificationToAdmin(EVENT_CLIENT_GIVE_UP, {
-            ...rideDataUpdated,
-         })
+         this.gateway.sendNotificationToAdmin(
+            [
+               UserRole.RIDER,
+               UserRole.CALL_CENTER,
+               UserRole.MANAGER_HUB,
+               UserRole.SUPER_ADMIN,
+            ],
+            EVENT_CLIENT_GIVE_UP,
+            {
+               ...rideDataUpdated,
+            },
+         )
       } catch (error) {
          // throw error
          throw new HttpException(error.message, error.status)

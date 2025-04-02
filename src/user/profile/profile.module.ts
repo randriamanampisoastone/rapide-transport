@@ -6,17 +6,28 @@ import { RedisService } from 'src/redis/redis.service'
 import { GoogleAuthService } from '../auth/google.auth.service'
 import { UpdateProfileService } from './update.profile.service'
 import { DeleteProfileService } from './delete.profile.service'
+import { DeleteProfileController } from './delete.profile.controller'
+import { Gateway } from 'src/gateway/gateway'
+import { SmsService } from 'src/sms/sms.service'
+import { LocationService } from 'src/gateway/location/location.service'
+import { NotificationService } from 'src/notification/notification.service'
+import { InfoOnRideService } from 'src/ride/info-on-ride.service'
 
 @Module({
    imports: [],
-   controllers: [ProfileController],
+   controllers: [ProfileController, DeleteProfileController],
    providers: [
       GetProfileService,
       PrismaService,
       RedisService,
       GoogleAuthService,
       UpdateProfileService,
-      DeleteProfileService
+      DeleteProfileService,
+      Gateway,
+      SmsService,
+      LocationService,
+      NotificationService,
+      InfoOnRideService,
    ],
 })
 export class ProfileModule {}

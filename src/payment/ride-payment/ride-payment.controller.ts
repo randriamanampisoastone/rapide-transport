@@ -10,16 +10,22 @@ import { RidePaymentService } from './ride-payment.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { InitRapideWalletPayment } from './dto/initRapideWalletPayment.dto'
-import { ProfileStatus } from '@prisma/client'
+import { ProfileStatus, UserRole } from '@prisma/client'
+import { ROUTE_PAYMENT_RIDE } from 'routes/main-routes'
+import {
+   ROUTE_CONFIRM_PAYMENT_WITH_RAPIDE_WALLET,
+   ROUTE_RESEND_CONFIRM_PAYMENT_WITH_RAPIDE_WALLET,
+   ROUTE_START_PAYMENT_WITH_RAPIDE_WALLET,
+} from 'routes/secondary-routes'
 
-@Controller('ride-payment')
+@Controller(ROUTE_PAYMENT_RIDE)
 export class RidePaymentController {
    constructor(private readonly ridePaymentService: RidePaymentService) {}
 
-   @Post('init-rapide-wallet-payment')
-   @SetMetadata('allowedRole', ['CLIENT'])
+   @Post(ROUTE_START_PAYMENT_WITH_RAPIDE_WALLET)
+   @SetMetadata('allowedRole', [UserRole.CLIENT])
    @UseGuards(RolesGuard)
-   async initRapideWalletPayment(
+   async startPaymentWithRapideWallet(
       @GetUser('sub') clientProfileId: string,
       @Body() initRapideWalletPayment: InitRapideWalletPayment,
       @GetUser('status') status: ProfileStatus,
@@ -27,22 +33,41 @@ export class RidePaymentController {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('Account is not activate')
       }
-      return await this.ridePaymentService.initRapideWalletPayment(
+      return await this.ridePaymentService.startPaymentWithRapideWallet(
          clientProfileId,
          initRapideWalletPayment,
       )
    }
 
-   @Post('validate-rapide-wallet-payment')
-   @SetMetadata('allowedRole', ['CLIENT'])
+   @Post(ROUTE_CONFIRM_PAYMENT_WITH_RAPIDE_WALLET)
+   @SetMetadata('allowedRole', [UserRole.CLIENT])
    @UseGuards(RolesGuard)
-   async validateRapideWalletPayment(
+   async confirmRapideWalletPayment(
       @GetUser('sub') clientProfileId: string,
       @Body('code') code: string,
+      @GetUser('status') status: ProfileStatus,
    ) {
-      return await this.ridePaymentService.validateRapideWalletPayment(
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('Account is not activate')
+      }
+      return await this.ridePaymentService.confirmRapideWalletPayment(
          clientProfileId,
          code,
+      )
+   }
+
+   @Post(ROUTE_RESEND_CONFIRM_PAYMENT_WITH_RAPIDE_WALLET)
+   @SetMetadata('allowedRole', [UserRole.CLIENT])
+   @UseGuards(RolesGuard)
+   async resendConfirmPaymentWithRapideWallet(
+      @GetUser('sub') clientProfileId: string,
+      @GetUser('status') status: ProfileStatus,
+   ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('Account is not activate')
+      }
+      return await this.ridePaymentService.resendConfirmRapideWalletPayment(
+         clientProfileId,
       )
    }
 }

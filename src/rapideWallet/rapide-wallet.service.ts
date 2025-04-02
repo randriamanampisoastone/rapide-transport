@@ -4,7 +4,7 @@ import {
    NotFoundException,
 } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { SetRapideWalletInfoDto } from './dto/set-rapide-wallet-info.dto'
+import { SetRapideWalletInformationDto } from './dto/set-rapide-wallet-information.dto'
 import * as bcrypt from 'bcrypt'
 import * as speakeasy from 'speakeasy'
 import * as jwt from 'jsonwebtoken'
@@ -12,8 +12,13 @@ import { GenderType, RapideWalletStatus, UserRole } from '@prisma/client'
 import { RedisService } from 'src/redis/redis.service'
 import { SmsService } from 'src/sms/sms.service'
 import { RAPIDE_WALLET_VALIDATION } from 'constants/redis.constant'
-import { SetRapideWalletInfoValidationInterface } from 'interfaces/set.rapide.wallet.info.validation.interface'
+import { RapideWalletInformationValidationInterface } from 'interfaces/rapide.wallet.interface'
 import { ConfigService } from '@nestjs/config'
+import {
+   SPECIAL_ACCESS_OTP,
+   SPECIAL_ACCESS_PHONE_NUMBER,
+} from 'constants/access.constant'
+import { ResendConfirmationCodeRapideWalletInformationDto } from './dto/resend-confirmation-code-rapide-wallet-information.dto'
 
 @Injectable()
 export class RapideWalletService {
@@ -33,28 +38,47 @@ export class RapideWalletService {
       this.JWT_EXPIRES_IN = this.configService.get<string>('JWT_EXPIRES_IN')
    }
 
-   async setInformation(
+   async setRapideWalletInformation(
       profileId: string,
-      setRapideWalletInfoDto: SetRapideWalletInfoDto,
+      setRapideWalletInformationDto: SetRapideWalletInformationDto,
    ) {
+      console.log('ICIIII')
+
       try {
-         const userProfile = await this.prismaService.profile.findUnique({
-            where: { sub: profileId },
-            select: {
-               gender: true,
-               phoneNumber: true,
-               firstName: true,
-               lastName: true,
-            },
-         })
          const secret = speakeasy.generateSecret({ length: 20 })
-         const confirmationCode = speakeasy.totp({
-            secret: secret.base32,
-            encoding: 'base32',
-         })
-         const dataOnRedis: SetRapideWalletInfoValidationInterface = {
-            ...setRapideWalletInfoDto,
-            code: confirmationCode,
+         const confirmationCode =
+            setRapideWalletInformationDto.phoneNumber ===
+            SPECIAL_ACCESS_PHONE_NUMBER
+               ? SPECIAL_ACCESS_OTP
+               : speakeasy.totp({
+                    secret: secret.base32,
+                    encoding: 'base32',
+                 })
+
+         let message: string = ''
+
+         if (setRapideWalletInformationDto.locale === 'fr') {
+            message = ` Votre code OTP pour la validation est : ${confirmationCode}`
+         } else if (setRapideWalletInformationDto.locale === 'mg') {
+            message = ` Indro ny kaody OTP afahanao manamarina : ${confirmationCode}`
+         } else if (setRapideWalletInformationDto.locale === 'en') {
+            message = `Your OTP code for validation is : ${confirmationCode}`
+         } else if (setRapideWalletInformationDto.locale === 'zh') {
+            message = `您的 OTP 验证码 : ${confirmationCode}`
+         }
+
+         if (
+            setRapideWalletInformationDto.phoneNumber !==
+            SPECIAL_ACCESS_PHONE_NUMBER
+         )
+            await this.smsService.sendSMS(
+               [setRapideWalletInformationDto.phoneNumber],
+               message,
+            )
+
+         const dataOnRedis: RapideWalletInformationValidationInterface = {
+            ...setRapideWalletInformationDto,
+            confirmationCode,
             attempt: 3,
          }
          await this.redisService.set(
@@ -62,41 +86,41 @@ export class RapideWalletService {
             JSON.stringify(dataOnRedis),
             10 * 60,
          )
-         await this.smsService.sendSMS(
-            [userProfile.phoneNumber],
-            `Dear ${userProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${userProfile.lastName} ${userProfile.firstName}, your validation code is : ${confirmationCode}`,
-         )
       } catch (error) {
          throw error
       }
    }
 
-   async validateInformation(
+   async confirmRapideWalletInformation(
       profileId: string,
-      code: string,
+      phoneNumber: string,
+      confirmationCode: string,
       userRole: UserRole,
    ) {
       try {
-         const rapideWalletInfo: SetRapideWalletInfoValidationInterface =
-            JSON.parse(
-               await this.redisService.get(
-                  `${RAPIDE_WALLET_VALIDATION}-${profileId}`,
-               ),
+         const rapideWalletInformationString: string =
+            await this.redisService.get(
+               `${RAPIDE_WALLET_VALIDATION}-${profileId}`,
             )
+         if (!rapideWalletInformationString) {
+            throw new NotFoundException('Timeout expired')
+         }
+         const rapideWalletInformation: RapideWalletInformationValidationInterface =
+            JSON.parse(rapideWalletInformationString)
 
-         if (code !== rapideWalletInfo.code) {
-            if (rapideWalletInfo.attempt > 1) {
-               rapideWalletInfo.attempt--
+         if (confirmationCode !== rapideWalletInformation.confirmationCode) {
+            if (rapideWalletInformation.attempt > 1) {
+               rapideWalletInformation.attempt--
                const ttl = await this.redisService.ttl(
                   `${RAPIDE_WALLET_VALIDATION}-${profileId}`,
                )
                await this.redisService.set(
                   `${RAPIDE_WALLET_VALIDATION}-${profileId}`,
-                  JSON.stringify(rapideWalletInfo),
+                  JSON.stringify(rapideWalletInformation),
                   ttl,
                )
                throw new BadRequestException(
-                  `Incorrect OTP code. You have ${rapideWalletInfo.attempt} attempt left.`,
+                  `Incorrect OTP code. You have ${rapideWalletInformation.attempt} attempt left.`,
                )
             } else {
                await this.redisService.remove(
@@ -107,23 +131,28 @@ export class RapideWalletService {
                )
             }
          }
+
          const salt = await bcrypt.genSalt(10, 'a')
          const hashedPassword = await bcrypt.hash(
-            rapideWalletInfo.password,
+            rapideWalletInformation.password,
             salt,
          )
          const condition =
             userRole === UserRole.CLIENT
                ? { clientProfileId: profileId }
                : { driverProfileId: profileId }
+
          const rapideWallet = await this.prismaService.rapideWallet.update({
             where: condition,
             data: {
-               idCard: rapideWalletInfo.idCard,
-               idCardPhotoRecto: rapideWalletInfo.idCardPhotoRecto,
-               idCardPhotoVerso: rapideWalletInfo.idCardPhotoVerso,
+               idCard: rapideWalletInformation.idCard,
+               idCardPhotoRecto: rapideWalletInformation.idCardPhotoRecto,
+               idCardPhotoVerso: rapideWalletInformation.idCardPhotoVerso,
                password: hashedPassword,
-               status: RapideWalletStatus.PENDING,
+               status:
+                  phoneNumber === SPECIAL_ACCESS_PHONE_NUMBER
+                     ? RapideWalletStatus.ACTIVE
+                     : RapideWalletStatus.PENDING,
             },
             select: {
                driverProfile: {
@@ -139,9 +168,11 @@ export class RapideWalletService {
                status: true,
             },
          })
+
          await this.redisService.remove(
             `${RAPIDE_WALLET_VALIDATION}-${profileId}`,
          )
+
          const updateUserProfile = {
             sub: profileId,
             role: userRole,
@@ -166,43 +197,66 @@ export class RapideWalletService {
       }
    }
 
-   async resendCode(profileId: string) {
+   async resendCode(
+      profileId: string,
+      resendConfirmationCodeRapideWalletInformationDto: ResendConfirmationCodeRapideWalletInformationDto,
+   ) {
       try {
-         const rapideWalletInfo: SetRapideWalletInfoValidationInterface =
-            JSON.parse(
-               await this.redisService.get(
-                  `${RAPIDE_WALLET_VALIDATION}-${profileId}`,
-               ),
+         const rapideWalletInformationString: string =
+            await this.redisService.get(
+               `${RAPIDE_WALLET_VALIDATION}-${profileId}`,
             )
-         if (!rapideWalletInfo) {
+         if (!rapideWalletInformationString) {
             throw new NotFoundException('Timeout expired')
          }
-         const profile = await this.prismaService.profile.findUnique({
-            where: { sub: profileId },
-            select: {
-               gender: true,
-               phoneNumber: true,
-               firstName: true,
-               lastName: true,
-            },
-         })
+         const rapideWalletInformation: RapideWalletInformationValidationInterface =
+            JSON.parse(rapideWalletInformationString)
+
          const secret = speakeasy.generateSecret({ length: 20 })
-         const confirmationCode = speakeasy.totp({
-            secret: secret.base32,
-            encoding: 'base32',
-         })
-         rapideWalletInfo.code = confirmationCode
+         const confirmationCode =
+            resendConfirmationCodeRapideWalletInformationDto.phoneNumber ===
+            SPECIAL_ACCESS_PHONE_NUMBER
+               ? SPECIAL_ACCESS_OTP
+               : speakeasy.totp({
+                    secret: secret.base32,
+                    encoding: 'base32',
+                 })
+
+         let message: string = ''
+
+         if (resendConfirmationCodeRapideWalletInformationDto.locale === 'fr') {
+            message = ` Votre code OTP pour la validation est : ${confirmationCode}`
+         } else if (
+            resendConfirmationCodeRapideWalletInformationDto.locale === 'mg'
+         ) {
+            message = ` Indro ny kaody OTP afahanao manamarina : ${confirmationCode}`
+         } else if (
+            resendConfirmationCodeRapideWalletInformationDto.locale === 'en'
+         ) {
+            message = `Your OTP code for validation is : ${confirmationCode}`
+         } else if (
+            resendConfirmationCodeRapideWalletInformationDto.locale === 'zh'
+         ) {
+            message = `您的 OTP 验证码 : ${confirmationCode}`
+         }
+
+         if (
+            resendConfirmationCodeRapideWalletInformationDto.phoneNumber !==
+            SPECIAL_ACCESS_PHONE_NUMBER
+         )
+            await this.smsService.sendSMS(
+               [resendConfirmationCodeRapideWalletInformationDto.phoneNumber],
+               message,
+            )
+
+         rapideWalletInformation.confirmationCode = confirmationCode
          const ttl = await this.redisService.ttl(
             `${RAPIDE_WALLET_VALIDATION}-${profileId}`,
          )
          await this.redisService.set(
             `${RAPIDE_WALLET_VALIDATION}-${profileId}`,
-            JSON.stringify(rapideWalletInfo),
+            JSON.stringify(rapideWalletInformation),
             ttl,
-         )
-         await this.smsService.sendSMS(
-            [profile.phoneNumber],
-            `Dear ${profile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${profile.lastName} ${profile.firstName}, your validation code is : ${confirmationCode}`,
          )
       } catch (error) {
          throw error
@@ -246,7 +300,7 @@ export class RapideWalletService {
             const customerProfile = rapideWallet.clientProfile
                ? rapideWallet.clientProfile.profile
                : rapideWallet.driverProfile.profile
-            console.log(customerProfile)
+
             await this.smsService.sendSMS(
                [customerProfile.phoneNumber],
                `Dear ${customerProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${customerProfile.firstName} ${customerProfile.lastName}, your Rapide Wallet is now active!`,
@@ -264,9 +318,70 @@ export class RapideWalletService {
             userRole === UserRole.CLIENT
                ? { clientProfileId: profileId }
                : { driverProfileId: profileId }
-         return await this.prismaService.rapideWallet.findUnique({
-            where: condition,
-         })
+         const rapideWalletData =
+            await this.prismaService.rapideWallet.findUnique({
+               where: condition,
+               select: {
+                  driverProfile: {
+                     select: {
+                        status: true,
+                     },
+                  },
+                  clientProfile: {
+                     select: {
+                        status: true,
+                     },
+                  },
+                  rapideWalletId: true,
+                  status: true,
+                  balance: true,
+                  depositeCount: true,
+                  transferCount: true,
+                  transactionCount: true,
+                  paymentCount: true,
+                  successCount: true,
+                  failedCount: true,
+                  rejectedCount: true,
+                  idCard: true,
+                  updatedAt: true,
+               },
+            })
+
+         const updateUserProfile = {
+            sub: profileId,
+            role: userRole,
+            status:
+               userRole === UserRole.CLIENT
+                  ? rapideWalletData.clientProfile.status
+                  : rapideWalletData.driverProfile.status,
+            rapideWalletStatus: rapideWalletData.status,
+         }
+         const token = jwt.sign(
+            updateUserProfile,
+            userRole === UserRole.CLIENT
+               ? this.JWT_SECRET_CLIENT
+               : this.JWT_SECRET_DRIVER,
+            {
+               expiresIn: this.JWT_EXPIRES_IN,
+            },
+         )
+         return {
+            rapideWallet: {
+               rapideWalletId: rapideWalletData.rapideWalletId,
+               status: rapideWalletData.status,
+               balance: rapideWalletData.balance,
+               depositeCount: rapideWalletData.depositeCount,
+               transferCount: rapideWalletData.transferCount,
+               transactionCount: rapideWalletData.transactionCount,
+               paymentCount: rapideWalletData.paymentCount,
+               successCount: rapideWalletData.successCount,
+               rejectedCount: rapideWalletData.rejectedCount,
+               failedCount: rapideWalletData.failedCount,
+               idCard: rapideWalletData.idCard,
+               updatedAt: rapideWalletData.updatedAt,
+            },
+            token,
+         }
       } catch (error) {
          throw error
       }

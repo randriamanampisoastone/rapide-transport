@@ -19,17 +19,29 @@ import {
    TransactionStatus,
    UserRole,
 } from '@prisma/client'
-import { GetClientTransactionByAdminDto } from './dto/get-client-transaction-by-admin.dto'
+import { ROUTE_TRANSACTION } from 'routes/main-routes'
+import {
+   ROUTE_ADMIN_SEARCH_TRANSACTIONS_DATA_BY_REFERENCE,
+   ROUTE_DEPOSITE,
+   ROUTE_GET_TRANSACTIONS,
+   ROUTE_GET_USER_TRANSACTIONS,
+   ROUTE_GET_USER_TRANSACTIONS_BY_ADMIN,
+   ROUTE_USER_SEARCH_TRANSACTIONS_DATA_BY_REFERENCE,
+} from 'routes/secondary-routes'
 
-@Controller('payment')
-export class PaymentController {
+@Controller(ROUTE_TRANSACTION)
+export class TransactionController {
    constructor(
       private readonly depositeService: DepositeService,
       private readonly getTransactionService: GetTransactionService,
    ) {}
 
-   @Post('deposite')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
+   @Post(ROUTE_DEPOSITE)
+   @SetMetadata('allowedRole', [
+      UserRole.DEPOSITOR,
+      UserRole.TREASURER,
+      UserRole.SUPER_ADMIN,
+   ])
    @UseGuards(RolesGuard)
    async deposite(
       @GetUser('sub') adminProfileId: string,
@@ -47,8 +59,12 @@ export class PaymentController {
       )
    }
 
-   @Get('transactions')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
+   @Get(ROUTE_GET_TRANSACTIONS)
+   @SetMetadata('allowedRole', [
+      UserRole.DEPOSITOR,
+      UserRole.TREASURER,
+      UserRole.SUPER_ADMIN,
+   ])
    @UseGuards(RolesGuard)
    async getTransactions(
       @Query('method') method: MethodType,
@@ -68,8 +84,8 @@ export class PaymentController {
       )
    }
 
-   @Get('user-transactions')
-   @SetMetadata('allowedRole', ['CLIENT', 'DRIVER'])
+   @Get(ROUTE_GET_USER_TRANSACTIONS)
+   @SetMetadata('allowedRole', [UserRole.CLIENT, UserRole.DRIVER])
    @UseGuards(RolesGuard)
    async getUserTransactions(
       @GetUser('sub') profileId: string,
@@ -91,8 +107,12 @@ export class PaymentController {
       )
    }
 
-   @Get('user-transactions-by-admin')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
+   @Get(ROUTE_GET_USER_TRANSACTIONS_BY_ADMIN)
+   @SetMetadata('allowedRole', [
+      UserRole.DEPOSITOR,
+      UserRole.TREASURER,
+      UserRole.SUPER_ADMIN,
+   ])
    @UseGuards(RolesGuard)
    async getUserTransactionsByAdmin(
       @Query('profileId') profileId: string,
@@ -114,8 +134,8 @@ export class PaymentController {
       )
    }
 
-   @Get('by-reference')
-   @SetMetadata('allowedRole', ['CLIENT', 'DRIVER'])
+   @Get(ROUTE_USER_SEARCH_TRANSACTIONS_DATA_BY_REFERENCE)
+   @SetMetadata('allowedRole', [UserRole.CLIENT, UserRole.DRIVER])
    @UseGuards(RolesGuard)
    async getTransactionByReferance(
       @GetUser('sub') profileId: string,
@@ -131,8 +151,12 @@ export class PaymentController {
       )
    }
 
-   @Get('search-by-reference')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
+   @Get(ROUTE_ADMIN_SEARCH_TRANSACTIONS_DATA_BY_REFERENCE)
+   @SetMetadata('allowedRole', [
+      UserRole.DEPOSITOR,
+      UserRole.TREASURER,
+      UserRole.SUPER_ADMIN,
+   ])
    @UseGuards(RolesGuard)
    async searchTransactionByReference(
       @Query('reference') reference: number,

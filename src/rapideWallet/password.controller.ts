@@ -10,16 +10,22 @@ import {
 import { PasswordService } from './password.service'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { RolesGuard } from 'src/jwt/roles.guard'
-import { ProfileStatus } from '@prisma/client'
+import { ProfileStatus, UserRole } from '@prisma/client'
 import { ChangePasswordDto } from './dto/changePassword.dto'
 import { ResetClientPasswordDto } from './dto/reset-client-password.dto'
+import { ROUTE_PASSWORD } from 'routes/main-routes'
+import { ROUTE_CLIENT_CHANGE_PASSWORD, ROUTE_RESET_CLIENT_PASSWORD, ROUTE_SET_ADMIN_PASSWORD } from 'routes/secondary-routes'
 
-@Controller('password')
+@Controller(ROUTE_PASSWORD)
 export class PasswordController {
    constructor(private readonly passwordService: PasswordService) {}
 
-   @Post('set-admin')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
+   @Post(ROUTE_SET_ADMIN_PASSWORD)
+   @SetMetadata('allowedRole', [
+      UserRole.DEPOSITOR,
+      UserRole.TREASURER,
+      UserRole.SUPER_ADMIN,
+   ])
    @UseGuards(RolesGuard)
    async setAdminPassword(
       @GetUser('sub') adminProfileId: string,
@@ -32,8 +38,8 @@ export class PasswordController {
       return this.passwordService.setAdminPassword(adminProfileId, password)
    }
 
-   @Patch('change-client-password')
-   @SetMetadata('allowedRole', ['CLIENT'])
+   @Patch(ROUTE_CLIENT_CHANGE_PASSWORD)
+   @SetMetadata('allowedRole', [UserRole.CLIENT])
    @UseGuards(RolesGuard)
    async changeClientPassword(
       @GetUser('sub') clientProfileId: string,
@@ -50,8 +56,8 @@ export class PasswordController {
       )
    }
 
-   @Patch('reset-client-password')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
+   @Patch(ROUTE_RESET_CLIENT_PASSWORD)
+   @SetMetadata('allowedRole', [UserRole.DEPOSITOR])
    @UseGuards(RolesGuard)
    async resetClientPassword(
       @Body() resetClientPasswordDto: ResetClientPasswordDto,

@@ -8,14 +8,19 @@ import {
 import { RideStatisticService } from './ride-statistic.service'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { RolesGuard } from 'src/jwt/roles.guard'
-import { ProfileStatus } from '@prisma/client'
+import { ProfileStatus, UserRole } from '@prisma/client'
+import { ROUTE_STATISTIC_RIDE } from 'routes/main-routes'
+import {
+   ROUTE_GET_DRIVER_STATISTIC,
+   ROUTE_GET_GLOBAL_STATISTIC,
+} from 'routes/secondary-routes'
 
-@Controller('ride-statistic')
+@Controller(ROUTE_STATISTIC_RIDE)
 export class RideStatisticController {
    constructor(private readonly rideStatisticService: RideStatisticService) {}
 
-   @Get('get-driver-statistic')
-   @SetMetadata('allowedRole', ['DRIVER'])
+   @Get(ROUTE_GET_DRIVER_STATISTIC)
+   @SetMetadata('allowedRole', [UserRole.DRIVER])
    @UseGuards(RolesGuard)
    async getDriverStatistic(
       @GetUser('sub') driverProfileId: string,
@@ -27,8 +32,12 @@ export class RideStatisticController {
       return await this.rideStatisticService.getDriverStatistic(driverProfileId)
    }
 
-   @Get('get-global-statistic')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN'])
+   @Get(ROUTE_GET_GLOBAL_STATISTIC)
+   @SetMetadata('allowedRole', [
+      UserRole.SUPER_ADMIN,
+      UserRole.RIDER,
+      UserRole.MANAGER_HUB,
+   ])
    @UseGuards(RolesGuard)
    async getGlobalRideStatistic() {
       return await this.rideStatisticService.geGlobalRideStatistic()

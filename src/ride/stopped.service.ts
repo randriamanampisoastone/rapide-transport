@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common'
 import { EVENT_CLIENT_STOPPED } from 'constants/event.constant'
 import { RIDE_PREFIX } from 'constants/redis.constant'
+import { UserRole } from 'enums/profile.enum'
 import { RideStatus } from 'enums/ride.enum'
 import { RideData } from 'interfaces/ride.interface'
 import { Gateway } from 'src/gateway/gateway'
@@ -88,9 +89,13 @@ export class StoppedService {
             EVENT_CLIENT_STOPPED,
             {},
          )
-         this.gateway.sendNotificationToAdmin(EVENT_CLIENT_STOPPED, {
-            ...rideDataUpdated,
-         })
+         this.gateway.sendNotificationToAdmin(
+            [UserRole.RIDER, UserRole.CALL_CENTER, UserRole.MANAGER_HUB],
+            EVENT_CLIENT_STOPPED,
+            {
+               ...rideDataUpdated,
+            },
+         )
       } catch (error) {
          // throw error
          throw new HttpException(error.message, HttpStatus.BAD_REQUEST)

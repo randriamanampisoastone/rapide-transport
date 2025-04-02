@@ -11,8 +11,10 @@ import { ResendConfirmSignUpService } from './resend.confirm.sign.up.service'
 import { ResendConfirmDto } from './dto/resend.confirm.dto'
 import { GoogleAuthService } from './google.auth.service'
 import { UserRole } from 'enums/profile.enum'
+import { ROUTE_AUTH } from 'routes/main-routes'
+import { ROUTE_CONFIRM_SIGN_IN, ROUTE_CONFIRM_SIGN_UP, ROUTE_GOOGLE_AUTH, ROUTE_RESEND_CONFIRM_SIGN_IN, ROUTE_RESEND_CONFIRM_SIGN_UP, ROUTE_SIGN_IN, ROUTE_SIGN_UP } from 'routes/secondary-routes'
 
-@Controller('auth')
+@Controller(ROUTE_AUTH)
 export class AuthController {
    constructor(
       private readonly signUpService: SignUpService,
@@ -24,21 +26,21 @@ export class AuthController {
       private readonly googleAuthService: GoogleAuthService,
    ) {}
 
-   @Post('signUp')
+   @Post(ROUTE_SIGN_UP)
    async signUp(
       @Body()
       signUpDto: SignUpDto,
    ) {
       return await this.signUpService.signUp(signUpDto)
    }
-   @Post('confirmSignUp')
+   @Post(ROUTE_CONFIRM_SIGN_UP)
    async confirmSignUp(
       @Body()
       confirmSignUpDto: ConfirmDto,
    ) {
       return await this.confirmSignUpService.confirmSignUp(confirmSignUpDto)
    }
-   @Post('resendConfirmSignUp')
+   @Post(ROUTE_RESEND_CONFIRM_SIGN_UP)
    async resendConfirmSignUp(
       @Body()
       resendConfirmDto: ResendConfirmDto,
@@ -47,21 +49,23 @@ export class AuthController {
          resendConfirmDto,
       )
    }
-   @Post('signIn')
+   @Post(ROUTE_SIGN_IN)
    async signIn(
       @Body()
       signInDto: SignInDto,
    ) {
+      console.log('signInDto : ', signInDto)
+
       return await this.signInService.signIn(signInDto)
    }
-   @Post('confirmSignIn')
+   @Post(ROUTE_CONFIRM_SIGN_IN)
    async confirmSignIn(
       @Body()
       confirmSignInDto: ConfirmDto,
    ) {
       return await this.confirmSignInService.confirmSignIn(confirmSignInDto)
    }
-   @Post('resendConfirmSignIn')
+   @Post(ROUTE_RESEND_CONFIRM_SIGN_IN)
    async resendConfirmSignIn(
       @Body()
       resendConfirmDto: ResendConfirmDto,
@@ -70,7 +74,7 @@ export class AuthController {
          resendConfirmDto,
       )
    }
-   @Post('googleAuth')
+   @Post(ROUTE_GOOGLE_AUTH)
    async googleAuth(
       @Body()
       data: {

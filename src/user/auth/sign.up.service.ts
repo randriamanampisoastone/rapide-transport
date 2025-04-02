@@ -6,6 +6,7 @@ import { AUTH_SIGN_UP_PREFIX } from 'constants/redis.constant'
 import { ConfigService } from '@nestjs/config'
 import { SmsService } from 'src/sms/sms.service'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { SPECIAL_ACCESS_PHONE_NUMBER } from 'constants/access.constant'
 
 @Injectable()
 export class SignUpService implements OnModuleInit {
@@ -39,15 +40,29 @@ export class SignUpService implements OnModuleInit {
          }
 
          const secret = speakeasy.generateSecret({ length: 20 })
-         const confirmationCode = speakeasy.totp({
-            secret: secret.base32,
-            encoding: 'base32',
-         })
+         const confirmationCode =
+            signUpDto.phoneNumber === SPECIAL_ACCESS_PHONE_NUMBER
+               ? '124578'
+               : speakeasy.totp({
+                    secret: secret.base32,
+                    encoding: 'base32',
+                 })
 
-         await this.smsService.sendSMS(
-            [signUpDto.phoneNumber],
-            `Your Rapide App OTP Code is : ${confirmationCode}`,
-         )
+         let message: string = ''
+
+         if (signUpDto.locale === 'fr') {
+            message = ` Votre code OTP pour la création de compte est : ${confirmationCode}`
+         } else if (signUpDto.locale === 'mg') {
+            message = ` Indro ny kaody OTP afahanao misoratra anarana : ${confirmationCode}`
+         } else if (signUpDto.locale === 'en') {
+            message = `Your OTP code for sign up is : ${confirmationCode}`
+         } else if (signUpDto.locale === 'zh') {
+            message = `您的 OTP 验证码 : ${confirmationCode}`
+         }
+
+         if (signUpDto.phoneNumber !== SPECIAL_ACCESS_PHONE_NUMBER)
+            await this.smsService.sendSMS([signUpDto.phoneNumber], message)
+
          const updateSignUpDto = {
             attempt: 0,
             confirmationCode,

@@ -15,11 +15,23 @@ import { GetRapideBalanceService } from './get-rapide-balance.service'
 import { GetUser } from 'src/jwt/get.user.decorator'
 import { DriverBalanceService } from './driverBalance.service'
 import { ProfileStatus, UserRole } from '@prisma/client'
-import { SetRapideWalletInfoDto } from './dto/set-rapide-wallet-info.dto'
 import { RapideWalletService } from './rapide-wallet.service'
 import { UpdateRapideWalletStatusDto } from './dto/update-rapide-wallet-status.dto'
+import { SetRapideWalletInformationDto } from './dto/set-rapide-wallet-information.dto'
+import { ResendConfirmationCodeRapideWalletInformationDto } from './dto/resend-confirmation-code-rapide-wallet-information.dto'
+import { ROUTE_RAPIDE_WALLET } from 'routes/main-routes'
+import {
+   ROUTE_CONFIRM_RAPIDE_WALLET_INFORMATION,
+   ROUTE_GET_RAPIDE_BALANCE,
+   ROUTE_GET_RAPIDE_WALLET,
+   ROUTE_GET_SOLDE,
+   ROUTE_RESEND_CONFIRM_RAPIDE_WALLET_INFORMATION,
+   ROUTE_RESET_DRIVER_BALANCE,
+   ROUTE_SET_RAPIDE_WALLET_INFORMATION,
+   ROUTE_UPDATE_RAPIDE_WALLET_STATUS,
+} from 'routes/secondary-routes'
 
-@Controller('rapideWallet')
+@Controller(ROUTE_RAPIDE_WALLET)
 export class RapideWalletController {
    constructor(
       private readonly resetBalanceService: ResetBalanceServce,
@@ -28,8 +40,8 @@ export class RapideWalletController {
       private readonly rapideWalletService: RapideWalletService,
    ) {}
 
-   @Patch('resetDriverBalance')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FINANCE_MANAGER'])
+   @Patch(ROUTE_RESET_DRIVER_BALANCE)
+   @SetMetadata('allowedRole', [UserRole.TREASURER, UserRole.SUPER_ADMIN])
    @UseGuards(RolesGuard)
    async resetRideBalance(
       @Query('rapideWalletId') rapideWalletId: string,
@@ -41,8 +53,8 @@ export class RapideWalletController {
       await this.resetBalanceService.resetRideBalance(rapideWalletId)
    }
 
-   @Get('getRapideBalance')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FINANCE_MANAGER'])
+   @Get(ROUTE_GET_RAPIDE_BALANCE)
+   @SetMetadata('allowedRole', [UserRole.TREASURER, UserRole.SUPER_ADMIN])
    @UseGuards(RolesGuard)
    async getRapideBalance(@GetUser('status') status: ProfileStatus) {
       if (status !== ProfileStatus.ACTIVE) {
@@ -51,8 +63,8 @@ export class RapideWalletController {
       return await this.getRapideBalanceService.getRapidebalance()
    }
 
-   @Get('sold')
-   @SetMetadata('allowedRole', ['DRIVER', 'CLIENT'])
+   @Get(ROUTE_GET_SOLDE)
+   @SetMetadata('allowedRole', [UserRole.DRIVER, UserRole.CLIENT])
    @UseGuards(RolesGuard)
    async getSold(
       @GetUser('sub') profileId: string,
@@ -64,57 +76,63 @@ export class RapideWalletController {
       return await this.driverBalanceService.getSold(profileId)
    }
 
-   @Patch('set-rapide-wallet-info')
-   @SetMetadata('allowedRole', ['DRIVER', 'CLIENT'])
+   @Patch(ROUTE_SET_RAPIDE_WALLET_INFORMATION)
+   @SetMetadata('allowedRole', [UserRole.DRIVER, UserRole.CLIENT])
    @UseGuards(RolesGuard)
    async setInformation(
       @GetUser('sub') profileId: string,
-      @Body() setRapideWalletInfoDto: SetRapideWalletInfoDto,
+      @Body() setRapideWalletInfoDto: SetRapideWalletInformationDto,
       @GetUser('status') status: ProfileStatus,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return await this.rapideWalletService.setInformation(
+      return await this.rapideWalletService.setRapideWalletInformation(
          profileId,
          setRapideWalletInfoDto,
       )
    }
 
-   @Post('validate-rapide-wallet-info')
-   @SetMetadata('allowedRole', ['DRIVER', 'CLIENT'])
+   @Post(ROUTE_CONFIRM_RAPIDE_WALLET_INFORMATION)
+   @SetMetadata('allowedRole', [UserRole.DRIVER, UserRole.CLIENT])
    @UseGuards(RolesGuard)
-   async validateInformation(
+   async confirmRapideWalletInformation(
       @GetUser('sub') profileId: string,
       @GetUser('role') userRole: UserRole,
       @GetUser('status') status: ProfileStatus,
-      @Body() data: { code: string },
+      @Body() data: { phoneNumber: string; confirmationCode: string },
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return await this.rapideWalletService.validateInformation(
+      return await this.rapideWalletService.confirmRapideWalletInformation(
          profileId,
-         data.code,
+         data.phoneNumber,
+         data.confirmationCode,
          userRole,
       )
    }
 
-   @Post('resend-code')
-   @SetMetadata('allowedRole', ['DRIVER', 'CLIENT'])
+   @Post(ROUTE_RESEND_CONFIRM_RAPIDE_WALLET_INFORMATION)
+   @SetMetadata('allowedRole', [UserRole.DRIVER, UserRole.CLIENT])
    @UseGuards(RolesGuard)
    async resendCode(
       @GetUser('sub') profileId: string,
       @GetUser('status') status: ProfileStatus,
+      @Body() data: ResendConfirmationCodeRapideWalletInformationDto,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return await this.rapideWalletService.resendCode(profileId)
+      return await this.rapideWalletService.resendCode(profileId, data)
    }
 
-   @Patch('update-status')
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FINANCE_MANAGER'])
+   @Patch(ROUTE_UPDATE_RAPIDE_WALLET_STATUS)
+   @SetMetadata('allowedRole', [
+      UserRole.DEPOSITOR,
+      UserRole.SUPER_ADMIN,
+      UserRole.TREASURER,
+   ])
    @UseGuards(RolesGuard)
    async updateStatus(
       @Body() updateRapideWalletStatusDto: UpdateRapideWalletStatusDto,
@@ -129,14 +147,16 @@ export class RapideWalletController {
       )
    }
 
-   @Get('get-rapide-wallet')
-   @SetMetadata('allowedRole', ['CLIENT', 'DRIVER'])
+   @Get(ROUTE_GET_RAPIDE_WALLET)
+   @SetMetadata('allowedRole', [UserRole.DRIVER, UserRole.CLIENT])
    @UseGuards(RolesGuard)
    async getRapideWallete(
       @GetUser('sub') profileId: string,
       @GetUser('role') userRole: UserRole,
       @GetUser('status') status: ProfileStatus,
    ) {
+      console.log('profileId : ', profileId)
+
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }

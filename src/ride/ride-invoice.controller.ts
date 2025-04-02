@@ -9,14 +9,20 @@ import {
 import { GetRideInvoiceService } from './get-ride-invoice.service'
 import { RolesGuard } from 'src/jwt/roles.guard'
 import { GetUser } from 'src/jwt/get.user.decorator'
-import { ProfileStatus } from '@prisma/client'
+import { ProfileStatus, UserRole } from '@prisma/client'
+import { ROUTE_INVOICE_RIDE } from 'routes/main-routes'
+import { ROUTE_GET_CLIENT_INVOICE } from 'routes/secondary-routes'
 
-@Controller('ride-invoice')
+@Controller(ROUTE_INVOICE_RIDE)
 export class RideInvoiceController {
    constructor(private readonly getRideInvoiceService: GetRideInvoiceService) {}
 
    @Get()
-   @SetMetadata('allowedRole', ['ADMIN', 'SUPER_ADMIN', 'FINANCE_MANAGER'])
+   @SetMetadata('allowedRole', [
+      UserRole.SUPER_ADMIN,
+      UserRole.DEPOSITOR,
+      UserRole.MANAGER_HUB,
+   ])
    @UseGuards(RolesGuard)
    async getInvoices(
       @Query('page') page: number,
@@ -28,8 +34,8 @@ export class RideInvoiceController {
       )
    }
 
-   @Get('get-client-invoice')
-   @SetMetadata('allowedRole', ['CLIENT'])
+   @Get(ROUTE_GET_CLIENT_INVOICE)
+   @SetMetadata('allowedRole', [UserRole.CLIENT])
    @UseGuards(RolesGuard)
    async getClientInvoices(
       @GetUser('sub') clientProfileId: string,

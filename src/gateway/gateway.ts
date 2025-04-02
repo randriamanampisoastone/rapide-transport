@@ -102,13 +102,22 @@ export class Gateway
                   secretKey =
                      this.configService.get<string>('JWT_SECRET_DRIVER')
                   break
-               case UserRole.ADMIN:
                case UserRole.SUPER_ADMIN:
-               case UserRole.FINANCE_MANAGER:
-               case UserRole.FLEET_MANAGER:
-               case UserRole.FOOD_MANAGER:
-               case UserRole.MART_MANAGER:
-               case UserRole.HUMAN_RESOURCES:
+                  secretKey = this.configService.get<string>('JWT_SECRET_ADMIN')
+                  break
+               case UserRole.CALL_CENTER:
+                  secretKey = this.configService.get<string>('JWT_SECRET_ADMIN')
+                  break
+               case UserRole.DEPOSITOR:
+                  secretKey = this.configService.get<string>('JWT_SECRET_ADMIN')
+                  break
+               case UserRole.MANAGER_HUB:
+                  secretKey = this.configService.get<string>('JWT_SECRET_ADMIN')
+                  break
+               case UserRole.RIDER:
+                  secretKey = this.configService.get<string>('JWT_SECRET_ADMIN')
+                  break
+               case UserRole.TREASURER:
                   secretKey = this.configService.get<string>('JWT_SECRET_ADMIN')
                   break
                default:
@@ -191,8 +200,8 @@ export class Gateway
       this.server.to(clientProfileId).emit(topic, payload)
    }
 
-   sendNotificationToAdmin(topic: string, payload: any) {
-      this.server.to(UserRole.ADMIN).emit(topic, payload)
+   sendNotificationToAdmin(roles: UserRole[], topic: string, payload: any) {
+      for (const role of roles) this.server.to(role).emit(topic, payload)
    }
 
    sendNotificationToSpecificAdmin(

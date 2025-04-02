@@ -6,15 +6,15 @@ import {
    IsString,
    Matches,
    IsEmail,
+   IsIn,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 import { GenderType, UserRole } from 'enums/profile.enum'
 
 export class SignUpDto {
    @IsNotEmpty()
-   @Matches(/^(?:\+261|261|0)(32|33|34|37|38)\d{7}$/, {
-      message:
-         'Phone number must be in the format: +261XXXXXXXXX, 261XXXXXXXXX, or 0XXXXXXXXX',
+   @Matches(/^(?:\+261)(32|33|34|37|38)\d{7}$/, {
+      message: 'Phone number must be in the format: +261 XX XX XXX XX',
    })
    phoneNumber: string
 
@@ -52,4 +52,10 @@ export class SignUpDto {
    @IsOptional()
    @IsString({ message: 'Profile photo must be a valid string URL' })
    profilePhoto?: string
+
+   @IsNotEmpty()
+   @IsIn(['fr', 'mg', 'en', 'zh'], {
+      message: 'Locale must be one of the following: fr, mg, en, zh',
+   })
+   locale: string
 }

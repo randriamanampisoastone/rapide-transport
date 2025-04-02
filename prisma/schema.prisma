@@ -28,7 +28,7 @@ enum ProfileStatus {
   SUSPENDED          // Compte suspendu pour enquête ou violation des règles
   LOCKED             // Compte verrouillé après des tentatives de connexion échouées 
   ARCHIVED           // Compte désactivé définitivement, mais les données sont conservées
-  DEACTIVATED        // Compte volontairement désactivé par l'utilisateur ou l'admin
+  DESACTIVATED       // Compte volontairement désactivé par l'utilisateur ou l'admin
   CLOSED             // Compte fermé définitivement et données supprimées
   UNDER_REVIEW       // Compte en cours d'examen pour des raisons administratives
   UNVERIFIED         // Compte non vérifié (e-mail ou téléphone non confirmé)
@@ -52,14 +52,12 @@ enum RapideWalletStatus {
 enum UserRole {
   CLIENT	            // Accéder aux services (Food, Mart, Ride, Express), passer des commandes, suivre les livraisons.
   DRIVER	            // Accepter et gérer les courses Ride, Mart, Express.
-  ADMIN	              // Gestion complète du système (accès à tout).
   SUPER_ADMIN	        // Accès total avec gestion des administrateurs et des autorisations.
-  FOOD_MANAGER      	// Gère les restaurants partenaires et les commandes Food.
-  MART_MANAGER	      // Gère les magasins partenaires et les commandes Mart.
-  HUMAN_RESOURCES   	// Gère la relation entre rapide et l'exterieure
-  FINANCE_MANAGER    	// Gère les paiements, commissions
-  FLEET_MANAGER      	// Supervise la flotte de véhicules (maintenance, attribution).
-  ORDER_MANAGER       // Gérer les commandes et les livraisons. Assure la bonne fonctinnaliter des commandes.
+  TREASURER
+  DEPOSITOR
+  CALL_CENTER
+  MANAGER_HUB
+  RIDER
 }
 
 enum MethodType {
@@ -265,8 +263,8 @@ model RideInvoice {
 
   transaction         Transaction? @relation("RideTransaction")
 
-  createdAt           String?
-  updatedAt           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model Ride {
@@ -279,19 +277,26 @@ model Ride {
   driverProfile     DriverProfile? @relation("DriverRide", fields: [driverProfileId], references: [driverProfileId])
 
   vehicleType       VehicleType
-  vehicleId         String?
+  plateNumber       String?
+
   methodType        MethodType
+
   pickUpLocation    String
   dropOffLocation   String
   encodedPolyline   String
   distanceMeters    Float
+
   estimatedDuration Float
   estimatedPrice    String
+
   realDuration      Float?
   realPrice         Float?
+
   status            RideStatus?
+
   note              Float?
   review            String?
+  
   startTime         Float?
   endTime           Float?
 

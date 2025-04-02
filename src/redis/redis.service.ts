@@ -14,7 +14,10 @@ import { VehicleType } from 'enums/vehicle.enum'
 import { getDistance } from 'geolib'
 import { DailyRideCompletsInterface } from 'interfaces/daily.ride.complets.interface'
 import { DriverLocationRedis } from 'interfaces/driver.interface'
-import { LatLng } from 'interfaces/location.interface'
+import {
+   LatLng,
+   UpdateDriverLocationInterface,
+} from 'interfaces/location.interface'
 import { RideData } from 'interfaces/ride.interface'
 import Redis from 'ioredis'
 
@@ -30,7 +33,7 @@ export class RedisService implements OnModuleInit {
       this.client = new Redis({
          host: this.configService.get<string>('REDIS_HOST'),
          port: this.configService.get<number>('REDIS_PORT'),
-         //tls: {},
+         tls: {},
       })
       this.REDIS_GEO_TTL_SECONDS = this.configService.get<number>(
          'REDIS_GEO_TTL_SECONDS',
@@ -81,21 +84,13 @@ export class RedisService implements OnModuleInit {
    }
 
    async addDriverLocationToRedis(
-      driverProfileId: string,
-      driverLocation: LatLng,
-      vehicleType: VehicleType,
-      driverExpoPushToken: string,
+      updateDriverLocation: UpdateDriverLocationInterface,
       ttl: number = this.REDIS_GEO_TTL_SECONDS,
    ) {
       try {
          await this.set(
-            `${DRIVER_LOCATION_PREFIX + driverProfileId}`,
-            JSON.stringify({
-               driverProfileId,
-               driverLocation,
-               vehicleType,
-               driverExpoPushToken,
-            }),
+            `${DRIVER_LOCATION_PREFIX + updateDriverLocation.driverProfileId}`,
+            JSON.stringify(updateDriverLocation),
             ttl,
          )
       } catch (error) {
