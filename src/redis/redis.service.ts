@@ -83,6 +83,14 @@ export class RedisService implements OnModuleInit {
       return await this.client.mget(keys)
    }
 
+   // async mget(keys: string[]): Promise<(string | null)[]> {
+   //    const pipeline = this.client.pipeline()
+   //    keys.forEach((key) => pipeline.get(key))
+   //    const results = await pipeline.exec()
+
+   //    return results.map((res) => (typeof res[1] === 'string' ? res[1] : null))
+   // }
+
    async addDriverLocationToRedis(
       updateDriverLocation: UpdateDriverLocationInterface,
       ttl: number = this.REDIS_GEO_TTL_SECONDS,
