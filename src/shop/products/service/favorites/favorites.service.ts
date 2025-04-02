@@ -1,5 +1,6 @@
 import {PrismaService} from "../../../../prisma/prisma.service";
-import {Injectable} from "@nestjs/common";
+import {HttpStatus, Injectable} from "@nestjs/common";
+import {ALREADY_EXIST, NOT_OWNER_OF_THE_PRODUCT} from "../../../../../constants/response.constant";
 
 @Injectable()
 export class FavoriteService {
@@ -9,6 +10,23 @@ export class FavoriteService {
     }
 
     async addToFavorites(userId: string, productId: string) {
+        const existingFavorite = await this.prismaService.favorite.findUnique({
+            where: {
+                userId_productId: {
+                    userId: userId,
+                    productId: productId,
+                },
+            },
+        });
+
+        if (existingFavorite) {
+            return {
+                statusCode: HttpStatus.CONFLICT,
+                message: ALREADY_EXIST,
+                error: 'Conflict',
+            }
+        }
+
         return this.prismaService.favorite.create({
             data: {
                 userId: userId,
