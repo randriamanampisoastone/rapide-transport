@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
    BadRequestException,
    Injectable,
@@ -146,20 +147,26 @@ export class TransferService {
                   JSON.stringify(transferRedisData),
                   10 * 60,
                )
-               await this.smsService.sendSMS(
-                  [sender.phoneNumber],
-                  `Your transaction code is : ${confirmationCode}`,
-               )
+
                return {
                   receiverId: receiver.sub,
                   firstName: receiver.firstName,
                   lastName: receiver.lastName,
                   profilePhoto: receiver.profilePhoto,
                   amount: initTransferDto.amount,
+                  phoneNumber: sender.phoneNumber,
+                  confirmationCode,
                }
             },
          )
-         return transaction
+
+         await this.smsService.sendSMS(
+            [transaction.phoneNumber],
+            `Your transaction code is : ${transaction.confirmationCode}`,
+         )
+
+         const { confirmationCode, phoneNumber, ...response } = transaction
+         return response
       } catch (error) {
          throw error
       }

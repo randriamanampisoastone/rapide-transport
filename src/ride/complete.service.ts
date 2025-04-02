@@ -122,12 +122,12 @@ export class CompleteService {
                rideInvoice.rideInvoiceId,
                Math.round(rideData.realPrice),
             )
-            // await this.ridePaymentService.cashPayment(
-            //    rideData.clientProfileId,
-            //    rideData.driverProfileId,
-            //    rideInvoice.rideInvoiceId,
-            //    Math.round(rideData.realPrice),
-            // )
+            await this.ridePaymentService.cashPayment(
+               rideData.clientProfileId,
+               rideData.driverProfileId,
+               rideInvoice.rideInvoiceId,
+               Math.round(rideData.realPrice),
+            )
          } else if (rideData.methodType === MethodType.RAPIDE_WALLET) {
             await this.ridePaymentService.processPaymentWithRapideWallet(
                rideInvoice.rideInvoiceId,

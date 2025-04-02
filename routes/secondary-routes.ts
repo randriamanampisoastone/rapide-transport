@@ -55,10 +55,8 @@ export const ROUTE_RESEND_CONFIRM_RAPIDE_WALLET_INFORMATION =
 export const ROUTE_UPDATE_RAPIDE_WALLET_STATUS = 'update-rapide-wallet-status'
 export const ROUTE_GET_RAPIDE_WALLET = 'get-rapide-wallet'
 
-
 // invoice-ride
 export const ROUTE_GET_CLIENT_INVOICE = 'get-client-invoice'
-
 
 // ride
 export const ROUTE_CREATE_ITINERARY = 'create-itinerary'
@@ -79,13 +77,11 @@ export const ROUTE_CHECK_CLIENT_RIDE = 'check-client-ride'
 export const ROUTE_CHECK_DRIVER_RIDE = 'check-driver-ride'
 export const ROUTE_ASSIGN_RIDE_TO_DRIVER = 'assign-ride-to-driver'
 export const ROUTE_SEND_REVIEW = 'send-review'
-export const ROUTE_DELETE_RIDE ='delete-ride'
-
+export const ROUTE_DELETE_RIDE = 'delete-ride'
 
 // statistic-ride
 export const ROUTE_GET_DRIVER_STATISTIC = 'get-driver-statistic'
 export const ROUTE_GET_GLOBAL_STATISTIC = 'get-global-statistic'
-
 
 // auth
 export const ROUTE_SIGN_UP = 'signUp'
@@ -96,12 +92,12 @@ export const ROUTE_CONFIRM_SIGN_IN = 'confirmSignIn'
 export const ROUTE_RESEND_CONFIRM_SIGN_IN = 'resendConfirmSignIn'
 export const ROUTE_GOOGLE_AUTH = 'googleAuth'
 
-
 // delete-profile
 export const ROUTE_BY_ADMIN = 'by-admin'
 export const ROUTE_BY_CUSTOMER = 'by-customer'
 export const ROUTE_CONFIRM_DELETE_INFORNATION = 'confirm-delete-infornation'
-export const ROUTE_SEND_DELETE_CODE_CONFIRNATION = 'send-delete-code-confirnation'
+export const ROUTE_SEND_DELETE_CODE_CONFIRNATION =
+   'send-delete-code-confirnation'
 export const ROUTE_CONFIRM_DELETE_PROFILE = 'confirm-delete-profile'
 export const ROUTE_RESEND_CODE = 'resend-code'
 
@@ -126,7 +122,6 @@ export const ROUTE_UPDATE_DRIVER_STATUS = 'udpateDriverStatus'
 export const ROUTE_GET_ADMINS = 'getAdmins'
 export const ROUTE_UPDATE_ADMIN_STATUS = 'updateAdminStatus'
 export const ROUTE_UPDATE_ADMIN_ROLE = 'updateAdminRole'
-
 
 // vehicle
 export const ROUTE_FINDING_DRIVER_NEAR_BY = 'finding-drivers-near-by'

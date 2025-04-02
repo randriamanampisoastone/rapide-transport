@@ -155,6 +155,8 @@ export class RapideWalletController {
       @GetUser('role') userRole: UserRole,
       @GetUser('status') status: ProfileStatus,
    ) {
+      console.log('profileId : ', profileId)
+
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
