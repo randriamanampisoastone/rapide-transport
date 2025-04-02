@@ -2,6 +2,7 @@ import {
    Body,
    Controller,
    ForbiddenException,
+   Get,
    Post,
    SetMetadata,
    UseGuards,
@@ -14,6 +15,7 @@ import { ProfileStatus, UserRole } from '@prisma/client'
 import { ROUTE_PAYMENT_RIDE } from 'routes/main-routes'
 import {
    ROUTE_CONFIRM_PAYMENT_WITH_RAPIDE_WALLET,
+   ROUTE_RESEND_CONFIRM_PAYMENT_WITH_RAPIDE_WALLET,
    ROUTE_START_PAYMENT_WITH_RAPIDE_WALLET,
 } from 'routes/secondary-routes'
 
@@ -41,7 +43,7 @@ export class RidePaymentController {
    @Post(ROUTE_CONFIRM_PAYMENT_WITH_RAPIDE_WALLET)
    @SetMetadata('allowedRole', [UserRole.CLIENT])
    @UseGuards(RolesGuard)
-   async validateRapideWalletPayment(
+   async confirmRapideWalletPayment(
       @GetUser('sub') clientProfileId: string,
       @Body('code') code: string,
       @GetUser('status') status: ProfileStatus,
@@ -49,9 +51,24 @@ export class RidePaymentController {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('Account is not activate')
       }
-      return await this.ridePaymentService.validateRapideWalletPayment(
+      return await this.ridePaymentService.confirmRapideWalletPayment(
          clientProfileId,
          code,
+      )
+   }
+
+   @Get(ROUTE_RESEND_CONFIRM_PAYMENT_WITH_RAPIDE_WALLET)
+   @SetMetadata('allowedRole', [UserRole.CLIENT])
+   @UseGuards(RolesGuard)
+   async resendConfirmPaymentWithRapideWallet(
+      @GetUser('sub') clientProfileId: string,
+      @GetUser('status') status: ProfileStatus,
+   ) {
+      if (status !== ProfileStatus.ACTIVE) {
+         throw new ForbiddenException('Account is not activate')
+      }
+      return await this.ridePaymentService.resendConfirmRapideWalletPayment(
+         clientProfileId,
       )
    }
 }

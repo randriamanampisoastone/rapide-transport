@@ -36,6 +36,8 @@ export const ROUTE_START_PAYMENT_WITH_RAPIDE_WALLET =
    'start-payment-with-rapide-wallet'
 export const ROUTE_CONFIRM_PAYMENT_WITH_RAPIDE_WALLET =
    'confirm-payment-with-rapide-wallet'
+export const ROUTE_RESEND_CONFIRM_PAYMENT_WITH_RAPIDE_WALLET =
+   'resend-confirm-payment-with-rapide-wallet'
 
 // password
 export const ROUTE_SET_ADMIN_PASSWORD = 'set-admin-password'

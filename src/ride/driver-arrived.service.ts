@@ -98,7 +98,7 @@ export class DriverArrivedService {
             await this.ridePaymentService.setReceiverAndTtl(
                rideData.clientProfileId,
                driverProfileId,
-               rideTtl,
+               rideTtl + 30 * 60,
             )
          }
 

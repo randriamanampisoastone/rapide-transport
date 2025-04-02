@@ -322,6 +322,10 @@ export class TransferService {
             [receiverProfile.phoneNumber],
             `Dear ${receiverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${receiverProfile.lastName} ${receiverProfile.firstName}, you have received ${transferInfo.amount} Ar from ${senderProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${senderProfile.lastName} ${senderProfile.firstName}. Your transaction reference is ${transactionData.transaction.reference.toString().padStart(6, '0')}.`,
          )
+         await this.smsService.sendSMS(
+            [senderProfile.phoneNumber],
+            `Dear ${senderProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${senderProfile.lastName} ${senderProfile.firstName}, you have transferred ${transferInfo.amount} Ar to ${receiverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${receiverProfile.lastName} ${receiverProfile.firstName}. Your transaction reference is ${transactionData.transaction.reference.toString().padStart(6, '0')}.`,
+         )
          return rest
       } catch (error) {
          throw error
@@ -352,12 +356,7 @@ export class TransferService {
          )
          const sender = await this.prismaService.profile.findUnique({
             where: { sub: profileId },
-            select: {
-               phoneNumber: true,
-               firstName: true,
-               lastName: true,
-               gender: true,
-            },
+            select: { phoneNumber: true },
          })
          await this.smsService.sendSMS(
             [sender.phoneNumber],

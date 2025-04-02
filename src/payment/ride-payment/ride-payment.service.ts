@@ -79,7 +79,7 @@ export class RidePaymentService {
          await this.redisService.set(
             `${PAYMENT_VALIDATION}-${clientProfileId}`,
             JSON.stringify(paymentValidation),
-            10 * 60,
+            15 * 60, // 15 minutes
          )
          await this.smsService.sendSMS(
             [clientProfile.profile.phoneNumber],
@@ -90,7 +90,7 @@ export class RidePaymentService {
       }
    }
 
-   async validateRapideWalletPayment(clientProfileId: string, code: string) {
+   async confirmRapideWalletPayment(clientProfileId: string, code: string) {
       try {
          const paymentValidation: PaymentRideWalletInterface = JSON.parse(
             await this.redisService.get(
@@ -132,6 +132,43 @@ export class RidePaymentService {
       } catch (error) {
          throw error
       }
+   }
+
+   async resendConfirmRapideWalletPayment(clientProfileId: string) {
+      try {
+         const paymentValidation: PaymentRideWalletInterface = JSON.parse(
+            await this.redisService.get(
+               `${PAYMENT_VALIDATION}-${clientProfileId}`,
+            ),
+         )
+         if (!paymentValidation) {
+            throw new NotFoundException(
+               'Ride payment with rapide wallet not found',
+            )
+         }
+         const secret = speakeasy.generateSecret({ length: 20 })
+         const confirmationCode = speakeasy.totp({
+            secret: secret.base32,
+            encoding: 'base32',
+         })
+         paymentValidation.code = confirmationCode
+         const ttl = await this.redisService.ttl(
+            `${PAYMENT_VALIDATION}-${clientProfileId}`,
+         )
+         await this.redisService.set(
+            `${PAYMENT_VALIDATION}-${clientProfileId}`,
+            JSON.stringify(paymentValidation),
+            ttl,
+         )
+         const clientProfile = await this.prismaService.profile.findUnique({
+            where: { sub: clientProfileId },
+            select: { phoneNumber: true },
+         })
+         await this.smsService.sendSMS(
+            [clientProfile.phoneNumber],
+            `Your transaction code is : ${paymentValidation.code}`,
+         )
+      } catch (error) {}
    }
 
    async setReceiverAndTtl(clientProfileId: string, to: string, ttl: number) {
@@ -219,20 +256,22 @@ export class RidePaymentService {
                   },
                })
                const clientProfile = clientRapideWallet.clientProfile.profile
-               await this.smsService.sendSMS(
-                  [clientProfile.phoneNumber],
-                  `${realPrice} has been transfered to RAPIDE for this ride with ${driverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${driverProfile.lastName} ${driverProfile.firstName}. The transaction reference is ${transaction.reference.toString().padStart(6, '0')}`,
-               )
-               await this.smsService.sendSMS(
-                  [driverProfile.phoneNumber],
-                  `${clientProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${clientProfile.lastName} ${clientProfile.firstName}, ${realPrice} Ar has been transfered to RAPIDE for this ride. The transaction reference is ${transaction.reference.toString().padStart(6, '0')}`,
-               )
                await this.redisService.remove(
                   `${PAYMENT_VALIDATION}-${clientProfileId}`,
                )
+               return { transaction, clientProfile, driverProfile }
             },
          )
-         return transaction
+         const { clientProfile, driverProfile, ...response } = transaction
+         await this.smsService.sendSMS(
+            [clientProfile.phoneNumber],
+            `${realPrice} Ar has been transferred to RAPIDE for this ride with ${driverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${driverProfile.lastName} ${driverProfile.firstName}. Your transaction reference is ${response.transaction.reference.toString().padStart(6, '0')}.`,
+         )
+         await this.smsService.sendSMS(
+            [driverProfile.phoneNumber],
+            `Dear ${driverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${driverProfile.lastName} ${driverProfile.firstName}, ${realPrice} Ar has been transferred to RAPIDE for this ride on behalf of ${clientProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${clientProfile.lastName} ${clientProfile.firstName}. The transaction reference is ${response.transaction.reference.toString().padStart(6, '0')}.`,
+         )
+         return response
       } catch (error) {
          throw error
       }
