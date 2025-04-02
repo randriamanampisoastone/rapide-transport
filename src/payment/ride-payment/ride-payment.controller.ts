@@ -2,7 +2,6 @@ import {
    Body,
    Controller,
    ForbiddenException,
-   Get,
    Post,
    SetMetadata,
    UseGuards,
@@ -57,7 +56,7 @@ export class RidePaymentController {
       )
    }
 
-   @Get(ROUTE_RESEND_CONFIRM_PAYMENT_WITH_RAPIDE_WALLET)
+   @Post(ROUTE_RESEND_CONFIRM_PAYMENT_WITH_RAPIDE_WALLET)
    @SetMetadata('allowedRole', [UserRole.CLIENT])
    @UseGuards(RolesGuard)
    async resendConfirmPaymentWithRapideWallet(
