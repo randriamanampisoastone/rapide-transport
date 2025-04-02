@@ -2,6 +2,7 @@ import {
    Body,
    Controller,
    ForbiddenException,
+   Get,
    Post,
    SetMetadata,
    UseGuards,
@@ -51,7 +52,7 @@ export class TransferController {
       return await this.transferService.confirmTransfer(profileId, code, role)
    }
 
-   @Post(ROUTE_RESEND_CONFIRM_TRANSFER)
+   @Get(ROUTE_RESEND_CONFIRM_TRANSFER)
    @SetMetadata('allowedRole', [UserRole.CLIENT, UserRole.DRIVER])
    @UseGuards(RolesGuard)
    async resendCode(
