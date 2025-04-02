@@ -168,7 +168,9 @@ export class RidePaymentService {
             [clientProfile.phoneNumber],
             `Your transaction code is : ${paymentValidation.code}`,
          )
-      } catch (error) {}
+      } catch (error) {
+         throw error
+      }
    }
 
    async setReceiverAndTtl(clientProfileId: string, to: string, ttl: number) {
