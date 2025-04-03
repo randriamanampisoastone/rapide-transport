@@ -1,24 +1,31 @@
 import {PrismaService} from "../../prisma/prisma.service";
 import {AddCartItemDto} from "./dto/cart-item.dto";
-import {HttpException, HttpStatus} from "@nestjs/common";
-import {CART_NOT_FOUND, ERROR_REMOVING_CART} from "../../../constants/response.constant";
+import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
+import {CART_NOT_FOUND, ERROR_FETCHING_CART, ERROR_REMOVING_CART} from "../../../constants/response.constant";
 
+@Injectable()
 export class CartService {
     constructor(
         private readonly prismaService: PrismaService,
     ) {}
 
     async getCart(userId: string){
-        return this.prismaService.cart.findUnique({
-            where: { userId },
-            include: {
-                items: {
-                    include: {
-                        product: true
+        try {
+            return this.prismaService.cart.findUnique({
+                where: {userId},
+                include: {
+                    items: {
+                        include: {
+                            product: true
+                        }
                     }
                 }
-            }
-        });
+            });
+        }catch (e) {
+            throw new HttpException({
+                error: ERROR_FETCHING_CART,
+            }, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     async addToCart(userId: string, addCartItemDto: AddCartItemDto) {
