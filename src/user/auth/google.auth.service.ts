@@ -57,7 +57,7 @@ export class GoogleAuthService {
       }
    }
 
-   async googleAuth(idToken: string, userRole: UserRole) {
+   async googleAuth(idToken: string, userRole: UserRole, locale: string) {
       try {
          const payload = await this.verifyGoogleToken(idToken, userRole)
 
@@ -104,6 +104,7 @@ export class GoogleAuthService {
                   status: existingUser.clientProfile.status,
                   rapideWalletStatus:
                      existingUser.clientProfile.rapideWallet.status,
+                  locale
                },
                this.JWT_SECRET_CLIENT,
                {
@@ -119,6 +120,7 @@ export class GoogleAuthService {
                   status: existingUser.driverProfile.status,
                   rapideWalletStatus:
                      existingUser.driverProfile.rapideWallet.status,
+                  locale
                },
                this.JWT_SECRET_DRIVER,
                {
@@ -141,6 +143,7 @@ export class GoogleAuthService {
                   status: existingUser.adminProfile.status,
                   isWalletPasswordDefined:
                      existingUser.adminProfile.isTransactionPasswordDefined,
+                  locale
                },
                this.JWT_SECRET_ADMIN,
                {

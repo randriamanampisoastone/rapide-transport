@@ -13,6 +13,7 @@ import { UserRole } from 'enums/profile.enum'
 import { ConfirmDto } from './dto/confirm.dto'
 import { ConfigService } from '@nestjs/config'
 import { RapideWalletStatus } from '@prisma/client'
+import { SignUpDataOnRedisInterface } from 'interfaces/sign.up.data.on.redis.interface'
 
 @Injectable()
 export class ConfirmSignUpService {
@@ -44,7 +45,7 @@ export class ConfirmSignUpService {
             throw new NotFoundException('Timeout expired')
          }
 
-         const signUpDto = JSON.parse(signUpDtoString)
+         const signUpDto: SignUpDataOnRedisInterface = JSON.parse(signUpDtoString)
          if (signUpDto.attempt >= 5) {
             await this.redisService.remove(
                `${AUTH_SIGN_UP_PREFIX + confirmSignUpDto.phoneNumber}`,
@@ -87,6 +88,7 @@ export class ConfirmSignUpService {
                   role: clientProfile.role,
                   status: clientProfile.status,
                   rapideWalletStatus: RapideWalletStatus.UNDETERMINED,
+                  locale: signUpDto.locale,
                },
                this.JWT_SECRET_CLIENT,
                {
@@ -102,6 +104,7 @@ export class ConfirmSignUpService {
                   status: driverProfile.status,
                   sub: driverProfile.sub,
                   rapideWalletStatus: RapideWalletStatus.UNDETERMINED,
+                  locale: signUpDto.locale,
                },
                this.JWT_SECRET_DRIVER,
                {
@@ -127,6 +130,7 @@ export class ConfirmSignUpService {
                   role: adminProfile.role,
                   status: adminProfile.status,
                   isTransactionPasswordDefined: false,
+                  locale: signUpDto.locale,
                },
                this.JWT_SECRET_ADMIN,
                {

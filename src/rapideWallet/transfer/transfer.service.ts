@@ -32,7 +32,11 @@ export class TransferService {
       private readonly gateway: Gateway,
    ) {}
 
-   async startTransfer(initTransferDto: InitTransferDto, role: UserRole) {
+   async startTransfer(
+      initTransferDto: InitTransferDto,
+      role: UserRole,
+      locale: string,
+   ) {
       try {
          const selectRapideWallet = {
             select: {
@@ -160,10 +164,19 @@ export class TransferService {
             },
          )
 
-         await this.smsService.sendSMS(
-            [transaction.phoneNumber],
-            `Your transaction code is : ${transaction.confirmationCode}`,
-         )
+         let message = ''
+
+         if (locale === 'fr') {
+            message = `Votre code OTP pour la transaction est : ${transaction.confirmationCode}`
+         } else if (locale === 'mg') {
+            message = `Indro ny kaody OTP afahanao manamarina : ${transaction.confirmationCode}`
+         } else if (locale === 'en') {
+            message = `Your transaction code is : ${transaction.confirmationCode}`
+         } else if (locale === 'zh') {
+            message = `您的交易码 : ${transaction.confirmationCode}`
+         }
+
+         await this.smsService.sendSMS([transaction.phoneNumber], message)
 
          const { confirmationCode, phoneNumber, ...response } = transaction
          return response
@@ -172,7 +185,12 @@ export class TransferService {
       }
    }
 
-   async confirmTransfer(profileId: string, code: string, role: UserRole) {
+   async confirmTransfer(
+      profileId: string,
+      code: string,
+      role: UserRole,
+      locale: string,
+   ) {
       try {
          const transferInfo: TransferRedisDataInterface = JSON.parse(
             await this.redisService.get(`${TRANSFER_VALIDATION}-${profileId}`),
@@ -318,21 +336,36 @@ export class TransferService {
             },
          )
          const { receiverProfile, senderProfile, ...rest } = transactionData
+
+         let messages = ['', '']
+
+         if (locale === 'fr') {
+            messages[0] = `Cher(e) ${receiverProfile.gender === GenderType.FEMALE ? 'Mme.' : 'M.'} ${receiverProfile.lastName} ${receiverProfile.firstName}, vous avez reçu ${transferInfo.amount} Ar de la part de ${senderProfile.gender === GenderType.FEMALE ? 'Mme.' : 'M.'} ${senderProfile.lastName} ${senderProfile.firstName}. Votre référence de transaction est ${transactionData.transaction.reference.toString().padStart(6, '0')}.`
+            messages[1] = `Cher(e) ${senderProfile.gender === GenderType.FEMALE ? 'Mme.' : 'M.'} ${senderProfile.lastName} ${senderProfile.firstName}, vous avez transféré ${transferInfo.amount} Ar à ${receiverProfile.gender === GenderType.FEMALE ? 'Mme.' : 'M.'} ${receiverProfile.lastName} ${receiverProfile.firstName}. Votre référence de transaction est ${transactionData.transaction.reference.toString().padStart(6, '0')}.`
+         } else if (locale === 'mg') {
+            messages[0] = `Ry ${receiverProfile.gender === GenderType.FEMALE ? 'Ramatoa' : 'Andriamatoa'} ${receiverProfile.lastName} ${receiverProfile.firstName}, nahazo ${transferInfo.amount} Ar avy amin'i ${senderProfile.gender === GenderType.FEMALE ? 'Ramatoa' : 'Andriamatoa'} ${senderProfile.lastName} ${senderProfile.firstName} ianao. Ny laharana fanovozan-kevitrao dia ${transactionData.transaction.reference.toString().padStart(6, '0')}.`
+            messages[1] = `Ry ${senderProfile.gender === GenderType.FEMALE ? 'Ramatoa' : 'Andriamatoa'} ${senderProfile.lastName} ${senderProfile.firstName}, nandefa ${transferInfo.amount} Ar ho an'i ${receiverProfile.gender === GenderType.FEMALE ? 'Ramatoa' : 'Andriamatoa'} ${receiverProfile.lastName} ${receiverProfile.firstName} ianao. Ny laharana fanovozan-kevitra dia ${transactionData.transaction.reference.toString().padStart(6, '0')}.`
+         } else if (locale === 'en') {
+            messages[0] = `Dear ${receiverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${receiverProfile.lastName} ${receiverProfile.firstName}, you have received ${transferInfo.amount} Ar from ${senderProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${senderProfile.lastName} ${senderProfile.firstName}. Your transaction reference is ${transactionData.transaction.reference.toString().padStart(6, '0')}.`
+            messages[1] = `Dear ${senderProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${senderProfile.lastName} ${senderProfile.firstName}, you have transferred ${transferInfo.amount} Ar to ${receiverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${receiverProfile.lastName} ${receiverProfile.firstName}. Your transaction reference is ${transactionData.transaction.reference.toString().padStart(6, '0')}.`
+         } else if (locale === 'zh') {
+            messages[0] = `尊敬的${receiverProfile.gender === GenderType.FEMALE ? '女士' : '先生'} ${receiverProfile.lastName} ${receiverProfile.firstName}，您已收到来自${senderProfile.gender === GenderType.FEMALE ? '女士' : '先生'} ${senderProfile.lastName} ${senderProfile.firstName} 的 ${transferInfo.amount} Ar。您的交易参考号是 ${transactionData.transaction.reference.toString().padStart(6, '0')}。`
+            messages[1] = `尊敬的${senderProfile.gender === GenderType.FEMALE ? '女士' : '先生'} ${senderProfile.lastName} ${senderProfile.firstName}，您已成功向 ${receiverProfile.gender === GenderType.FEMALE ? '女士' : '先生'} ${receiverProfile.lastName} ${receiverProfile.firstName} 转账 ${transferInfo.amount} Ar。您的交易参考号是 ${transactionData.transaction.reference.toString().padStart(6, '0')}。`
+         }
+
+
          await this.smsService.sendSMS(
             [receiverProfile.phoneNumber],
-            `Dear ${receiverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${receiverProfile.lastName} ${receiverProfile.firstName}, you have received ${transferInfo.amount} Ar from ${senderProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${senderProfile.lastName} ${senderProfile.firstName}. Your transaction reference is ${transactionData.transaction.reference.toString().padStart(6, '0')}.`,
+            messages[0],
          )
-         await this.smsService.sendSMS(
-            [senderProfile.phoneNumber],
-            `Dear ${senderProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${senderProfile.lastName} ${senderProfile.firstName}, you have transferred ${transferInfo.amount} Ar to ${receiverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${receiverProfile.lastName} ${receiverProfile.firstName}. Your transaction reference is ${transactionData.transaction.reference.toString().padStart(6, '0')}.`,
-         )
+         await this.smsService.sendSMS([senderProfile.phoneNumber], messages[1])
          return rest
       } catch (error) {
          throw error
       }
    }
 
-   async resendCode(profileId: string) {
+   async resendCode(profileId: string, locale: string) {
       try {
          const transferInfo: TransferRedisDataInterface = JSON.parse(
             await this.redisService.get(`${TRANSFER_VALIDATION}-${profileId}`),
@@ -358,6 +391,18 @@ export class TransferService {
             where: { sub: profileId },
             select: { phoneNumber: true },
          })
+         let message = ''
+
+         if (locale === 'fr') {
+            message = `Votre code OTP pour la transaction est : ${transferInfo.code}`
+         } else if (locale === 'mg') {
+            message = `Indro ny kaody OTP afahanao manamarina : ${transferInfo.code}`
+         } else if (locale === 'en') {
+            message = `Your transaction code is : ${transferInfo.code}`
+         } else if (locale === 'zh') {
+            message = `您的交易码 : ${transferInfo.code}`
+         }
+
          await this.smsService.sendSMS(
             [sender.phoneNumber],
             `Your transaction code is : ${transferInfo.code}`,

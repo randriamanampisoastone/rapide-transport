@@ -240,6 +240,7 @@ export class DeleteProfileService {
          await this.redisService.remove(
             `${DELETE_PROFILE_PREFIX}-${confirmDeleteDto.clientProfileId}`,
          )
+         await this.smsService.sendSMS([data.phoneNumber], ``)
          await this.gateWay.sendNotificationToAdmin(
             [UserRole.RIDER, UserRole.CALL_CENTER, UserRole.MANAGER_HUB],
             EVENT_DELETEE_PROFILE,

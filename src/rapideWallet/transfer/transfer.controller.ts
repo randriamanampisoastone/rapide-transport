@@ -30,11 +30,16 @@ export class TransferController {
       @Body() initTransferDto: InitTransferDto,
       @GetUser('status') status: ProfileStatus,
       @GetUser('role') role: UserRole,
+      @GetUser('locale') locale: string,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return await this.transferService.startTransfer(initTransferDto, role)
+      return await this.transferService.startTransfer(
+         initTransferDto,
+         role,
+         locale,
+      )
    }
 
    @Post(ROUTE_CONFIRM_TRANSFER)
@@ -45,11 +50,17 @@ export class TransferController {
       @Body('code') code: string,
       @GetUser('status') status: ProfileStatus,
       @GetUser('role') role: UserRole,
+      @GetUser('locale') locale: string,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return await this.transferService.confirmTransfer(profileId, code, role)
+      return await this.transferService.confirmTransfer(
+         profileId,
+         code,
+         role,
+         locale,
+      )
    }
 
    @Get(ROUTE_RESEND_CONFIRM_TRANSFER)
@@ -58,10 +69,11 @@ export class TransferController {
    async resendCode(
       @GetUser('sub') profileId: string,
       @GetUser('status') status: ProfileStatus,
+      @GetUser('locale') locale: string,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return await this.transferService.resendCode(profileId)
+      return await this.transferService.resendCode(profileId, locale)
    }
 }
