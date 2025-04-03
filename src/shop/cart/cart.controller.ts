@@ -3,8 +3,10 @@ import {CartService} from "./cart.service";
 import {GetUser} from "../../jwt/get.user.decorator";
 import {UserRole} from "../../../enums/profile.enum";
 import {RolesGuard} from "../../jwt/roles.guard";
-import {ApiOperation} from "@nestjs/swagger";
+import {ApiBody, ApiOperation} from "@nestjs/swagger";
 import {AddCartItemDto} from "./dto/cart-item.dto";
+import {CartDecoratorDto} from "./dto/cart-decorator.dto";
+import {UpdateCartDecoratorDto} from "./dto/update-cart-decorator.dto";
 
 @Controller('cart')
 export class CartController {
@@ -25,6 +27,7 @@ export class CartController {
     @SetMetadata('allowedRole', [UserRole.CLIENT])
     @UseGuards(RolesGuard)
     @ApiOperation({summary: 'Add product to cart (from carItem)'})
+    @ApiBody({type : CartDecoratorDto})
     @Post()
     async addToCart(
         @GetUser('sub') userId: string,
@@ -47,6 +50,7 @@ export class CartController {
     @UseGuards(RolesGuard)
     @ApiOperation({summary: 'Update product quantity in cart'})
     @Patch()
+    @ApiBody({type : UpdateCartDecoratorDto})
     async updateCartItemQuantity(
         @Body() updateCartItemDto: {
             cartItemId: string;
