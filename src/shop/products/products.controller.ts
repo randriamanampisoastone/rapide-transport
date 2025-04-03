@@ -253,12 +253,22 @@ export class ProductsController {
         );
     }
 
+    @ApiOperation({summary: 'Get a product infos by id for public users'})
+    @Get('public/:id')
+    @Public()
+    async getInfoProductPublic(
+        @Param('id') id: string
+    ) {
+        return this.searchProductService.getInfoProduct(id, null);
+    }
+
+    @SetMetadata('allowedRole', [UserRole.SELLER, UserRole.CLIENT])
+    @UseGuards(RolesGuard)
     @ApiOperation({summary: 'Fetch a product by id'})
     @Get(':id')
-    @ApiOperation({summary: 'Get product infos'})
     async getInfoProduct(
         @Param('id') id: string,
-        @GetUser('sub') user?: string,
+        @GetUser('sub') user: string,
     ) {
         return this.searchProductService.getInfoProduct(id, user);
     }
