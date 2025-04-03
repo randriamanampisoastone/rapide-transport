@@ -11,14 +11,27 @@ import { UserRole } from 'enums/profile.enum'
 import { Request } from 'express'
 import * as jwt from 'jsonwebtoken'
 
+export const IS_PUBLIC_KEY = 'isPublic'
+
 @Injectable()
 export class RolesGuard implements CanActivate {
    constructor(
-      private readonly reflector: Reflector,
-      private readonly configService: ConfigService,
+       private readonly reflector: Reflector,
+       private readonly configService: ConfigService,
    ) {}
 
    canActivate(context: ExecutionContext): boolean {
+      // Check if route is marked as public
+      const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+         context.getHandler(),
+         context.getClass(),
+      ]);
+
+      // If the route is public, allow access without token verification
+      if (isPublic) {
+         return true;
+      }
+
       const request: Request = context.switchToHttp().getRequest()
       const authHeader = request.headers.authorization
 
@@ -55,7 +68,7 @@ export class RolesGuard implements CanActivate {
                break
             default:
                throw new UnauthorizedException(
-                  `Rôle invalide: ${decodedHeader.role}`,
+                   `Rôle invalide: ${decodedHeader.role}`,
                )
          }
 
@@ -67,13 +80,13 @@ export class RolesGuard implements CanActivate {
 
          // Vérifier le rôle de l'utilisateur
          const requiredRoles = this.reflector.get<string[]>(
-            'allowedRole',
-            context.getHandler(),
+             'allowedRole',
+             context.getHandler(),
          )
 
          if (requiredRoles && !requiredRoles.includes(decoded.role)) {
             throw new ForbiddenException(
-               `Access denied. User role: ${decoded.role}`,
+                `Access denied. User role: ${decoded.role}`,
             )
          }
 

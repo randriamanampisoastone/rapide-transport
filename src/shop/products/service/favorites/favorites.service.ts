@@ -56,7 +56,7 @@ export class FavoriteService {
             }
         });
 
-        return !!favorite;
+        return (favorite !== null);
     }
 
     async getUserFavorites(userId: string) {

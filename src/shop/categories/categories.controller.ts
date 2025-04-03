@@ -12,6 +12,7 @@ import {
     INVALID_CATEGORY_TYPE_FOR,
     INVALID_PARAMS
 } from "../../../constants/response.constant";
+import {Public} from "../../jwt/public.decorator";
 
 
 @Controller('categories')
@@ -119,6 +120,7 @@ export class CategoriesController {
 
 
     @Get()
+    @Public()
     @ApiOperation({summary: 'Search categories by name and type'})
     @ApiQuery({name: 'name', required: false, description: 'Filter categories by name (case insensitive)'})
     @ApiQuery({name: 'for', required: false, description: 'Filter categories by type ( MART, FOOD)'})

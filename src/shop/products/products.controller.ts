@@ -14,10 +14,11 @@ import {
 } from "@nestjs/common";
 import {AddProductService} from "./service/add.product.service";
 import {CreateProductDto} from "./dto/create-product.dto";
-import {ApiBody, ApiConsumes, ApiOperation, ApiQuery} from "@nestjs/swagger";
+import {ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiQuery} from "@nestjs/swagger";
 import {UserRole} from "../../../enums/profile.enum";
 import {RolesGuard} from "../../jwt/roles.guard";
 import {GetUser} from "../../jwt/get.user.decorator";
+import {Public} from "../../jwt/public.decorator";
 import {createDynamicFileInterceptor} from "../Common/Interceptor/dynamic.interptor";
 import {EditProductService} from "./service/edit.product.service";
 import {UpdateProductDto} from "./dto/update-product.dto";
@@ -181,8 +182,45 @@ export class ProductsController {
         return this.productService.deleteImageFromProduct(id, user);
     }
 
+    @ApiOperation({ summary: 'Fetch products for public users' })
+    @Get('public/fetch/all')
+    @Public()
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'itemsPerPage', required: false, type: Number })
+    @ApiQuery({ name: 'name', required: false, type: String })
+    @ApiQuery({ name: 'minPrice', required: false, type: Number })
+    @ApiQuery({ name: 'maxPrice', required: false, type: Number })
+    @ApiQuery({ name: 'categories', required: false, type: String, isArray: true })
+    @ApiQuery({ name: 'shop', required: false, type: String })
+    @ApiQuery({ name: 'productFor', required: false, type: String, enum: ['MART', 'FOOD'] })
+    async getPublicProducts(
+        @Query('productFor') productFor: string,
+        @Query('page') page?: number,
+        @Query('itemsPerPage') itemsPerPage?: number,
+        @Query('name') name?: string,
+        @Query('minPrice') minPrice?: number,
+        @Query('maxPrice') maxPrice?: number,
+        @Query('categories') categories?: string | string[],
+        @Query('shop') shop?: string
+    ) {
+        return this.searchProductService.getProducts(
+            productFor,
+            null, // Explicitly pass null for public access
+            page,
+            itemsPerPage,
+            name,
+            minPrice,
+            maxPrice,
+            categories,
+            shop
+        );
+    }
+
+    @SetMetadata('allowedRole', [UserRole.SELLER, UserRole.CLIENT])
+    @UseGuards(RolesGuard)
     @ApiOperation({summary: 'Fetch all products and can filter'})
     @Get()
+    @ApiBearerAuth()
     @ApiQuery({name: 'page', required: false, type: Number})
     @ApiQuery({name: 'itemsPerPage', required: false, type: Number})
     @ApiQuery({name: 'name', required: false, type: String})
@@ -220,7 +258,7 @@ export class ProductsController {
     @ApiOperation({summary: 'Get product infos'})
     async getInfoProduct(
         @Param('id') id: string,
-        @GetUser('sub') user: string,
+        @GetUser('sub') user?: string,
     ) {
         return this.searchProductService.getInfoProduct(id, user);
     }
@@ -229,27 +267,23 @@ export class ProductsController {
     @SetMetadata('allowedRole', [UserRole.CLIENT])
     @UseGuards(RolesGuard)
     @ApiOperation({summary: 'Add a product to favorites'})
-    @Post('favorite')
+    @Post('favorite/:productId')
     async addToFavorite(
-        @Body() favoriteDto: {
-            userId: string;
-            productId: string;
-        }
+        @GetUser('sub') userId: string,
+        @Param('productId') productId: string
     ) {
-        return this.favoriteService.addToFavorites(favoriteDto.userId, favoriteDto.productId);
+        return this.favoriteService.addToFavorites(userId, productId);
     }
 
     @SetMetadata('allowedRole', [UserRole.CLIENT])
     @UseGuards(RolesGuard)
     @ApiOperation({summary: 'Remove a product from favorites'})
-    @Delete('favorite')
+    @Delete('favorite/:productId')
     async removeFromFavorites(
-        @Body() favoriteDto: {
-            userId: string;
-            productId: string;
-        }
+        @GetUser('sub') userId: string,
+        @Param('productId') productId: string
     ) {
-        return this.favoriteService.removeFromFavorite(favoriteDto.userId, favoriteDto.productId);
+        return this.favoriteService.removeFromFavorite(userId, productId);
     }
 
     @SetMetadata('allowedRole', [UserRole.CLIENT])

@@ -4,9 +4,12 @@ import {PrismaService} from "../../../prisma/prisma.service";
 import {ReviewService} from "./reviews/review.service";
 import {Injectable} from "@nestjs/common";
 import {FavoriteService} from "./favorites/favorites.service";
+import {Profile} from "@prisma/client";
+import {UserRole} from "../../../../enums/profile.enum";
 
 @Injectable()
 export class SearchProductService extends ProductsService {
+
     constructor(
         uploadAwsService: UploadAwsService,
         prismaService: PrismaService,
@@ -18,7 +21,7 @@ export class SearchProductService extends ProductsService {
 
     async getProducts(
         productFor: string,
-        user: string,
+        user?: string | null,
         page?: number,
         itemsPerPage?: number,
         name?: string,
@@ -33,6 +36,17 @@ export class SearchProductService extends ProductsService {
         const skip = (currentPage - 1) * limit;
 
         const where: any = {};
+        let connectedUser: any = null;
+
+        if (user) {
+            try{
+                connectedUser = await this.getConnectedUser(user);
+                console.log('user ', user);
+                console.log('connectedUser ', connectedUser);
+            }catch (error){
+                console.error('Error fetching connected user:', error);
+            }
+        }
 
         // Add name filter if provided
         if (name) {
@@ -82,6 +96,10 @@ export class SearchProductService extends ProductsService {
             // needed on web part, 'cauz the product shop is filter by owner
             // when connect to web, get the connectedUser info and get sub
             where.sellerId = shop;
+        }
+
+        if (connectedUser !== null && connectedUser.role === UserRole.SELLER) {
+            where.sellerId = user;
         }
 
         // Get total count for pagination
@@ -142,20 +160,30 @@ export class SearchProductService extends ProductsService {
 
         // Transform products and add ratings
         const transformedProducts = await Promise.all(products.map(async product => {
-            const rating = await this.reviewService.getAverageRating(product.id);
-            const favorite = user ? await this.favoriteService.isFavorite(user, product.id) : false;
-            return {
+
+            let dataToReturn = {
                 ...product,
                 price: Number(product.price.toString()),
-                isFavorite: favorite,
                 categories: product.categories.map(c => c.category),
                 discounts: product.discounts.map(d => ({
                     ...d.discount,
                     value: Number(d.discount.value.toString())
                 })),
-                rating,
                 reviewsCount: await this.reviewService.getProductReviewCount(product.id),
-            };
+            }
+
+            if (connectedUser !== null && connectedUser.role === UserRole.CLIENT) {
+                const rating = await this.reviewService.getAverageRating(product.id);
+                const favorite = user ? await this.favoriteService.isFavorite(user, product.id) : false;
+
+                return {
+                    ...dataToReturn,
+                    rating,
+                    isFavorite: favorite,
+                };
+            }
+
+            return dataToReturn;
         }));
 
         return {
@@ -169,7 +197,14 @@ export class SearchProductService extends ProductsService {
         };
     }
 
-    async getInfoProduct(id: string, user: string) {
+    async getInfoProduct(id: string, user?: string) {
+        let connectedUser: any = null;
+        let transformedProduct: any = null;
+
+        if (user) {
+            connectedUser = await this.getConnectedUser(user);
+        }
+
         const product = await this.prismaService.product.findUnique({
             where: {
                 id: id
@@ -194,18 +229,35 @@ export class SearchProductService extends ProductsService {
             return null;
         }
 
-        // Transform product and await async operations
-        return {
+        let dataToReturn = {
             ...product,
-            rating: await this.reviewService.getAverageRating(product.id),
             reviewsCount: await this.reviewService.getProductReviewCount(product.id),
-            isFavorite: user ? await this.favoriteService.isFavorite(user, product.id) : false,
             price: Number(product.price.toString()),
             categories: product.categories.map(c => c.category),
             discounts: product.discounts.map(d => ({
                 ...d.discount,
                 value: Number(d.discount.value.toString())
             }))
-        };
+        }
+
+        transformedProduct = dataToReturn;
+
+        if (connectedUser !== null && connectedUser.role === UserRole.CLIENT) {
+            transformedProduct = {
+                ...dataToReturn,
+                rating: await this.reviewService.getAverageRating(product.id),
+                isFavorite: user ? await this.favoriteService.isFavorite(user, product.id) : false
+            }
+        }
+
+        return transformedProduct;
+    }
+
+    private getConnectedUser(user: string) {
+        return this.prismaService.profile.findUnique({
+            where: {
+                sub: user
+            }
+        });
     }
 }
