@@ -25,6 +25,7 @@ export class RidePaymentService {
    async startPaymentWithRapideWallet(
       clientProfileId: string,
       initRapideWalletPayment: InitRapideWalletPayment,
+      locale: string,
    ) {
       try {
          const clientProfile =
@@ -81,9 +82,21 @@ export class RidePaymentService {
             JSON.stringify(paymentValidation),
             15 * 60, // 15 minutes
          )
+         let message = ''
+
+         if (locale === 'fr') {
+            message = `Votre code OTP pour la transaction est : ${confirmationCode}`
+         } else if (locale === 'mg') {
+            message = `Indro ny kaody OTP afahanao manamarina : ${confirmationCode}`
+         } else if (locale === 'en') {
+            message = `Your transaction code is : ${confirmationCode}`
+         } else if (locale === 'zh') {
+            message = `您的交易码 : ${confirmationCode}`
+         }
+
          await this.smsService.sendSMS(
             [clientProfile.profile.phoneNumber],
-            `Your transaction code is : ${confirmationCode}`,
+            message,
          )
       } catch (error) {
          throw error
@@ -134,7 +147,10 @@ export class RidePaymentService {
       }
    }
 
-   async resendConfirmRapideWalletPayment(clientProfileId: string) {
+   async resendConfirmRapideWalletPayment(
+      clientProfileId: string,
+      locale: string,
+   ) {
       try {
          const paymentValidation: PaymentRideWalletInterface = JSON.parse(
             await this.redisService.get(
@@ -164,10 +180,20 @@ export class RidePaymentService {
             where: { sub: clientProfileId },
             select: { phoneNumber: true },
          })
-         await this.smsService.sendSMS(
-            [clientProfile.phoneNumber],
-            `Your transaction code is : ${paymentValidation.code}`,
-         )
+
+         let message = ''
+
+         if (locale === 'fr') {
+            message = `Votre code OTP pour la transaction est : ${confirmationCode}`
+         } else if (locale === 'mg') {
+            message = `Indro ny kaody OTP afahanao manamarina : ${confirmationCode}`
+         } else if (locale === 'en') {
+            message = `Your transaction code is : ${confirmationCode}`
+         } else if (locale === 'zh') {
+            message = `您的交易码 : ${confirmationCode}`
+         }
+
+         await this.smsService.sendSMS([clientProfile.phoneNumber], message)
       } catch (error) {
          throw error
       }
@@ -198,6 +224,7 @@ export class RidePaymentService {
       rideInvoiceId: string,
       clientProfileId: string,
       realPrice: number,
+      locale: string,
    ) {
       try {
          const paymentValidation: PaymentRideWalletInterface = JSON.parse(
@@ -265,14 +292,24 @@ export class RidePaymentService {
             },
          )
          const { clientProfile, driverProfile, ...response } = transaction
-         await this.smsService.sendSMS(
-            [clientProfile.phoneNumber],
-            `${realPrice} Ar has been transferred to RAPIDE for this ride with ${driverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${driverProfile.lastName} ${driverProfile.firstName}. Your transaction reference is ${response.transaction.reference.toString().padStart(6, '0')}.`,
-         )
-         await this.smsService.sendSMS(
-            [driverProfile.phoneNumber],
-            `Dear ${driverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${driverProfile.lastName} ${driverProfile.firstName}, ${realPrice} Ar has been transferred to RAPIDE for this ride on behalf of ${clientProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${clientProfile.lastName} ${clientProfile.firstName}. The transaction reference is ${response.transaction.reference.toString().padStart(6, '0')}.`,
-         )
+         const messages: string[] = ['', '']
+         if (locale === 'fr') {
+            messages[0] = `${realPrice} Ar ont été transférés à RAPIDE pour cette course avec ${driverProfile.gender === GenderType.FEMALE ? 'Mme.' : 'M.'} ${driverProfile.lastName} ${driverProfile.firstName}. Votre référence de transaction est ${response.transaction.reference.toString().padStart(6, '0')}.`
+            messages[1] = `Cher(e) ${driverProfile.gender === GenderType.FEMALE ? 'Mme.' : 'M.'} ${driverProfile.lastName} ${driverProfile.firstName}, ${realPrice} Ar ont été transférés à RAPIDE pour cette course au nom de ${clientProfile.gender === GenderType.FEMALE ? 'Mme.' : 'M.'} ${clientProfile.lastName} ${clientProfile.firstName}. La référence de la transaction est ${response.transaction.reference.toString().padStart(6, '0')}.`
+         } else if (locale === 'mg') {
+            messages[0] = `${realPrice} Ar dia nalefa tany amin'ny RAPIDE ho an'ity dia natao niaraka tamin'i ${driverProfile.gender === GenderType.FEMALE ? 'Ramatoa' : 'Andriamatoa'} ${driverProfile.lastName} ${driverProfile.firstName}. Ny laharana fanovozan-kevitrao dia ${response.transaction.reference.toString().padStart(6, '0')}.`
+            messages[1] = `Ry ${driverProfile.gender === GenderType.FEMALE ? 'Ramatoa' : 'Andriamatoa'} ${driverProfile.lastName} ${driverProfile.firstName}, ${realPrice} Ar dia nalefa tany amin'ny RAPIDE ho an'ity dia natao ho an'i ${clientProfile.gender === GenderType.FEMALE ? 'Ramatoa' : 'Andriamatoa'} ${clientProfile.lastName} ${clientProfile.firstName}. Ny laharana fanovozan-kevitra dia ${response.transaction.reference.toString().padStart(6, '0')}.`
+         } else if (locale === 'en') {
+            messages[0] = `${realPrice} Ar has been transferred to RAPIDE for this ride with ${driverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${driverProfile.lastName} ${driverProfile.firstName}. Your transaction reference is ${response.transaction.reference.toString().padStart(6, '0')}.`
+            messages[1] = `Dear ${driverProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${driverProfile.lastName} ${driverProfile.firstName}, ${realPrice} Ar has been transferred to RAPIDE for this ride on behalf of ${clientProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${clientProfile.lastName} ${clientProfile.firstName}. The transaction reference is ${response.transaction.reference.toString().padStart(6, '0')}.`
+         } else if (locale === 'zh') {
+            messages[0] = `${realPrice} Ar 已转账至 RAPIDE，用于本次行程，乘客：${driverProfile.gender === GenderType.FEMALE ? '女士' : '先生'} ${driverProfile.lastName} ${driverProfile.firstName}。您的交易参考号是 ${response.transaction.reference.toString().padStart(6, '0')}。`
+            messages[1] = `尊敬的${driverProfile.gender === GenderType.FEMALE ? '女士' : '先生'} ${driverProfile.lastName} ${driverProfile.firstName}，${realPrice} Ar 已转账至 RAPIDE，用于本次行程，由 ${clientProfile.gender === GenderType.FEMALE ? '女士' : '先生'} ${clientProfile.lastName} ${clientProfile.firstName} 代付。交易参考号为 ${response.transaction.reference.toString().padStart(6, '0')}。`
+         }
+
+
+         await this.smsService.sendSMS([clientProfile.phoneNumber], messages[0])
+         await this.smsService.sendSMS([driverProfile.phoneNumber], messages[1])
          return response
       } catch (error) {
          throw error
@@ -283,7 +320,7 @@ export class RidePaymentService {
       clientProfileId: string,
       driverProfileId: string,
       rideInvoiceId: string,
-      amount: number,
+      amount: number
    ) {
       try {
          const transactionData = await this.prismaService.$transaction(

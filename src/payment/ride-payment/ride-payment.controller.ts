@@ -29,6 +29,7 @@ export class RidePaymentController {
       @GetUser('sub') clientProfileId: string,
       @Body() initRapideWalletPayment: InitRapideWalletPayment,
       @GetUser('status') status: ProfileStatus,
+      @GetUser('locale') locale: string,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('Account is not activate')
@@ -36,6 +37,7 @@ export class RidePaymentController {
       return await this.ridePaymentService.startPaymentWithRapideWallet(
          clientProfileId,
          initRapideWalletPayment,
+         locale,
       )
    }
 
@@ -62,12 +64,14 @@ export class RidePaymentController {
    async resendConfirmPaymentWithRapideWallet(
       @GetUser('sub') clientProfileId: string,
       @GetUser('status') status: ProfileStatus,
+      @GetUser('locale') locale: string,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('Account is not activate')
       }
       return await this.ridePaymentService.resendConfirmRapideWalletPayment(
          clientProfileId,
+         locale,
       )
    }
 }

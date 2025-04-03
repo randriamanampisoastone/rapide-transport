@@ -1,4 +1,4 @@
-import { IsNotEmpty, Matches } from 'class-validator'
+import { IsIn, IsNotEmpty, Matches } from 'class-validator'
 
 export class ResendConfirmDto {
    @IsNotEmpty()
@@ -7,4 +7,10 @@ export class ResendConfirmDto {
          'Phone number must be in the format: +261XXXXXXXXX or 261XXXXXXXXX or 0XXXXXXXXX',
    })
    phoneNumber: string
+
+   @IsNotEmpty()
+   @IsIn(['fr', 'mg', 'en', 'zh'], {
+      message: 'Locale must be one of the following: fr, mg, en, zh',
+   })
+   locale: string
 }

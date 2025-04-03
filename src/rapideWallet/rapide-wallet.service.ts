@@ -96,6 +96,7 @@ export class RapideWalletService {
       phoneNumber: string,
       confirmationCode: string,
       userRole: UserRole,
+      locale: string,
    ) {
       try {
          const rapideWalletInformationString: string =
@@ -181,6 +182,7 @@ export class RapideWalletService {
                   ? rapideWallet.clientProfile.status
                   : rapideWallet.driverProfile.status,
             rapideWalletStatus: rapideWallet.status,
+            locale,
          }
          const token = jwt.sign(
             updateUserProfile,
@@ -263,7 +265,11 @@ export class RapideWalletService {
       }
    }
 
-   async updateStatus(rapideWalletId: string, status: RapideWalletStatus) {
+   async updateStatus(
+      rapideWalletId: string,
+      status: RapideWalletStatus,
+      locale: string,
+   ) {
       try {
          const rapideWallet = await this.prismaService.rapideWallet.update({
             where: { rapideWalletId },
@@ -296,14 +302,25 @@ export class RapideWalletService {
             },
          })
          if (status === RapideWalletStatus.ACTIVE) {
-            console.log('sms sended')
             const customerProfile = rapideWallet.clientProfile
                ? rapideWallet.clientProfile.profile
                : rapideWallet.driverProfile.profile
 
+            let message: string = ''
+
+            if (locale === 'fr') {
+               message = `Cher(e) ${customerProfile.gender === GenderType.FEMALE ? 'Mme.' : 'M.'} ${customerProfile.firstName} ${customerProfile.lastName}, votre portefeuille Rapide est maintenant actif !`
+            } else if (locale === 'mg') {
+               message = `Ry ${customerProfile.gender === GenderType.FEMALE ? 'Mme.' : 'M.'} ${customerProfile.firstName} ${customerProfile.lastName}, efa active izao ny kaontinao Rapide Wallet !`
+            } else if (locale === 'en') {
+               message = `Dear ${customerProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${customerProfile.firstName} ${customerProfile.lastName}, your Rapide Wallet is now active!`
+            } else if (locale === 'zh') {
+               message = `尊敬的${customerProfile.gender === GenderType.FEMALE ? '女士' : '先生'} ${customerProfile.firstName} ${customerProfile.lastName}，您的 Rapide 钱包现已激活！`
+            }
+
             await this.smsService.sendSMS(
                [customerProfile.phoneNumber],
-               `Dear ${customerProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${customerProfile.firstName} ${customerProfile.lastName}, your Rapide Wallet is now active!`,
+               message,
             )
          }
          return rapideWallet
@@ -312,7 +329,11 @@ export class RapideWalletService {
       }
    }
 
-   async getRapideWallet(profileId: string, userRole: UserRole) {
+   async getRapideWallet(
+      profileId: string,
+      userRole: UserRole,
+      locale: string,
+   ) {
       try {
          const condition =
             userRole === UserRole.CLIENT
@@ -355,6 +376,7 @@ export class RapideWalletService {
                   ? rapideWalletData.clientProfile.status
                   : rapideWalletData.driverProfile.status,
             rapideWalletStatus: rapideWalletData.status,
+            locale,
          }
          const token = jwt.sign(
             updateUserProfile,

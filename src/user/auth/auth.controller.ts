@@ -12,7 +12,16 @@ import { ResendConfirmDto } from './dto/resend.confirm.dto'
 import { GoogleAuthService } from './google.auth.service'
 import { UserRole } from 'enums/profile.enum'
 import { ROUTE_AUTH } from 'routes/main-routes'
-import { ROUTE_CONFIRM_SIGN_IN, ROUTE_CONFIRM_SIGN_UP, ROUTE_GOOGLE_AUTH, ROUTE_RESEND_CONFIRM_SIGN_IN, ROUTE_RESEND_CONFIRM_SIGN_UP, ROUTE_SIGN_IN, ROUTE_SIGN_UP } from 'routes/secondary-routes'
+import {
+   ROUTE_CONFIRM_SIGN_IN,
+   ROUTE_CONFIRM_SIGN_UP,
+   ROUTE_GOOGLE_AUTH,
+   ROUTE_RESEND_CONFIRM_SIGN_IN,
+   ROUTE_RESEND_CONFIRM_SIGN_UP,
+   ROUTE_SIGN_IN,
+   ROUTE_SIGN_UP,
+} from 'routes/secondary-routes'
+import { GoogleAuthDto } from './dto/google.auth.dto'
 
 @Controller(ROUTE_AUTH)
 export class AuthController {
@@ -75,16 +84,11 @@ export class AuthController {
       )
    }
    @Post(ROUTE_GOOGLE_AUTH)
-   async googleAuth(
-      @Body()
-      data: {
-         idToken: string
-         userRole: UserRole
-      },
-   ) {
+   async googleAuth(@Body() data: GoogleAuthDto) {
       return await this.googleAuthService.googleAuth(
          data.idToken,
          data.userRole,
+         data.locale,
       )
    }
 }

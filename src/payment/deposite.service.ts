@@ -29,6 +29,7 @@ export class DepositeService {
       adminProfileId: string,
       clientProfileId: string,
       depositeDto: DepositeDto,
+      locale: string,
    ) {
       try {
          const adminProfile = await this.prismaService.adminProfile.findUnique({
@@ -77,10 +78,22 @@ export class DepositeService {
 
             const clientProfile = rapideWallet.clientProfile.profile
 
-            await this.smsService.sendSMS(
-               [clientProfile.phoneNumber],
-               `Dear ${clientProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${clientProfile.lastName} ${clientProfile.firstName}, you have received ${depositeDto.amount} Ar. The transaction reference is ${transaction.reference.toString().padStart(6, '0')}`,
-            )
+            let message: string = ''
+
+            if (locale === 'fr') {
+               message = `Chers ${clientProfile.gender === GenderType.FEMALE ? 'Mme.' : 'Mr.'} ${clientProfile.lastName} ${clientProfile.firstName}, vous avez reçu ${depositeDto.amount} Ar. La référence de la transaction est ${transaction.reference.toString().padStart(6, '0')}`
+            } else if (locale === 'mg') {
+               message = `Ry ${clientProfile.gender === GenderType.FEMALE ? 'Mme.' : 'Mr.'} ${clientProfile.lastName} ${clientProfile.firstName}, nahazo ${depositeDto.amount} Ar ianao. Ny laharana fanovozan-kevitra dia ${transaction.reference.toString().padStart(6, '0')}`
+            } else if (locale === 'en') {
+               message = `Dear ${clientProfile.gender === GenderType.FEMALE ? 'Ms.' : 'Mr.'} ${clientProfile.lastName} ${clientProfile.firstName}, you have received ${depositeDto.amount} Ar. The transaction reference is ${transaction.reference.toString().padStart(6, '0')}`
+            } else if (locale === 'zh') {
+               message = `尊敬的${clientProfile.gender === GenderType.FEMALE ? '女士' : '先生'}, 您已成功存款 ${depositeDto.amount}元, 交易参考号为${transaction.reference.toString().padStart(6, '0')}`
+            } else {
+               message = `Dear ${clientProfile.lastName} ${clientProfile.firstName}, you have received ${depositeDto.amount} Ar. The transaction reference is ${transaction.reference.toString().padStart(6, '0')}`
+            }
+
+
+            await this.smsService.sendSMS([clientProfile.phoneNumber], message)
 
             await this.gateWay.sendNotificationToClient(
                clientProfileId,

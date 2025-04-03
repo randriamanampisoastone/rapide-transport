@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config'
 import { SmsService } from 'src/sms/sms.service'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { SPECIAL_ACCESS_PHONE_NUMBER } from 'constants/access.constant'
+import { SignUpDataOnRedisInterface } from 'interfaces/sign.up.data.on.redis.interface'
 
 @Injectable()
 export class SignUpService implements OnModuleInit {
@@ -63,7 +64,7 @@ export class SignUpService implements OnModuleInit {
          if (signUpDto.phoneNumber !== SPECIAL_ACCESS_PHONE_NUMBER)
             await this.smsService.sendSMS([signUpDto.phoneNumber], message)
 
-         const updateSignUpDto = {
+         const updateSignUpDto: SignUpDataOnRedisInterface = {
             attempt: 0,
             confirmationCode,
             ...signUpDto,

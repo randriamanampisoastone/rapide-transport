@@ -32,7 +32,7 @@ export class CompleteService {
       private readonly prismaService: PrismaService,
       private readonly ridePaymentService: RidePaymentService,
    ) {}
-   async complete(completeDto: CompleteDto) {
+   async complete(completeDto: CompleteDto, locale: string) {
       try {
          const rideId = completeDto.rideId
          const driverProfileId = completeDto.driverProfileId
@@ -126,13 +126,14 @@ export class CompleteService {
                rideData.clientProfileId,
                rideData.driverProfileId,
                rideInvoice.rideInvoiceId,
-               Math.round(rideData.realPrice),
+               Math.round(rideData.realPrice)
             )
          } else if (rideData.methodType === MethodType.RAPIDE_WALLET) {
             await this.ridePaymentService.processPaymentWithRapideWallet(
                rideInvoice.rideInvoiceId,
                rideData.clientProfileId,
                Math.round(rideData.realPrice),
+               locale
             )
          }
 
