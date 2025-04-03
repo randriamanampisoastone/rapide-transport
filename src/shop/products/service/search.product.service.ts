@@ -41,8 +41,6 @@ export class SearchProductService extends ProductsService {
         if (user) {
             try{
                 connectedUser = await this.getConnectedUser(user);
-                console.log('user ', user);
-                console.log('connectedUser ', connectedUser);
             }catch (error){
                 console.error('Error fetching connected user:', error);
             }
