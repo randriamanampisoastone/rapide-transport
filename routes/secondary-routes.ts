@@ -127,3 +127,12 @@ export const ROUTE_UPDATE_ADMIN_ROLE = 'updateAdminRole'
 
 // vehicle
 export const ROUTE_FINDING_DRIVER_NEAR_BY = 'finding-drivers-near-by'
+
+// promotion-code
+export const ROUTE_CREATE_NEW_PROMOTION_CODE = 'create-new-promotion-code'
+export const ROUTE_CHANGE_PROMOTION_CODE_AVAILABILITY =
+   'change-promotion-code-availability'
+export const ROUTE_GET_PROMOTION_CODES = 'get-promotion-codes'
+export const ROUTE_GET_PROMOTION_CODE = 'get-promotion-code'
+export const ROUTE_UPDATE_PROMOTION_CODE = 'update-promotion-code'
+export const ROUTE_UPDATE_PROMOTION_SERVICE = 'update-promotion-service'
