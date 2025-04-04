@@ -4,7 +4,7 @@ import {GetUser} from "../../jwt/get.user.decorator";
 import {UserRole} from "../../../enums/profile.enum";
 import {RolesGuard} from "../../jwt/roles.guard";
 import {ApiBody, ApiOperation} from "@nestjs/swagger";
-import {AddCartItemDto} from "./dto/cart-item.dto";
+import {AddCartItemDto, UpdateCartItemDto} from "./dto/cart-item.dto";
 import {CartDecoratorDto} from "./dto/cart-decorator.dto";
 import {UpdateCartDecoratorDto} from "./dto/update-cart-decorator.dto";
 
@@ -52,11 +52,8 @@ export class CartController {
     @Patch()
     @ApiBody({type : UpdateCartDecoratorDto})
     async updateCartItemQuantity(
-        @Body() updateCartItemDto: {
-            cartItemId: string;
-            quantity: number;
-        }
+        @Body() updateCartItemDto: UpdateCartItemDto
     ){
-        return this.cartService.updateCartItemQuantity(updateCartItemDto.cartItemId, updateCartItemDto.quantity);
+        return this.cartService.updateCartItemQuantity(updateCartItemDto);
     }
 }

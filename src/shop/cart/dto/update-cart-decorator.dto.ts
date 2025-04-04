@@ -11,4 +11,9 @@ export class UpdateCartDecoratorDto {
     @IsNotEmpty()
     @IsNumber()
     quantity: number;
+
+    @ApiProperty({example: 1500.00, description: 'Calculated price of the product in the cart item'})
+    @IsNotEmpty()
+    @IsNumber()
+    calculatedPrice: number;
 }

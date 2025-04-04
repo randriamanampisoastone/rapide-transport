@@ -1,5 +1,5 @@
 import {PrismaService} from "../../prisma/prisma.service";
-import {AddCartItemDto} from "./dto/cart-item.dto";
+import {AddCartItemDto, UpdateCartItemDto} from "./dto/cart-item.dto";
 import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
 import {
     CART_NOT_FOUND,
@@ -17,16 +17,54 @@ export class CartService {
 
     async getCart(userId: string) {
         try {
-            return this.prismaService.cart.findUnique({
+            const cart = await this.prismaService.cart.findUnique({
                 where: {userId},
                 include: {
                     items: {
                         include: {
-                            product: true
+                            product: {
+                                include: {
+                                    seller: {
+                                        select: {
+                                            sub: true,
+                                            firstName: true,
+                                            lastName: true,
+                                        }
+                                    },
+                                    discounts: {
+                                        select: {
+                                            discount: {
+                                                select: {
+                                                    type: true,
+                                                    value: true
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             });
+
+            if (!cart) {
+                throw new HttpException({
+                    error: CART_NOT_FOUND,
+                }, HttpStatus.NOT_FOUND);
+            }
+
+            return {
+                ...cart,
+                items: cart.items.map(item => ({
+                    ...item,
+                    calculatedPrice: parseFloat(item.calculatedPrice.toString()),
+                    product: {
+                        ...item.product,
+                        price: parseFloat(item.product.price.toString())
+                    }
+                }))
+            };
         } catch (e) {
             throw new HttpException({
                 error: ERROR_FETCHING_CART,
@@ -55,25 +93,37 @@ export class CartService {
         });
 
         if (existingCartItem) {
-            // Update quantity if item exists
-            return this.prismaService.cartItem.update({
+            // Update quantity and save the provided calculatedPrice value
+            const updated= await this.prismaService.cartItem.update({
                 where: {id: existingCartItem.id},
                 data: {
-                    quantity: existingCartItem.quantity + addCartItemDto.quantity
+                    quantity: existingCartItem.quantity + addCartItemDto.quantity,
+                    calculatedPrice: addCartItemDto.calculatedPrice
                 },
                 include: {product: true}
             });
+
+            return {
+                ...updated,
+                calculatedPrice: parseFloat(updated.calculatedPrice.toString()),
+            }
         }
 
-        // Create new cart item
-        return this.prismaService.cartItem.create({
+        // Create new cart item with provided calculatedPrice
+        const created = await this.prismaService.cartItem.create({
             data: {
                 cartId: cart.id,
                 productId: addCartItemDto.productId,
-                quantity: addCartItemDto.quantity
+                quantity: addCartItemDto.quantity,
+                calculatedPrice: Number(addCartItemDto.calculatedPrice.toString())
             },
             include: {product: true}
         });
+
+        return {
+            ...created,
+            calculatedPrice: parseFloat(created.calculatedPrice.toString()),
+        }
     }
 
     async removeFromCart(cartItemId: string) {
@@ -98,10 +148,10 @@ export class CartService {
         }
     }
 
-    async updateCartItemQuantity(cartItemId: string, quantity: number) {
+    async updateCartItemQuantity(updateCartItemDto: UpdateCartItemDto) {
         try {
             const cartItem = await this.prismaService.cartItem.findUnique({
-                where: {id: cartItemId}
+                where: {id: updateCartItemDto.cartItemId}
             });
 
             if (!cartItem) {
@@ -111,8 +161,11 @@ export class CartService {
             }
 
             return this.prismaService.cartItem.update({
-                where: {id: cartItemId},
-                data: {quantity},
+                where: {id: updateCartItemDto.cartItemId},
+                data: {
+                    quantity: updateCartItemDto.quantity,
+                    calculatedPrice: updateCartItemDto.calculatedPrice
+                },
                 include: {product: true}
             });
         } catch (e) {

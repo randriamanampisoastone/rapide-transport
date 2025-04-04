@@ -12,6 +12,11 @@ export class CartDecoratorDto {
     @IsNumber()
     quantity: number;
 
+    @ApiProperty({example: 1500.00, description: 'Calculated price of the product in the cart item'})
+    @IsNotEmpty()
+    @IsNumber()
+    calculatedPrice: number;
+
     @ApiProperty({example: '#163546', description: 'Color of the product if it is to wear adn available'})
     @IsOptional()
     @IsString()
