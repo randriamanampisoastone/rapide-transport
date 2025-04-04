@@ -1,15 +1,21 @@
 import {PrismaService} from "../../prisma/prisma.service";
 import {AddCartItemDto} from "./dto/cart-item.dto";
 import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
-import {CART_NOT_FOUND, ERROR_FETCHING_CART, ERROR_REMOVING_CART} from "../../../constants/response.constant";
+import {
+    CART_NOT_FOUND,
+    ERROR_FETCHING_CART,
+    ERROR_REMOVING_CART,
+    ERROR_UPDATING_CART
+} from "../../../constants/response.constant";
 
 @Injectable()
 export class CartService {
     constructor(
         private readonly prismaService: PrismaService,
-    ) {}
+    ) {
+    }
 
-    async getCart(userId: string){
+    async getCart(userId: string) {
         try {
             return this.prismaService.cart.findUnique({
                 where: {userId},
@@ -21,7 +27,7 @@ export class CartService {
                     }
                 }
             });
-        }catch (e) {
+        } catch (e) {
             throw new HttpException({
                 error: ERROR_FETCHING_CART,
             }, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -31,12 +37,12 @@ export class CartService {
     async addToCart(userId: string, addCartItemDto: AddCartItemDto) {
         // Find or create cart for user
         let cart = await this.prismaService.cart.findUnique({
-            where: { userId }
+            where: {userId}
         });
 
         if (!cart) {
             cart = await this.prismaService.cart.create({
-                data: { userId }
+                data: {userId}
             });
         }
 
@@ -51,11 +57,11 @@ export class CartService {
         if (existingCartItem) {
             // Update quantity if item exists
             return this.prismaService.cartItem.update({
-                where: { id: existingCartItem.id },
+                where: {id: existingCartItem.id},
                 data: {
                     quantity: existingCartItem.quantity + addCartItemDto.quantity
                 },
-                include: { product: true }
+                include: {product: true}
             });
         }
 
@@ -66,7 +72,7 @@ export class CartService {
                 productId: addCartItemDto.productId,
                 quantity: addCartItemDto.quantity
             },
-            include: { product: true }
+            include: {product: true}
         });
     }
 
@@ -85,7 +91,7 @@ export class CartService {
             return this.prismaService.cartItem.delete({
                 where: {id: cartItemId}
             });
-        }catch (e) {
+        } catch (e) {
             throw new HttpException({
                 error: ERROR_REMOVING_CART,
             }, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -93,21 +99,27 @@ export class CartService {
     }
 
     async updateCartItemQuantity(cartItemId: string, quantity: number) {
-        const cartItem = await this.prismaService.cartItem.findUnique({
-            where: { id: cartItemId }
-        });
+        try {
+            const cartItem = await this.prismaService.cartItem.findUnique({
+                where: {id: cartItemId}
+            });
 
-        if (!cartItem) {
+            if (!cartItem) {
+                throw new HttpException({
+                    error: CART_NOT_FOUND,
+                }, HttpStatus.NOT_FOUND);
+            }
+
+            return this.prismaService.cartItem.update({
+                where: {id: cartItemId},
+                data: {quantity},
+                include: {product: true}
+            });
+        } catch (e) {
             throw new HttpException({
-                error: CART_NOT_FOUND,
-            }, HttpStatus.NOT_FOUND);
+                error: ERROR_UPDATING_CART,
+            }, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return this.prismaService.cartItem.update({
-            where: { id: cartItemId },
-            data: { quantity },
-            include: { product: true }
-        });
     }
 
 }

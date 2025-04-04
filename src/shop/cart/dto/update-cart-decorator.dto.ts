@@ -5,7 +5,7 @@ export class UpdateCartDecoratorDto {
     @ApiProperty({example: 'uuid', description: 'Id cart item ID'})
     @IsNotEmpty()
     @IsString()
-    productId: string;
+    cartIemId: string;
 
     @ApiProperty({example: 15, description: 'Number of product in the cart item'})
     @IsNotEmpty()
