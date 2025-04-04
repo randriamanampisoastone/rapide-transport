@@ -31,6 +31,7 @@ import {VariantService} from "./service/variants/variant.service";
 import {AddVariantDto, EditVariantDto} from "./dto/variant.dto";
 import {DiscountService} from "./service/discount/discount.service";
 import {AddDiscountDTO} from "./dto/discount.dto";
+import {GetProductsDto} from "./dto/get-products.dto";
 
 @Controller('products')
 export class ProductsController {
@@ -185,34 +186,20 @@ export class ProductsController {
     @ApiOperation({ summary: 'Fetch products for public users' })
     @Get('public/fetch/all')
     @Public()
-    @ApiQuery({ name: 'page', required: false, type: Number })
-    @ApiQuery({ name: 'itemsPerPage', required: false, type: Number })
-    @ApiQuery({ name: 'name', required: false, type: String })
-    @ApiQuery({ name: 'minPrice', required: false, type: Number })
-    @ApiQuery({ name: 'maxPrice', required: false, type: Number })
-    @ApiQuery({ name: 'categories', required: false, type: String, isArray: true })
-    @ApiQuery({ name: 'shop', required: false, type: String })
-    @ApiQuery({ name: 'productFor', required: false, type: String, enum: ['MART', 'FOOD'] })
+    @ApiQuery({ type: GetProductsDto })
     async getPublicProducts(
-        @Query('productFor') productFor: string,
-        @Query('page') page?: number,
-        @Query('itemsPerPage') itemsPerPage?: number,
-        @Query('name') name?: string,
-        @Query('minPrice') minPrice?: number,
-        @Query('maxPrice') maxPrice?: number,
-        @Query('categories') categories?: string | string[],
-        @Query('shop') shop?: string
+        @Query() query: GetProductsDto,
     ) {
         return this.searchProductService.getProducts(
-            productFor,
+            query.productFor,
             null, // Explicitly pass null for public access
-            page,
-            itemsPerPage,
-            name,
-            minPrice,
-            maxPrice,
-            categories,
-            shop
+            query.page,
+            query.itemsPerPage,
+            query.name,
+            query.minPrice,
+            query.maxPrice,
+            query.categories,
+            query.shop
         );
     }
 
@@ -221,35 +208,21 @@ export class ProductsController {
     @ApiOperation({summary: 'Fetch all products and can filter'})
     @Get()
     @ApiBearerAuth()
-    @ApiQuery({name: 'page', required: false, type: Number})
-    @ApiQuery({name: 'itemsPerPage', required: false, type: Number})
-    @ApiQuery({name: 'name', required: false, type: String})
-    @ApiQuery({name: 'minPrice', required: false, type: Number})
-    @ApiQuery({name: 'maxPrice', required: false, type: Number})
-    @ApiQuery({name: 'categories', required: false, type: String, isArray: true})
-    @ApiQuery({name: 'shop', required: false, type: String})
-    @ApiQuery({name: 'productFor', required: false, type: String, enum: ['MART', 'FOOD']})
+    @ApiQuery({type: GetProductsDto})
     async getAllProducts(
-        @Query('productFor') productFor: string,
+        @Query() query: GetProductsDto,
         @GetUser('sub') user: string,
-        @Query('page') page?: number,
-        @Query('itemsPerPage') itemsPerPage?: number,
-        @Query('name') name?: string,
-        @Query('minPrice') minPrice?: number,
-        @Query('maxPrice') maxPrice?: number,
-        @Query('categories') categories?: string | string[],
-        @Query('shop') shop?: string
     ) {
         return this.searchProductService.getProducts(
-            productFor,
+            query.productFor,
             user,
-            page,
-            itemsPerPage,
-            name,
-            minPrice,
-            maxPrice,
-            categories,
-            shop
+            query.page,
+            query.itemsPerPage,
+            query.name,
+            query.minPrice,
+            query.maxPrice,
+            query.categories,
+            query.shop
         );
     }
 
