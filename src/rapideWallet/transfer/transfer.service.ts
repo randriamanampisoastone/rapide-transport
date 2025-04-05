@@ -337,7 +337,7 @@ export class TransferService {
          )
          const { receiverProfile, senderProfile, ...rest } = transactionData
 
-         let messages = ['', '']
+         const messages: string[] = []
 
          if (locale === 'fr') {
             messages[0] = `Cher(e) ${receiverProfile.gender === GenderType.FEMALE ? 'Mme.' : 'M.'} ${receiverProfile.lastName} ${receiverProfile.firstName}, vous avez reçu ${transferInfo.amount} Ar de la part de ${senderProfile.gender === GenderType.FEMALE ? 'Mme.' : 'M.'} ${senderProfile.lastName} ${senderProfile.firstName}. Votre référence de transaction est ${transactionData.transaction.reference.toString().padStart(6, '0')}.`
@@ -352,7 +352,6 @@ export class TransferService {
             messages[0] = `尊敬的${receiverProfile.gender === GenderType.FEMALE ? '女士' : '先生'} ${receiverProfile.lastName} ${receiverProfile.firstName}，您已收到来自${senderProfile.gender === GenderType.FEMALE ? '女士' : '先生'} ${senderProfile.lastName} ${senderProfile.firstName} 的 ${transferInfo.amount} Ar。您的交易参考号是 ${transactionData.transaction.reference.toString().padStart(6, '0')}。`
             messages[1] = `尊敬的${senderProfile.gender === GenderType.FEMALE ? '女士' : '先生'} ${senderProfile.lastName} ${senderProfile.firstName}，您已成功向 ${receiverProfile.gender === GenderType.FEMALE ? '女士' : '先生'} ${receiverProfile.lastName} ${receiverProfile.firstName} 转账 ${transferInfo.amount} Ar。您的交易参考号是 ${transactionData.transaction.reference.toString().padStart(6, '0')}。`
          }
-
 
          await this.smsService.sendSMS(
             [receiverProfile.phoneNumber],

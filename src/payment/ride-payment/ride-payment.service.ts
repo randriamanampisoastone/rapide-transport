@@ -307,7 +307,6 @@ export class RidePaymentService {
             messages[1] = `尊敬的${driverProfile.gender === GenderType.FEMALE ? '女士' : '先生'} ${driverProfile.lastName} ${driverProfile.firstName}，${realPrice} Ar 已转账至 RAPIDE，用于本次行程，由 ${clientProfile.gender === GenderType.FEMALE ? '女士' : '先生'} ${clientProfile.lastName} ${clientProfile.firstName} 代付。交易参考号为 ${response.transaction.reference.toString().padStart(6, '0')}。`
          }
 
-
          await this.smsService.sendSMS([clientProfile.phoneNumber], messages[0])
          await this.smsService.sendSMS([driverProfile.phoneNumber], messages[1])
          return response
@@ -320,7 +319,7 @@ export class RidePaymentService {
       clientProfileId: string,
       driverProfileId: string,
       rideInvoiceId: string,
-      amount: number
+      amount: number,
    ) {
       try {
          const transactionData = await this.prismaService.$transaction(
