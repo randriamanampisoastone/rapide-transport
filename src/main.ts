@@ -9,7 +9,13 @@ async function bootstrap() {
     const redisIoAdapter = new RedisIoAdapter(app)
     await redisIoAdapter.connectToRedis()
     app.useWebSocketAdapter(redisIoAdapter)
-    app.useGlobalPipes(new ValidationPipe({transform: true, whitelist: true}))
+    app.useGlobalPipes(new ValidationPipe({
+        transform: true,
+        whitelist: true,
+        transformOptions: {
+            enableImplicitConversion: true
+        }
+    }))
     app.enableCors({
         origin: '*',
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
