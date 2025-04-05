@@ -52,8 +52,9 @@ export class CartController {
     @Patch()
     @ApiBody({type : UpdateCartDecoratorDto})
     async updateCartItemQuantity(
-        @Body() updateCartItemDto: UpdateCartItemDto
+        @Body() updateCartItemDto: UpdateCartDecoratorDto
     ){
+        console.log("Pass cart item", updateCartItemDto);
         return this.cartService.updateCartItemQuantity(updateCartItemDto);
     }
 }

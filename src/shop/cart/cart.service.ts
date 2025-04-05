@@ -94,7 +94,7 @@ export class CartService {
 
         if (existingCartItem) {
             // Update quantity and save the provided calculatedPrice value
-            const updated= await this.prismaService.cartItem.update({
+            const updated = await this.prismaService.cartItem.update({
                 where: {id: existingCartItem.id},
                 data: {
                     quantity: existingCartItem.quantity + addCartItemDto.quantity,
@@ -149,30 +149,40 @@ export class CartService {
     }
 
     async updateCartItemQuantity(updateCartItemDto: UpdateCartItemDto) {
-        try {
-            const cartItem = await this.prismaService.cartItem.findUnique({
-                where: {id: updateCartItemDto.cartItemId}
-            });
-
-            if (!cartItem) {
-                throw new HttpException({
-                    error: CART_NOT_FOUND,
-                }, HttpStatus.NOT_FOUND);
+        const cartItem = await this.prismaService.cartItem.findUnique({
+            where: {
+                id: updateCartItemDto.cartItemId
             }
+        });
 
-            return this.prismaService.cartItem.update({
-                where: {id: updateCartItemDto.cartItemId},
-                data: {
-                    quantity: updateCartItemDto.quantity,
-                    calculatedPrice: updateCartItemDto.calculatedPrice
-                },
-                include: {product: true}
-            });
-        } catch (e) {
+        if (!cartItem) {
+            throw new HttpException({
+                error: CART_NOT_FOUND,
+            }, HttpStatus.NOT_FOUND);
+        }
+
+        const updated = await this.prismaService.cartItem.update({
+            where: {
+                id: updateCartItemDto.cartItemId
+            },
+            data: {
+                quantity: updateCartItemDto.quantity,
+                calculatedPrice: Number(updateCartItemDto.calculatedPrice)
+            },
+            include: {
+                product: true
+            }
+        });
+        if (!updated) {
             throw new HttpException({
                 error: ERROR_UPDATING_CART,
             }, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
+        return {
+            ...updated,
+            calculatedPrice: parseFloat(updated.calculatedPrice.toString())
+        };
     }
 
 }
