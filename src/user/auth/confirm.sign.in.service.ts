@@ -171,7 +171,7 @@ export class ConfirmSignInService {
             })
             const updateAdminProfile = {
                sub: adminProfile.sub,
-               role: adminProfile.role,
+               role: signInDto.role,
                status: adminProfile.adminProfile.status,
                isTransactionPasswordDefined:
                   adminProfile.adminProfile.isTransactionPasswordDefined,

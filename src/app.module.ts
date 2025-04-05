@@ -15,6 +15,7 @@ import { HomeModule } from './home/home.module'
 import { RideStatisticModule } from './ride-statistic/ride-statistic.module'
 import { ClientRequestModule } from './clientRequest/client-request.module'
 import { PaymentModule } from './payment/payment.module'
+import { PromotionCodeModule } from './promotion-code/promotion-code.module'
 
 @Module({
    imports: [
@@ -48,6 +49,7 @@ import { PaymentModule } from './payment/payment.module'
       RideStatisticModule,
       ClientRequestModule,
       PaymentModule,
+      PromotionCodeModule
    ],
    controllers: [AppController],
    providers: [],
