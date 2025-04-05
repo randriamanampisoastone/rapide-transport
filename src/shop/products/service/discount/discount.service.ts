@@ -24,12 +24,10 @@ export class DiscountService {
                 }))
             }
         };
-
-        console.log(dataTransformed);
+        
         return this.prismaService.discount.create({
             data: dataTransformed
         });
-
     }
 
 }
