@@ -28,7 +28,7 @@ export class UpdateProductDto {
     @IsNumber()
     inventory: number;
 
-    @ApiProperty({example: true, description: 'Is active if product is clothing'})
+    @ApiProperty({example: true, description: 'Is active if product is to wear like shoes, etc.'})
     @IsOptional()
     @IsBoolean()
     toWear: boolean;

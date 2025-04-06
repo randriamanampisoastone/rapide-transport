@@ -37,10 +37,10 @@ export class CreateProductDto {
     @IsNumber()
     inventory: number;
 
-    @ApiProperty({example: true, description: 'Is active if product is clothing'})
+    @ApiProperty({example: true, description: 'Is active if product is to wear like shoes, etc.'})
     @IsOptional()
     @IsBoolean()
-    isClothes: boolean;
+    toWear: boolean;
 
     @ApiProperty({example: 'Blue', description: 'Color of the cloths'})
     @IsOptional()
