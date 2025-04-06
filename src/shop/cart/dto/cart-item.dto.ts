@@ -1,11 +1,9 @@
-import {SizeType} from "../../../../enums/shop.enum";
-
 type CartItem = {
     productId: string,
     quantity: number,
     calculatedPrice: number,
     color?: string,
-    size?: SizeType,
+    size?: string,
     cartItemId: string,
 }
 

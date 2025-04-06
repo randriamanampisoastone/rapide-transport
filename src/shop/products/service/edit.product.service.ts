@@ -16,7 +16,7 @@ export class EditProductService extends ProductsService {
 
     async editProduct(id: string, createProductDto: any) {
         try {
-            const {images, categories, ...productData} = createProductDto;
+            const {images, categories, variants, ...productData} = createProductDto;
 
             // Check the product by id
             const product = await this.prismaService.product.findUnique({
@@ -58,6 +58,13 @@ export class EditProductService extends ProductsService {
                 await Promise.all(categoryPromises);
             }
 
+            // Process variants if they exist
+            if(variants && variants.length > 0){
+                const variantPromises = variants.map(async variant =>
+                    await this.createVariantProduct(product.id, variant)
+                );
+                await Promise.all(variantPromises);
+            }
 
             // Return the complete product with relations
             return this.returnDataOnFlush(product);

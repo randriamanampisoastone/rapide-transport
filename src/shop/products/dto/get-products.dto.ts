@@ -1,7 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
-import {SizeType} from "../../../../enums/shop.enum";
+import {ApiProperty} from '@nestjs/swagger';
+import {IsEnum, IsNumber, IsOptional, IsString} from 'class-validator';
+import {Transform, Type} from 'class-transformer';
 
 export class GetProductsDto {
     @ApiProperty({ required: false, enum: ['MART', 'FOOD'] })
@@ -43,8 +42,8 @@ export class GetProductsDto {
     @IsOptional()
     color?: string;
 
-    @ApiProperty({ required: false, enum: SizeType })
-    @IsEnum(SizeType)
+    @ApiProperty({ required: false })
+    @IsString()
     @IsOptional()
     size?: string;
 

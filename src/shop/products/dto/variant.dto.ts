@@ -1,8 +1,6 @@
-import {SizeType} from "../../../../enums/shop.enum";
-
 type Variant = {
     color: string;
-    size: SizeType;
+    size: string;
     stock: number;
 }
 
