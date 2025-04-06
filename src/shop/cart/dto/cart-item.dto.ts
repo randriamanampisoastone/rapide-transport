@@ -4,8 +4,8 @@ type CartItem = {
     productId: string,
     quantity: number,
     calculatedPrice: number,
-    color?: SizeType,
-    size?: string,
+    color?: string,
+    size?: SizeType,
     cartItemId: string,
 }
 
