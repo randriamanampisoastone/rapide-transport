@@ -1,5 +1,6 @@
 import {ApiProperty} from "@nestjs/swagger";
-import {IsNotEmpty, IsNumber, IsString, IsOptional} from "class-validator";
+import {IsNotEmpty, IsNumber, IsString, IsOptional, IsEnum} from "class-validator";
+import {SizeType} from "../../../../enums/shop.enum";
 
 export class CartDecoratorDto {
     @ApiProperty({example: 'uuid', description: 'Product ID'})
@@ -17,13 +18,13 @@ export class CartDecoratorDto {
     @IsNumber()
     calculatedPrice: number;
 
-    @ApiProperty({example: '#163546', description: 'Color of the product if it is to wear adn available'})
+    @ApiProperty({enum: SizeType, example: 'XL', description: 'Color of the product if it is to wear adn available'})
+    @IsEnum(SizeType)
+    @IsString()
+    size?: SizeType;
+
+    @ApiProperty({example: 'Red', description: 'Size of the product if it is to wear adn available'})
     @IsOptional()
     @IsString()
     color?: string;
-
-    @ApiProperty({example: '#163546', description: 'Size of the product if it is to wear adn available'})
-    @IsOptional()
-    @IsString()
-    size?: string;
 }
