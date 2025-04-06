@@ -186,7 +186,6 @@ export class ProductsController {
     @ApiOperation({ summary: 'Fetch products for public users' })
     @Get('public/fetch/all')
     @Public()
-    @ApiQuery({ type: GetProductsDto })
     async getPublicProducts(
         @Query() query: GetProductsDto,
     ) {
@@ -198,6 +197,8 @@ export class ProductsController {
             query.name,
             query.minPrice,
             query.maxPrice,
+            query.color,
+            query.size,
             query.categories,
             query.shop
         );
@@ -208,7 +209,6 @@ export class ProductsController {
     @ApiOperation({summary: 'Fetch all products and can filter'})
     @Get()
     @ApiBearerAuth()
-    @ApiQuery({type: GetProductsDto})
     async getAllProducts(
         @Query() query: GetProductsDto,
         @GetUser('sub') user: string,
@@ -221,6 +221,8 @@ export class ProductsController {
             query.name,
             query.minPrice,
             query.maxPrice,
+            query.color,
+            query.size,
             query.categories,
             query.shop
         );

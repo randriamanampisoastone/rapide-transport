@@ -31,6 +31,8 @@ export class SearchProductService extends ProductsService {
         name?: string,
         minPrice?: number,
         maxPrice?: number,
+        color?: string,
+        size?: string,
         categories?: string | string[],
         shop?: string
     ) {
@@ -68,6 +70,30 @@ export class SearchProductService extends ProductsService {
                 if (maxPrice !== undefined && !isNaN(Number(maxPrice))) {
                     where.price.lte = Number(maxPrice);
                 }
+            }
+
+            // find by variant color
+            if (color) {
+                where.variants = {
+                    some: {
+                        color: {
+                            contains: color,
+                            mode: 'insensitive'
+                        }
+                    }
+                };
+            }
+
+            // find by variant size
+            if (size) {
+                where.variants = {
+                    some: {
+                        size: {
+                            contains: size,
+                            mode: 'insensitive'
+                        }
+                    }
+                };
             }
 
             // find by categories
@@ -145,6 +171,13 @@ export class SearchProductService extends ProductsService {
                                     icon: true
                                 }
                             }
+                        }
+                    },
+                    variants: {
+                        select: {
+                            color: true,
+                            size: true,
+                            stock: true
                         }
                     },
                     discounts: {

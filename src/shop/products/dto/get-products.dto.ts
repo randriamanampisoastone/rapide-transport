@@ -37,6 +37,16 @@ export class GetProductsDto {
     @Type(() => Number)
     maxPrice?: number;
 
+    @ApiProperty({ required: false })
+    @IsString()
+    @IsOptional()
+    color?: string;
+
+    @ApiProperty({ required: false })
+    @IsString()
+    @IsOptional()
+    size?: string;
+
     @ApiProperty({ required: false, type: [String] })
     @IsOptional()
     @Transform(({ value }) => Array.isArray(value) ? value : [value])
