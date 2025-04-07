@@ -1,5 +1,24 @@
+import {PrismaService} from "../../prisma/prisma.service";
+import {CreateAuditLogDto} from "./audit.dto";
+import {HttpException, HttpStatus} from "@nestjs/common";
+import {ERROR_FETCHING_CART} from "../../../constants/response.constant";
+
 export class AuditService {
-    async log(param: {entityType: string; entityId: any; action: string; oldValue?: string; newValue?: string; performedBy: string}) {
+    constructor(
+        private readonly prismaService: PrismaService,
+    ) {}
+
+    async log(auditDto: CreateAuditLogDto) {
+        try {
+            await this.prismaService.auditLog.create({
+                data: auditDto,
+            });
+        } catch (error) {
+            console.log('Error creating audit log:', error);
+            throw new HttpException({
+                error: ERROR_FETCHING_CART,
+            }, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
         
     }
 }
