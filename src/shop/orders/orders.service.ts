@@ -72,6 +72,7 @@ export class OrdersService {
     private async validateAndGetCart(userId: string) {
         const cart = this.cartService.getCart(userId);
 
+        console.log("Cart", cart);
         if (!cart || (await cart).items.length === 0) {
             throw new HttpException({
                 error: CARD_EMPTY,
