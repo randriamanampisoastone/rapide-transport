@@ -23,10 +23,27 @@ export class OrdersService {
                 userId,
                 status: OrderStatus.PENDING,
             },
+            include: {
+                items: {
+                    include: {
+                        product: {
+                            include: {
+                                images: true,
+                            },
+                        }
+                    }
+                },
+            },
         });
 
         if (existingOrder) {
-            return existingOrder;
+            return {
+                ...existingOrder,
+                items: existingOrder.items.map(item => ({
+                    ...item,
+                    priceAtPurchase: parseFloat(item.priceAtPurchase.toString())
+                }))
+            };
         }
 
         const cart = await this.validateAndGetCart(userId);
@@ -43,7 +60,13 @@ export class OrdersService {
             performedBy: userId,
         });
 
-        return order;
+        return {
+            ...order,
+            items: order.items.map(item => ({
+                ...item,
+                priceAtPurchase: parseFloat(item.priceAtPurchase.toString())
+            }))
+        };
     }
 
     private async validateAndGetCart(userId: string) {
@@ -111,7 +134,15 @@ export class OrdersService {
                 },
             },
             include: {
-                items: true,
+                items: {
+                    include: {
+                        product: {
+                            include: {
+                                images: true,
+                            },
+                        }
+                    }
+                },
             },
         });
     }
