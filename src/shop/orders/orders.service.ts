@@ -18,23 +18,7 @@ export class OrdersService {
     }
 
     async createOder(userId: string) {
-        const existingOrder = await this.prisma.order.findFirst({
-            where: {
-                userId,
-                status: OrderStatus.PENDING,
-            },
-            include: {
-                items: {
-                    include: {
-                        product: {
-                            include: {
-                                images: true,
-                            },
-                        }
-                    }
-                },
-            },
-        });
+        const existingOrder = await this.checkExistOrder(userId);
 
         if (existingOrder) {
             return {
@@ -67,6 +51,26 @@ export class OrdersService {
                 priceAtPurchase: parseFloat(item.priceAtPurchase.toString())
             }))
         };
+    }
+
+    private async checkExistOrder(userId: string){
+        return this.prisma.order.findFirst({
+            where: {
+                userId,
+                status: OrderStatus.PENDING,
+            },
+            include: {
+                items: {
+                    include: {
+                        product: {
+                            include: {
+                                images: true,
+                            },
+                        }
+                    }
+                },
+            },
+        });
     }
 
     private async validateAndGetCart(userId: string) {
