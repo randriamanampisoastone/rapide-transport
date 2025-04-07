@@ -10,7 +10,6 @@ import {
 } from 'class-validator';
 import {Type} from 'class-transformer';
 import {ApiProperty} from '@nestjs/swagger';
-import {string} from "joi";
 import {ImageDto} from "./image.dto";
 
 export class CreateProductDto {
@@ -71,12 +70,11 @@ export class CreateProductDto {
     images?: ImageDto[];
 
     @ApiProperty({
-        type: [string],
+        type: [String],
         description: 'Array of product category',
         required: false
     })
     @IsArray()
-    @ValidateNested({each: true})
-    @Type(() => string)
+    @IsString({each: true})
     categories?: string[];
 }

@@ -31,6 +31,13 @@ export class CartService {
                                             lastName: true,
                                         }
                                     },
+                                    images: {
+                                        select: {
+                                            url: true,
+                                            alt: true,
+                                            isMain: true,
+                                        }
+                                    },
                                     discounts: {
                                         select: {
                                             discount: {
