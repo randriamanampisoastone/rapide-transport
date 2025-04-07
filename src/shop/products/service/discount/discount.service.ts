@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {PrismaService} from "../../../../prisma/prisma.service";
 import {AddDiscountDTO} from "../../dto/discount.dto";
 import {MIN_AMOUNT_PURCHASED} from "../../../../../constants/discount.constant";
 import {Decimal} from "@prisma/client/runtime/library";
+import {ERROR_FETCHING_PRODUCT} from "../../../../../constants/response.constant";
 
 @Injectable()
 export class DiscountService {

@@ -361,7 +361,6 @@ export class ProductsController {
     @ApiOperation({summary: 'Add a discount ot a product'})
     @Post('discount')
     async addDiscountToProduct(
-        @GetUser('sub') userId: string,
         @Body() data: AddDiscountDTO
     ){
         return this.discountService.createDiscount(data);

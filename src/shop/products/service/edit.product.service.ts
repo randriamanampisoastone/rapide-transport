@@ -20,14 +20,19 @@ export class EditProductService extends ProductsService {
 
             // Check the product by id
             const product = await this.prismaService.product.findUnique({
-                where: {id}
+                where: {id},
+                include: {
+                    images: true,
+                    categories: true,
+                    variants: true
+                }
             });
+
             if (!product) {
-                return {
-                    statusCode: HttpStatus.NOT_FOUND,
+                throw new HttpException({
                     message: PRODUCT_NOT_FOUND,
                     error: 'Not Found',
-                };
+                }, HttpStatus.NOT_FOUND);
             }
 
             // Update the product record first
@@ -38,6 +43,27 @@ export class EditProductService extends ProductsService {
 
             // Process images if exist
             if (images && images.length > 0) {
+                // Delete existing non-main images if requested
+                const existingImages = product.images;
+                const imagesToDelete = existingImages.filter(img => !img.isMain);
+
+                if (imagesToDelete.length > 0) {
+                    // Delete files from AWS
+                    await Promise.all(
+                        imagesToDelete.map(img => this.uploadAwsService.deleteFile(img.url))
+                    );
+
+                    // Delete image records
+                    await this.prismaService.image.deleteMany({
+                        where: {
+                            id: {
+                                in: imagesToDelete.map(img => img.id)
+                            }
+                        }
+                    });
+                }
+
+                // Upload new images
                 const imagePromises = images.map(image =>
                     this.handleImageUpload(image, updatedProduct.id)
                 );
@@ -46,30 +72,39 @@ export class EditProductService extends ProductsService {
 
             // Handle categories if present
             if (categories && categories.length > 0) {
-                // First delete existing category relationships
                 await this.prismaService.productCategory.deleteMany({
-                    where: { productId : updatedProduct.id }
+                    where: { productId: updatedProduct.id }
                 });
 
-                // Then create new category relationships
-                const categoryPromises = categories.map(categoryId =>
-                    this.attachCategoriesToProduct(updatedProduct, categoryId)
-                );
-                await Promise.all(categoryPromises);
+                await this.prismaService.productCategory.createMany({
+                    data: categories.map(categoryId => ({
+                        productId: updatedProduct.id,
+                        categoryId
+                    }))
+                });
             }
 
             // Process variants if they exist
-            if(variants && variants.length > 0){
-                const variantPromises = variants.map(async variant =>
-                    await this.createVariantProduct(product.id, variant)
-                );
-                await Promise.all(variantPromises);
+            if (variants && variants.length > 0) {
+                await this.prismaService.productVariant.deleteMany({
+                    where: { productId: product.id }
+                });
+
+                await this.prismaService.productVariant.createMany({
+                    data: variants.map(variant => ({
+                        productId: product.id,
+                        color: variant.color,
+                        size: variant.size,
+                        stock: variant.stock
+                    }))
+                });
             }
 
-            // Return the complete product with relations
-            return this.returnDataOnFlush(product);
+            // Return the updated product with relations
+            return this.returnDataOnFlush(updatedProduct);
         } catch (error) {
-            console.error('Error creating product:', error);
+            if (error instanceof HttpException) throw error;
+
             throw new HttpException({
                 error: ERROR_CREATING_PRODUCT,
             }, HttpStatus.INTERNAL_SERVER_ERROR);
