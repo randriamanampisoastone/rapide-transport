@@ -389,7 +389,7 @@ model PromotionService {
   promotionServiceId String        @id @default(uuid())
   serviceFor         Services
   vehicleType        VehicleType?
-  value              Float
+  value              Float // 0 et 1
   phoneNumbers       String[] // Take all user ho already used the service of this promotion code
 
   rideInvoices       RideInvoice[]  @relation("RideInvoicePromotionService")

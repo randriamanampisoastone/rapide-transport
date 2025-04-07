@@ -6,17 +6,22 @@ import {
    InternalServerErrorException,
    NotFoundException,
 } from '@nestjs/common'
-import { MethodType } from '@prisma/client'
+import { MethodType, Services } from '@prisma/client'
 import { EVENT_RIDE_COMPLETED } from 'constants/event.constant'
-import { RIDE_PREFIX } from 'constants/redis.constant'
+import {
+   CLIENT_PROMOTION_CODE_PREFIX,
+   RIDE_PREFIX,
+} from 'constants/redis.constant'
 import { RideStatus } from 'enums/ride.enum'
 import { RideData } from 'interfaces/ride.interface'
-import { DriverBalanceService } from 'src/rapideWallet/driverBalance.service'
 import { Gateway } from 'src/gateway/gateway'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { RedisService } from 'src/redis/redis.service'
 import { RidePaymentService } from 'src/payment/ride-payment/ride-payment.service'
 import { UserRole } from 'enums/profile.enum'
+import { PromotionCodeService } from 'src/promotion-code/promotion-code.service'
+import { EstimatedPrice } from 'interfaces/price.interface'
+import { roundToNearestThousand } from 'utils/roundToNearestThousand.utils'
 
 export interface CompleteDto {
    driverProfileId: string
@@ -28,9 +33,9 @@ export class CompleteService {
    constructor(
       private readonly gateway: Gateway,
       private readonly redisService: RedisService,
-      private readonly driverBalanceService: DriverBalanceService,
       private readonly prismaService: PrismaService,
       private readonly ridePaymentService: RidePaymentService,
+      private readonly promotionCodeService: PromotionCodeService,
    ) {}
    async complete(completeDto: CompleteDto, locale: string) {
       try {
@@ -56,11 +61,43 @@ export class CompleteService {
             throw new ForbiddenException('Driver is not the driver of the ride')
          }
 
+         // Applay promotionCode
+         const usedPromotoinCode =
+            await this.promotionCodeService.getUsedClientPromotionServiceInRedis(
+               rideData.clientProfileId,
+            )
+         console.log(usedPromotoinCode)
+         if (
+            usedPromotoinCode !== null &&
+            usedPromotoinCode.promotionService.serviceFor === Services.RIDE &&
+            usedPromotoinCode.promotionService.vehicleType ===
+               rideData.vehicleType
+         ) {
+            rideData.estimatedPrice.upper = roundToNearestThousand(
+               rideData.estimatedPrice.upper *
+                  usedPromotoinCode.promotionService.value,
+            )
+            rideData.realPrice = roundToNearestThousand(
+               rideData.realPrice * usedPromotoinCode.promotionService.value,
+            )
+            await this.redisService.remove(
+               `${CLIENT_PROMOTION_CODE_PREFIX}-${rideData.clientProfileId}`,
+            )
+            await this.promotionCodeService.addClientPhoneNumberOnPromotionService(
+               usedPromotoinCode.phoneNumber,
+               usedPromotoinCode.promotionService.promotionServiceId,
+            )
+         }
+
          const updatedRideData = await this.prismaService.ride.update({
             where: {
                rideId,
             },
             data: {
+               estimatedPrice: JSON.stringify({
+                  lower: rideData.estimatedPrice.lower,
+                  upper: rideData.estimatedPrice.upper,
+               } as EstimatedPrice),
                status: RideStatus.COMPLETED,
                realDuration: rideData.realDuration,
                realPrice: Math.round(rideData.realPrice),
@@ -110,6 +147,9 @@ export class CompleteService {
                dropOffLongitude: rideData.dropOffLocation.longitude,
                status: RideStatus.COMPLETED,
                endTime: updatedRideData.endTime,
+               promotionServiceId: usedPromotoinCode
+                  ? usedPromotoinCode.promotionService.promotionServiceId
+                  : null,
             },
          })
 
@@ -126,14 +166,14 @@ export class CompleteService {
                rideData.clientProfileId,
                rideData.driverProfileId,
                rideInvoice.rideInvoiceId,
-               Math.round(rideData.realPrice)
+               Math.round(rideData.realPrice),
             )
          } else if (rideData.methodType === MethodType.RAPIDE_WALLET) {
             await this.ridePaymentService.processPaymentWithRapideWallet(
                rideInvoice.rideInvoiceId,
                rideData.clientProfileId,
                Math.round(rideData.realPrice),
-               locale
+               locale,
             )
          }
 

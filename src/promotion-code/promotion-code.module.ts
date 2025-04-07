@@ -7,6 +7,7 @@ import { LocationService } from "src/gateway/location/location.service";
 import { NotificationService } from "src/notification/notification.service";
 import { InfoOnRideService } from "src/ride/info-on-ride.service";
 import { RedisService } from "src/redis/redis.service";
+import { SmsService } from "src/sms/sms.service";
 
 @Module({
    imports: [],
@@ -19,6 +20,7 @@ import { RedisService } from "src/redis/redis.service";
       NotificationService,
       InfoOnRideService,
       RedisService,
+      SmsService,
    ],
 })
 export class PromotionCodeModule {}
