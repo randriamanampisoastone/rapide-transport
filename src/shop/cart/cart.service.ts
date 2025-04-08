@@ -112,7 +112,9 @@ export class CartService {
                 where: {id: existingCartItem.id},
                 data: {
                     quantity: existingCartItem.quantity + addCartItemDto.quantity,
-                    calculatedPrice: addCartItemDto.calculatedPrice
+                    calculatedPrice: addCartItemDto.calculatedPrice,
+                    color: addCartItemDto.color,
+                    size: addCartItemDto.size,
                 },
                 include: {product: true}
             });
@@ -129,7 +131,9 @@ export class CartService {
                 cartId: cart.id,
                 productId: addCartItemDto.productId,
                 quantity: addCartItemDto.quantity,
-                calculatedPrice: Number(addCartItemDto.calculatedPrice.toString())
+                calculatedPrice: Number(addCartItemDto.calculatedPrice.toString()),
+                color: addCartItemDto.color,
+                size: addCartItemDto.size,
             },
             include: {product: true}
         });
