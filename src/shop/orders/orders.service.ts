@@ -23,6 +23,7 @@ export class OrdersService {
         if (existingOrder) {
             return {
                 ...existingOrder,
+                totalPrice : parseFloat(existingOrder.totalPrice.toString()),
                 items: existingOrder.items.map(item => ({
                     ...item,
                     priceAtPurchase: parseFloat(item.priceAtPurchase.toString())
@@ -46,6 +47,7 @@ export class OrdersService {
 
         return {
             ...order,
+            totalPrice: parseFloat(order.totalPrice.toString()),
             items: order.items.map(item => ({
                 ...item,
                 priceAtPurchase: parseFloat(item.priceAtPurchase.toString())
@@ -65,7 +67,8 @@ export class OrdersService {
                         product: {
                             include: {
                                 images: true,
-                                variants: true
+                                variants: true,
+                                seller: true,
                             },
                         }
                     }
@@ -76,7 +79,7 @@ export class OrdersService {
 
     private async validateAndGetCart(userId: string) {
         const cart = this.cartService.getCart(userId);
-        
+
         if (!cart || (await cart).items.length === 0) {
             throw new HttpException({
                 error: CARD_EMPTY,
@@ -146,7 +149,8 @@ export class OrdersService {
                         product: {
                             include: {
                                 images: true,
-                                variants: true
+                                variants: true,
+                                seller: true,
                             },
                         }
                     }
