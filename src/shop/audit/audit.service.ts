@@ -1,7 +1,5 @@
 import {PrismaService} from "../../prisma/prisma.service";
 import {CreateAuditLogDto} from "./audit.dto";
-import {HttpException, HttpStatus} from "@nestjs/common";
-import {ERROR_ADDING_AUDIT} from "../../../constants/response.constant";
 
 export class AuditService {
     constructor(
