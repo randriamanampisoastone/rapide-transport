@@ -189,34 +189,41 @@ export class PromotionCodeService {
             }
          }
 
-         if (promotoinsServices.length) {
-            let message = ''
-
-            if (locale === 'fr') {
-               message = `Cher client, votre code promotionnel "${promotionCode}" est valide. Vous avez ${promotoinsServices.length} service(s) de réduction.`
-            } else if (locale === 'mg') {
-               message = `Ry mpanjifa hajaina, manan-kery ny kaody fampiroboroboana "${promotionCode}". Manana tolotra fihenam-bidy ${promotoinsServices.length} ianao.`
-            } else if (locale === 'en') {
-               message = `Dear customer, your promotional code "${promotionCode}" is valid. You have ${promotoinsServices.length} discount service(s).`
-            } else if (locale === 'zh') {
-               message = `尊敬的客户，您的优惠码 "${promotionCode}" 有效。您有 ${promotoinsServices.length} 项优惠服务。`
-            }
-
-            await this.smsService.sendSMS([phoneNumber], message)
+         if (promotionCodeExist.customMessage) {
+            await this.smsService.sendSMS(
+               [phoneNumber],
+               promotionCodeExist.customMessage,
+            )
          } else {
-            let message = ''
+            if (promotoinsServices.length) {
+               let message = ''
 
-            if (locale === 'fr') {
-               message = `Vous avez epuiser vos service de reduction sur ce code promotionel`
-            } else if (locale === 'mg') {
-               message = ``
-            } else if (locale === 'en') {
-               message = ``
-            } else if (locale === 'zh') {
-               message = ``
+               if (locale === 'fr') {
+                  message = `Cher client, votre code promotionnel "${promotionCode}" est valide. Vous avez ${promotoinsServices.length} service(s) de réduction.`
+               } else if (locale === 'mg') {
+                  message = `Ry mpanjifa hajaina, manan-kery ny kaody fampiroboroboana "${promotionCode}". Manana tolotra fihenam-bidy ${promotoinsServices.length} ianao.`
+               } else if (locale === 'en') {
+                  message = `Dear customer, your promotional code "${promotionCode}" is valid. You have ${promotoinsServices.length} discount service(s).`
+               } else if (locale === 'zh') {
+                  message = `尊敬的客户，您的优惠码 "${promotionCode}" 有效。您有 ${promotoinsServices.length} 项优惠服务。`
+               }
+
+               await this.smsService.sendSMS([phoneNumber], message)
+            } else {
+               let message = ''
+
+               if (locale === 'fr') {
+                  message = `Vous avez epuiser vos service de reduction sur ce code promotionel`
+               } else if (locale === 'mg') {
+                  message = ``
+               } else if (locale === 'en') {
+                  message = ``
+               } else if (locale === 'zh') {
+                  message = ``
+               }
+
+               await this.smsService.sendSMS([phoneNumber], message)
             }
-
-            await this.smsService.sendSMS([phoneNumber], message)
          }
 
          return promotoinsServices

@@ -75,7 +75,7 @@ export class PromotionCodeController {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return await this.promotionCodeService.getPromotionCodes(page, pageSize)
+      return await this.promotionCodeService.getPromotionCodes(page || 1, pageSize || 10)
    }
 
    @Get(ROUTE_GET_PROMOTION_CODE)
@@ -93,7 +93,7 @@ export class PromotionCodeController {
       )
    }
 
-   @Get(ROUTE_UPDATE_PROMOTION_CODE)
+   @Patch(ROUTE_UPDATE_PROMOTION_CODE)
    @SetMetadata('allowedRole', [UserRole.TREASURER, UserRole.SUPER_ADMIN])
    @UseGuards(RolesGuard)
    async updatePromotionCode(
@@ -108,7 +108,7 @@ export class PromotionCodeController {
       )
    }
 
-   @Get(ROUTE_UPDATE_PROMOTION_SERVICE)
+   @Patch(ROUTE_UPDATE_PROMOTION_SERVICE)
    @SetMetadata('allowedRole', [UserRole.TREASURER, UserRole.SUPER_ADMIN])
    @UseGuards(RolesGuard)
    async updatePromotionService(
