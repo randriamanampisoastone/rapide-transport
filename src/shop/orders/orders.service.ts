@@ -1,5 +1,5 @@
 // src/orders/orders.service.ts
-import {BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {PrismaService} from "../../prisma/prisma.service";
 import {AuditService} from "../audit/audit.service";
 import {OrderStatus} from "@prisma/client";
@@ -65,6 +65,7 @@ export class OrdersService {
                         product: {
                             include: {
                                 images: true,
+                                variants: true
                             },
                         }
                     }
@@ -144,6 +145,7 @@ export class OrdersService {
                         product: {
                             include: {
                                 images: true,
+                                variants: true
                             },
                         }
                     }
@@ -153,6 +155,8 @@ export class OrdersService {
     }
 
     private async updateProductStock(tx: any, cartItems: any[], userId: string) {
+        const stockUpdates = [];
+
         for (const item of cartItems) {
             const product = await tx.product.update({
                 where: {id: item.productId},
@@ -166,15 +170,25 @@ export class OrdersService {
                 },
             });
 
-            await this.auditService.log({
-                entityType: 'Product',
-                entityId: item.productId,
-                action: AuditType.UPDATE,
-                oldValue: String(product.inventory + item.quantity),
-                newValue: String(product.inventory),
-                performedBy: userId,
+            // Store update info for later
+            stockUpdates.push({
+                productId: item.productId,
+                oldInventory: product.inventory + item.quantity,
+                newInventory: product.inventory
             });
         }
+
+        // Create audit logs after transaction
+        await Promise.all(stockUpdates.map(update =>
+            this.auditService.log({
+                entityType: 'Product',
+                entityId: update.productId,
+                action: AuditType.UPDATE,
+                oldValue: String(update.oldInventory),
+                newValue: String(update.newInventory),
+                performedBy: userId,
+            })
+        ));
     }
 
     private async clearCart(tx: any, cartId: string) {

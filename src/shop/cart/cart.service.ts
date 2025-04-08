@@ -47,6 +47,13 @@ export class CartService {
                                                 }
                                             }
                                         }
+                                    },
+                                    variants: {
+                                        select: {
+                                            color: true,
+                                            size: true,
+                                            stock: true
+                                        }
                                     }
                                 }
                             }
