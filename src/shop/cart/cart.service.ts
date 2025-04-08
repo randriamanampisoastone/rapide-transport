@@ -61,6 +61,7 @@ export class CartService {
                     }
                 }
             });
+            console.log("fetchinnng cart :", cart);
 
             if (!cart) {
                 throw new HttpException({

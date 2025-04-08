@@ -430,6 +430,8 @@ model OrderItem {
   id              String   @id @default(uuid())
   quantity        Int
   productId       String
+  color           String?
+  size            String?
   product         Product  @relation(fields: [productId], references: [id])
   orderId         String
   order           Order    @relation(fields: [orderId], references: [id])

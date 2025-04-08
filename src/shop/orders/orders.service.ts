@@ -76,8 +76,7 @@ export class OrdersService {
 
     private async validateAndGetCart(userId: string) {
         const cart = this.cartService.getCart(userId);
-
-        console.log("Cart", cart);
+        
         if (!cart || (await cart).items.length === 0) {
             throw new HttpException({
                 error: CARD_EMPTY,
@@ -106,6 +105,8 @@ export class OrdersService {
                 productId: item.productId,
                 quantity: item.quantity,
                 priceAtPurchase: (item.calculatedPrice == 0) ? 0 : (totalAmount / item.quantity),
+                color: item.color,
+                size: item.size,
             };
         });
 
