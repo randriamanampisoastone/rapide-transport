@@ -16,7 +16,7 @@ export class AuditService {
         } catch (error) {
             console.log('Error creating audit log:', error);
             throw new HttpException({
-                error: ERROR_ADDING_AUDIT,
+                error: ERROR_ADDING_AUDIT + error,
             }, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         
