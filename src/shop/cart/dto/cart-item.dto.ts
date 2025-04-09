@@ -4,6 +4,9 @@ type CartItem = {
     calculatedPrice: number,
     color?: string,
     size?: string,
+    sauces?: string[],
+    extras?: string[],
+    drinks?: string[],
     cartItemId: string,
 }
 

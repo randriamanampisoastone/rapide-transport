@@ -114,8 +114,9 @@ export class CartService {
                 data: {
                     quantity: existingCartItem.quantity + addCartItemDto.quantity,
                     calculatedPrice: addCartItemDto.calculatedPrice,
-                    color: addCartItemDto.color,
-                    size: addCartItemDto.size,
+                    sauces: JSON.stringify(addCartItemDto.sauces),
+                    extras: JSON.stringify(addCartItemDto.extras),
+                    drinks: JSON.stringify(addCartItemDto.drinks),
                 },
                 include: {product: true}
             });
@@ -135,6 +136,9 @@ export class CartService {
                 calculatedPrice: Number(addCartItemDto.calculatedPrice.toString()),
                 color: addCartItemDto.color,
                 size: addCartItemDto.size,
+                sauces: JSON.stringify(addCartItemDto.sauces),
+                extras: JSON.stringify(addCartItemDto.extras),
+                drinks: JSON.stringify(addCartItemDto.drinks),
             },
             include: {product: true}
         });

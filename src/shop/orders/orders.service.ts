@@ -110,6 +110,9 @@ export class OrdersService {
                 priceAtPurchase: (item.calculatedPrice == 0) ? 0 : (totalAmount / item.quantity),
                 color: item.color,
                 size: item.size,
+                sauces: item.sauces,
+                extras: item.extras,
+                drinks: item.drinks
             };
         });
 
