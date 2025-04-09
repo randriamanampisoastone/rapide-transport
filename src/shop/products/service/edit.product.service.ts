@@ -6,7 +6,6 @@ import {ProductsService} from "../products.service";
 
 @Injectable()
 export class EditProductService extends ProductsService {
-
     constructor(
         uploadAwsService: UploadAwsService,
         prismaService: PrismaService
@@ -14,117 +13,140 @@ export class EditProductService extends ProductsService {
         super(uploadAwsService, prismaService);
     }
 
-    async editProduct(id: string, createProductDto: any) {
+    async editProduct(id: string, productDto: any) {
         try {
-            const {images, categories, variants, ingredients, ...productData} = createProductDto;
+            const product = await this.getProductById(id);
+            const updatedProduct = await this.updateProductBase(product.id, productDto);
 
-            // Check the product by id
-            const product = await this.prismaService.product.findUnique({
-                where: {id},
-                include: {
-                    images: true,
-                    categories: true,
-                    variants: true,
-                    ingredients: true
-                }
-            });
+            await Promise.all([
+                this.handleImageUpdates(product, productDto.images),
+                this.handleCategoryUpdates(updatedProduct.id, productDto.categories),
+                this.handleIngredientUpdates(updatedProduct.id, productDto.ingredients),
+                this.handleSauceUpdates(updatedProduct.id, productDto.sauces),
+                this.handleVariantUpdates(product.id, productDto.variants)
+            ]);
 
-            if (!product) {
-                throw new HttpException({
-                    message: PRODUCT_NOT_FOUND,
-                    error: 'Not Found',
-                }, HttpStatus.NOT_FOUND);
-            }
-
-            // Update the product record first
-            const updatedProduct = await this.prismaService.product.update({
-                where: { id: product.id },
-                data: productData
-            });
-
-            // Process images if exist
-            if (images && images.length > 0) {
-                // Delete existing non-main images if requested
-                const existingImages = product.images;
-                const imagesToDelete = existingImages.filter(img => !img.isMain);
-
-                if (imagesToDelete.length > 0) {
-                    // Delete files from AWS
-                    await Promise.all(
-                        imagesToDelete.map(img => this.uploadAwsService.deleteFile(img.url))
-                    );
-
-                    // Delete image records
-                    await this.prismaService.image.deleteMany({
-                        where: {
-                            id: {
-                                in: imagesToDelete.map(img => img.id)
-                            }
-                        }
-                    });
-                }
-
-                // Upload new images
-                const imagePromises = images.map(image =>
-                    this.handleImageUpload(image, updatedProduct.id)
-                );
-                await Promise.all(imagePromises);
-            }
-
-            // Handle categories if present
-            if (categories && categories.length > 0) {
-                await this.prismaService.productCategory.deleteMany({
-                    where: { productId: updatedProduct.id }
-                });
-
-                await this.prismaService.productCategory.createMany({
-                    data: categories.map(categoryId => ({
-                        productId: updatedProduct.id,
-                        categoryId
-                    }))
-                });
-            }
-
-            // Handle ingredients if present
-            if(ingredients && ingredients.length > 0){
-                await this.prismaService.productIngredient.deleteMany({
-                    where: { productId: updatedProduct.id }
-                });
-
-                await this.prismaService.productIngredient.createMany({
-                    data: ingredients.map(ingredientId => ({
-                        productId: updatedProduct.id,
-                        ingredientId
-                    }))
-                });
-            }
-
-            // Process variants if they exist
-            if (variants && variants.length > 0) {
-                await this.prismaService.productVariant.deleteMany({
-                    where: { productId: product.id }
-                });
-
-                await this.prismaService.productVariant.createMany({
-                    data: variants.map(variant => ({
-                        productId: product.id,
-                        color: variant.color,
-                        size: variant.size,
-                        stock: variant.stock
-                    }))
-                });
-            }
-
-            // Return the updated product with relations
             return this.returnDataOnFlush(updatedProduct);
         } catch (error) {
-            if (error instanceof HttpException) throw error;
-
-            throw new HttpException({
-                error: ERROR_CREATING_PRODUCT,
-            }, HttpStatus.INTERNAL_SERVER_ERROR);
+            this.handleError(error);
         }
     }
 
+    private async getProductById(id: string) {
+        const product = await this.prismaService.product.findUnique({
+            where: {id},
+            include: {
+                images: true,
+                categories: true,
+                variants: true,
+                ingredients: true
+            }
+        });
 
+        if (!product) {
+            throw new HttpException({
+                message: PRODUCT_NOT_FOUND,
+                error: 'Not Found',
+            }, HttpStatus.NOT_FOUND);
+        }
+
+        return product;
+    }
+
+    private async updateProductBase(id: string, productDto: any) {
+        const {images, categories, variants, ingredients, sauces, ...productData} = productDto;
+        return this.prismaService.product.update({
+            where: {id},
+            data: productData
+        });
+    }
+
+    private async handleImageUpdates(product: any, newImages: any[]) {
+        if (!newImages?.length) return;
+
+        const existingImages = product.images;
+        const nonMainImages = existingImages.filter(img => !img.isMain);
+
+        if (nonMainImages.length) {
+            await Promise.all([
+                ...nonMainImages.map(img => this.uploadAwsService.deleteFile(img.url)),
+                this.prismaService.image.deleteMany({
+                    where: {id: {in: nonMainImages.map(img => img.id)}}
+                })
+            ]);
+        }
+
+        await Promise.all(
+            newImages.map(image => this.handleImageUpload(image, product.id))
+        );
+    }
+
+    private async handleCategoryUpdates(productId: string, categories: string[]) {
+        if (!categories?.length) return;
+
+        await this.prismaService.productCategory.deleteMany({
+            where: {productId}
+        });
+
+        await this.prismaService.productCategory.createMany({
+            data: categories.map(categoryId => ({
+                productId,
+                categoryId
+            }))
+        });
+    }
+
+    private async handleIngredientUpdates(productId: string, ingredients: string[]) {
+        if (!ingredients?.length) return;
+
+        await this.prismaService.productIngredient.deleteMany({
+            where: {productId}
+        });
+
+        await this.prismaService.productIngredient.createMany({
+            data: ingredients.map(ingredientId => ({
+                productId,
+                ingredientId
+            }))
+        });
+    }
+
+    private async handleSauceUpdates(productId: string, sauces: string[]) {
+        if (!sauces?.length) return;
+
+        await this.prismaService.productSauce.deleteMany({
+            where: {productId}
+        });
+
+        await this.prismaService.productSauce.createMany({
+            data: sauces.map(sauceId => ({
+                productId,
+                sauceId
+            }))
+        });
+    }
+
+    private async handleVariantUpdates(productId: string, variants: any[]) {
+        if (!variants?.length) return;
+
+        await this.prismaService.productVariant.deleteMany({
+            where: {productId}
+        });
+
+        await this.prismaService.productVariant.createMany({
+            data: variants.map(variant => ({
+                productId,
+                color: variant.color,
+                size: variant.size,
+                stock: variant.stock
+            }))
+        });
+    }
+
+    private handleError(error: any) {
+        if (error instanceof HttpException) throw error;
+        throw new HttpException({
+            error: ERROR_CREATING_PRODUCT,
+        }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

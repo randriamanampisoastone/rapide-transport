@@ -4,6 +4,7 @@ import {UploadAwsService} from "../../Common/upload-aws/upload-aws.service";
 import {PrismaService} from "../../../prisma/prisma.service";
 import {ProductsService} from "../products.service";
 import {IngredientsService} from "./ingredients/ingredients.service";
+import {SaucesService} from "./sauces/sauces.service";
 
 @Injectable()
 export class AddProductService extends ProductsService {
@@ -12,13 +13,14 @@ export class AddProductService extends ProductsService {
         uploadAwsService: UploadAwsService,
         prismaService: PrismaService,
         private readonly ingredientsService: IngredientsService,
+        private readonly saucesService: SaucesService,
     ) {
         super(uploadAwsService, prismaService);
     }
 
     async createProduct(createProductDto: any, userConnected: string) {
         try {
-            const {images, categories, variants, ingredients, ...productData} = createProductDto;
+            const {images, categories, variants, ingredients, sauces, ...productData} = createProductDto;
 
             // Check if the user already has a product with the same name
             await this.checkProductExist(productData, userConnected);
@@ -50,12 +52,17 @@ export class AddProductService extends ProductsService {
                 await this.ingredientsService.attachIngredientsToProduct(product.id, ingredientId);
             }) ?? [];
 
+            const  saucePromises = sauces?.map(async sauceId => {
+                await this.saucesService.attachSaucesToProduct(product.id, sauceId);
+            }) ?? [];
+
             // Wait for all async operations to complete
             await Promise.all([
                 ...imagePromises,
                 ...categoryPromises,
                 ...variantPromises,
-                ...ingredientPromises
+                ...ingredientPromises,
+                ...saucePromises
             ]);
 
             // Return the complete product with relations
