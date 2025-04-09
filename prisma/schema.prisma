@@ -490,6 +490,7 @@ model ProductDrink {
 
   @@id([productId, drinkId])
 }
+
 //****** !!!end - just for FOOD section ******//
 
 model Order {
@@ -511,6 +512,9 @@ model OrderItem {
   productId       String
   color           String?
   size            String?
+  sauces          String?
+  extras          String?
+  drinks          String?
   product         Product  @relation(fields: [productId], references: [id])
   orderId         String
   order           Order    @relation(fields: [orderId], references: [id])
@@ -565,6 +569,9 @@ model CartItem {
   quantity        Int
   color           String?
   size            String?
+  sauces          String?
+  extras          String?
+  drinks          String?
   calculatedPrice Decimal @default(0)
   productId       String
   product         Product @relation(fields: [productId], references: [id])
