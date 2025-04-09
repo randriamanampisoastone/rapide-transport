@@ -279,6 +279,21 @@ export class SearchProductService extends ProductsService {
                         include: {
                             ingredient: true
                         }
+                    },
+                    sauces: {
+                        include: {
+                            sauce: true
+                        }
+                    },
+                    addOns: {
+                        include: {
+                            addOn: true
+                        }
+                    },
+                    drinks: {
+                        include: {
+                            drink: true
+                        }
                     }
                 }
             });
@@ -299,6 +314,9 @@ export class SearchProductService extends ProductsService {
                     value: Number(d.discount.value.toString())
                 })),
                 ingredients: product.ingredients.map(c => c.ingredient),
+                sauces: product.sauces.map(c => c.sauce),
+                addOns: product.addOns.map(c => c.addOn),
+                drinks: product.drinks.map(c => c.drink)
             };
 
             if (connectedUser?.role === UserRole.CLIENT) {
