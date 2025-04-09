@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, Matches } from 'class-validator'
+import { IsEnum, IsNotEmpty, Matches, IsOptional } from 'class-validator'
 import { UserRole } from 'enums/profile.enum'
 
 export class SignInDto {
@@ -9,9 +9,10 @@ export class SignInDto {
    })
    phoneNumber: string
 
+   @IsOptional()
    @IsEnum(UserRole, {
       message:
          'User Role must be one of the following values: CLIENT, DRIVER, ADMIN, SELLER',
    })
-   role: string
+   role?: string
 }
