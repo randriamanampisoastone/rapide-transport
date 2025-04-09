@@ -312,12 +312,12 @@ model Category {
 }
 
 model Product {
-  id          String            @id @default(uuid())
+  id          String              @id @default(uuid())
   name        String
   description String
   price       Decimal
-  inventory   Int               @default(0)
-  toWear      Boolean           @default(false)
+  inventory   Int                 @default(0)
+  toWear      Boolean             @default(false)
   images      Image[]
   reviews     Review[]
   orderItems  OrderItem[]
@@ -326,8 +326,12 @@ model Product {
   variants    ProductVariant[]
   favorites   Favorite[]
   discounts   ProductDiscount[]
+  ingredients ProductIngredient[] // Base ingredients
+  sauces      ProductSauce[] // Sauces (max 2)
+  addOns      ProductAddOn[] // AddOns (max 2)
+  drinks      ProductDrink[] // Drinks (max 2)
   sellerId    String
-  seller      Profile           @relation(fields: [sellerId], references: [sub])
+  seller      Profile             @relation(fields: [sellerId], references: [sub])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -412,6 +416,81 @@ model ProductDiscount {
 
   @@id([productId, discountId])
 }
+
+//****** just for FOOD section ******//
+// Base ingredient table
+model Ingredient {
+  id        String              @id @default(uuid())
+  name      String
+  icon      String
+  products  ProductIngredient[]
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+}
+
+model ProductIngredient {
+  productId    String
+  ingredientId String
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@id([productId, ingredientId])
+}
+
+// Primary Sauce table
+model Sauce {
+  id        String         @id @default(uuid())
+  name      String
+  products  ProductSauce[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model ProductSauce {
+  productId String
+  sauceId   String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sauce     Sauce   @relation(fields: [sauceId], references: [id], onDelete: Cascade)
+
+  @@id([productId, sauceId])
+}
+
+// Secondary Sauce table
+model AddOn {
+  id        String         @id @default(uuid())
+  name      String
+  products  ProductAddOn[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model ProductAddOn {
+  productId String
+  addOnId   String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  addOn     AddOn   @relation(fields: [addOnId], references: [id], onDelete: Cascade)
+
+  @@id([productId, addOnId])
+}
+
+// Drink table
+model Drink {
+  id        String         @id @default(uuid())
+  name      String
+  products  ProductDrink[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model ProductDrink {
+  productId String
+  drinkId   String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  drink     Drink   @relation(fields: [drinkId], references: [id], onDelete: Cascade)
+
+  @@id([productId, drinkId])
+}
+//****** !!!end - just for FOOD section ******//
 
 model Order {
   id         String      @id @default(uuid())
