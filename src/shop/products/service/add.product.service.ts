@@ -3,20 +3,22 @@ import {ERROR_CREATING_PRODUCT} from "../../../../constants/response.constant";
 import {UploadAwsService} from "../../Common/upload-aws/upload-aws.service";
 import {PrismaService} from "../../../prisma/prisma.service";
 import {ProductsService} from "../products.service";
+import {IngredientsService} from "./ingredients/ingredients.service";
 
 @Injectable()
 export class AddProductService extends ProductsService {
 
     constructor(
         uploadAwsService: UploadAwsService,
-        prismaService: PrismaService
+        prismaService: PrismaService,
+        private readonly ingredientsService: IngredientsService,
     ) {
         super(uploadAwsService, prismaService);
     }
 
     async createProduct(createProductDto: any, userConnected: string) {
         try {
-            const {images, categories, variants, ...productData} = createProductDto;
+            const {images, categories, variants, ingredients, ...productData} = createProductDto;
 
             // Check if the user already has a product with the same name
             await this.checkProductExist(productData, userConnected);
@@ -44,8 +46,17 @@ export class AddProductService extends ProductsService {
                 await this.attachCategoriesToProduct(product, categoryId)
             }) ?? [];
 
+            const ingredientPromises = ingredients?.map(async ingredientId => {
+                await this.ingredientsService.attachIngredientsToProduct(product.id, ingredientId);
+            }) ?? [];
+
             // Wait for all async operations to complete
-            await Promise.all([...imagePromises, ...categoryPromises, ...variantPromises]);
+            await Promise.all([
+                ...imagePromises,
+                ...categoryPromises,
+                ...variantPromises,
+                ...ingredientPromises
+            ]);
 
             // Return the complete product with relations
            return this.returnDataOnFlush(product);

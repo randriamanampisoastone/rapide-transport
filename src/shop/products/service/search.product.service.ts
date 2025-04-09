@@ -190,6 +190,16 @@ export class SearchProductService extends ProductsService {
                             }
                         }
                     },
+                    ingredients: {
+                        select: {
+                            ingredient: {
+                                select: {
+                                    name: true,
+                                    icon: true
+                                }
+                            }
+                        }
+                    }
                 }
             });
 
@@ -206,6 +216,7 @@ export class SearchProductService extends ProductsService {
                         value: Number(d.discount.value.toString())
                     })),
                     reviewsCount: await this.reviewService.getProductReviewCount(product.id),
+                    ingredients: product.ingredients.map(c => c.ingredient),
                 }
 
                 if (connectedUser !== null && connectedUser.role === UserRole.CLIENT) {
@@ -263,6 +274,11 @@ export class SearchProductService extends ProductsService {
                         include: {
                             discount: true
                         }
+                    },
+                    ingredients: {
+                        include: {
+                            ingredient: true
+                        }
                     }
                 }
             });
@@ -281,7 +297,8 @@ export class SearchProductService extends ProductsService {
                 discounts: product.discounts.map(d => ({
                     ...d.discount,
                     value: Number(d.discount.value.toString())
-                }))
+                })),
+                ingredients: product.ingredients.map(c => c.ingredient),
             };
 
             if (connectedUser?.role === UserRole.CLIENT) {

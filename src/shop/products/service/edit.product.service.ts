@@ -16,7 +16,7 @@ export class EditProductService extends ProductsService {
 
     async editProduct(id: string, createProductDto: any) {
         try {
-            const {images, categories, variants, ...productData} = createProductDto;
+            const {images, categories, variants, ingredients, ...productData} = createProductDto;
 
             // Check the product by id
             const product = await this.prismaService.product.findUnique({
@@ -24,7 +24,8 @@ export class EditProductService extends ProductsService {
                 include: {
                     images: true,
                     categories: true,
-                    variants: true
+                    variants: true,
+                    ingredients: true
                 }
             });
 
@@ -80,6 +81,20 @@ export class EditProductService extends ProductsService {
                     data: categories.map(categoryId => ({
                         productId: updatedProduct.id,
                         categoryId
+                    }))
+                });
+            }
+
+            // Handle ingredients if present
+            if(ingredients && ingredients.length > 0){
+                await this.prismaService.productIngredient.deleteMany({
+                    where: { productId: updatedProduct.id }
+                });
+
+                await this.prismaService.productIngredient.createMany({
+                    data: ingredients.map(ingredientId => ({
+                        productId: updatedProduct.id,
+                        ingredientId
                     }))
                 });
             }
