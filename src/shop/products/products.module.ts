@@ -10,9 +10,15 @@ import {ReviewService} from "./service/reviews/review.service";
 import {VariantService} from "./service/variants/variant.service";
 import {DiscountService} from "./service/discount/discount.service";
 import {DiscountUtils} from "../Common/utils/discount";
+import {Utils} from "../Common/utils/utils";
+import {IngredientsController} from "./ingredients.controller";
+import {IngredientsService} from "./service/ingredients/ingredients.service";
 
 @Module({
-    controllers: [ProductsController],
+    controllers: [
+        ProductsController,
+        IngredientsController
+    ],
     providers: [
         AddProductService,
         EditProductService,
@@ -23,8 +29,11 @@ import {DiscountUtils} from "../Common/utils/discount";
         ReviewService,
         VariantService,
         DiscountService,
-        DiscountUtils
+        DiscountUtils,
+        Utils,
+        IngredientsService
     ],
     exports: [SearchProductService, ProductsService]
 })
-export class ProductsModule {}
+export class ProductsModule {
+}

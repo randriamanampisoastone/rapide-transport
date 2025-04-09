@@ -73,10 +73,15 @@ export class ProductsService {
                 images: true,
                 categories: {
                     include: {
-                        category: true
+                        category: true,
                     }
                 },
                 variants: true,
+                ingredients: {
+                    include: {
+                        ingredient: true,
+                    }
+                }
             }
         });
 
@@ -84,7 +89,8 @@ export class ProductsService {
         return {
             ...productWithRelations,
             price: Number(productWithRelations.price.toString()),
-            categories: productWithRelations.categories.map(c => c.category)
+            categories: productWithRelations.categories.map(c => c.category),
+            ingredients: productWithRelations.ingredients.map(c => c.ingredient)
         };
     }
 
