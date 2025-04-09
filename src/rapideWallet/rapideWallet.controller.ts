@@ -100,6 +100,7 @@ export class RapideWalletController {
       @GetUser('sub') profileId: string,
       @GetUser('role') userRole: UserRole,
       @GetUser('status') status: ProfileStatus,
+      @GetUser('locale') locale: string,
       @Body() data: { phoneNumber: string; confirmationCode: string },
    ) {
       if (status !== ProfileStatus.ACTIVE) {
@@ -110,6 +111,7 @@ export class RapideWalletController {
          data.phoneNumber,
          data.confirmationCode,
          userRole,
+         locale
       )
    }
 
@@ -137,6 +139,7 @@ export class RapideWalletController {
    async updateStatus(
       @Body() updateRapideWalletStatusDto: UpdateRapideWalletStatusDto,
       @GetUser('status') status: ProfileStatus,
+      @GetUser('locale') locale: string,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
@@ -144,22 +147,24 @@ export class RapideWalletController {
       return await this.rapideWalletService.updateStatus(
          updateRapideWalletStatusDto.rapideWalletId,
          updateRapideWalletStatusDto.status,
+         locale
       )
    }
 
    @Get(ROUTE_GET_RAPIDE_WALLET)
    @SetMetadata('allowedRole', [UserRole.DRIVER, UserRole.CLIENT])
    @UseGuards(RolesGuard)
-   async getRapideWallete(
+   async getRapideWallet(
       @GetUser('sub') profileId: string,
       @GetUser('role') userRole: UserRole,
       @GetUser('status') status: ProfileStatus,
+      @GetUser('locale') locale: string,
    ) {
       console.log('profileId : ', profileId)
 
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return await this.rapideWalletService.getRapideWallet(profileId, userRole)
+      return await this.rapideWalletService.getRapideWallet(profileId, userRole, locale)
    }
 }

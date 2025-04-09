@@ -93,6 +93,7 @@ export const ROUTE_SIGN_IN = 'signIn'
 export const ROUTE_CONFIRM_SIGN_IN = 'confirmSignIn'
 export const ROUTE_RESEND_CONFIRM_SIGN_IN = 'resendConfirmSignIn'
 export const ROUTE_GOOGLE_AUTH = 'googleAuth'
+export const ROUTE_APPLE_AUTH = 'appleAuth'
 
 // delete-profile
 export const ROUTE_BY_ADMIN = 'by-admin'
@@ -127,3 +128,14 @@ export const ROUTE_UPDATE_ADMIN_ROLE = 'updateAdminRole'
 
 // vehicle
 export const ROUTE_FINDING_DRIVER_NEAR_BY = 'finding-drivers-near-by'
+
+// promotion-code
+export const ROUTE_CREATE_NEW_PROMOTION_CODE = 'create-new-promotion-code'
+export const ROUTE_CHANGE_PROMOTION_CODE_AVAILABILITY =
+   'change-promotion-code-availability'
+export const ROUTE_GET_PROMOTION_CODES = 'get-promotion-codes'
+export const ROUTE_GET_PROMOTION_CODE = 'get-promotion-code'
+export const ROUTE_UPDATE_PROMOTION_CODE = 'update-promotion-code'
+export const ROUTE_UPDATE_PROMOTION_SERVICE = 'update-promotion-service'
+export const ROUTE_CHECK_PROMOTION_CODE = 'check-promotion-code'
+export const ROUTE_CHOUSE_PROMOTION_SERVICE = 'chose-promotion-service'

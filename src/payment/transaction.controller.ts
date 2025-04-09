@@ -48,6 +48,7 @@ export class TransactionController {
       @Query('clientProfileId') clientProfileId: string,
       @Body() depositeDto: DepositeDto,
       @GetUser('status') status: ProfileStatus,
+      @GetUser('locale') locale: string,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
@@ -56,6 +57,7 @@ export class TransactionController {
          adminProfileId,
          clientProfileId,
          depositeDto,
+         locale
       )
    }
 

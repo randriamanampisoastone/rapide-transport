@@ -15,6 +15,7 @@ import {
    SPECIAL_ACCESS_OTP,
    SPECIAL_ACCESS_PHONE_NUMBER,
 } from 'constants/access.constant'
+import { SignInDataOnRedisInterface } from 'interfaces/sign.in.data.on.redis.interface'
 
 @Injectable()
 export class SignInService {
@@ -42,7 +43,10 @@ export class SignInService {
                `User with this phone number doesn't exists`,
             )
          }
-         if (existingUser.role !== signInDto.role) {
+         if (
+            existingUser.role !== UserRole.SUPER_ADMIN &&
+            existingUser.role !== signInDto.role
+         ) {
             throw new UnauthorizedException(`User role doesn't match`)
          }
          if (!Object.values(UserRole).includes(signInDto.role)) {
@@ -73,10 +77,12 @@ export class SignInService {
          if (signInDto.phoneNumber !== SPECIAL_ACCESS_PHONE_NUMBER)
             await this.smsService.sendSMS([signInDto.phoneNumber], message)
 
-         const updateSignInDto = {
+         const updateSignInDto: SignInDataOnRedisInterface = {
             attempt: 0,
             confirmationCode,
-            ...signInDto,
+            phoneNumber: signInDto.phoneNumber,
+            locale: signInDto.locale,
+            role: existingUser.role as UserRole,
          }
          await this.redisService.set(
             `${AUTH_SIGN_IN_PREFIX + signInDto.phoneNumber}`,

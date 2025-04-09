@@ -41,10 +41,21 @@ export class ResendConfirmSignInService {
             secret: secret.base32,
             encoding: 'base32',
          })
-         await this.smsService.sendSMS(
-            [resendConfirmDto.phoneNumber],
-            `Your Rapide App confirmation code is : ${confirmationCode}`,
-         )
+
+         let message = ''
+
+         if (resendConfirmDto.locale === 'fr') {
+            message = `Votre code de confirmation pour l'application Rapide est : ${confirmationCode}`
+         } else if (resendConfirmDto.locale === 'mg') {
+            message = `Ny kaody fanamafisana ho an'ny fampiharana Rapide dia : ${confirmationCode}`
+         } else if (resendConfirmDto.locale === 'en') {
+            message = `Your Rapide App confirmation code is : ${confirmationCode}`
+         } else if (resendConfirmDto.locale === 'zh') {
+            message = `您的 Rapide 应用确认码是：${confirmationCode}`
+         }
+
+         await this.smsService.sendSMS([resendConfirmDto.phoneNumber], message)
+
          const ttl = await this.redisService.ttl(
             `${AUTH_SIGN_IN_PREFIX + resendConfirmDto.phoneNumber}`,
          )

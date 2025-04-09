@@ -278,6 +278,7 @@ export class RideController {
       @Body() { rideId }: { rideId: string },
       @GetUser('sub') driverProfileId: string,
       @GetUser('status') status: ProfileStatus,
+      @GetUser('locale') locale: string,
    ) {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
@@ -285,7 +286,7 @@ export class RideController {
       return this.completeService.complete({
          driverProfileId,
          rideId,
-      })
+      }, locale)
    }
 
    @Post(ROUTE_REVIEW)

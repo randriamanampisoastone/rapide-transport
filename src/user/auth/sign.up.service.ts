@@ -6,7 +6,11 @@ import { AUTH_SIGN_UP_PREFIX } from 'constants/redis.constant'
 import { ConfigService } from '@nestjs/config'
 import { SmsService } from 'src/sms/sms.service'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { SPECIAL_ACCESS_PHONE_NUMBER } from 'constants/access.constant'
+import {
+   SPECIAL_ACCESS_OTP,
+   SPECIAL_ACCESS_PHONE_NUMBER,
+} from 'constants/access.constant'
+import { SignUpDataOnRedisInterface } from 'interfaces/sign.up.data.on.redis.interface'
 
 @Injectable()
 export class SignUpService implements OnModuleInit {
@@ -27,7 +31,7 @@ export class SignUpService implements OnModuleInit {
          const existingUser = await this.prismaService.profile.findFirst({
             where: {
                OR: [
-                  { email: signUpDto.email },
+                  { sub: signUpDto.sub },
                   { phoneNumber: signUpDto.phoneNumber },
                ],
             },
@@ -42,7 +46,7 @@ export class SignUpService implements OnModuleInit {
          const secret = speakeasy.generateSecret({ length: 20 })
          const confirmationCode =
             signUpDto.phoneNumber === SPECIAL_ACCESS_PHONE_NUMBER
-               ? '124578'
+               ? SPECIAL_ACCESS_OTP
                : speakeasy.totp({
                     secret: secret.base32,
                     encoding: 'base32',
@@ -63,7 +67,7 @@ export class SignUpService implements OnModuleInit {
          if (signUpDto.phoneNumber !== SPECIAL_ACCESS_PHONE_NUMBER)
             await this.smsService.sendSMS([signUpDto.phoneNumber], message)
 
-         const updateSignUpDto = {
+         const updateSignUpDto: SignUpDataOnRedisInterface = {
             attempt: 0,
             confirmationCode,
             ...signUpDto,

@@ -33,7 +33,7 @@ export class RedisService implements OnModuleInit {
       this.client = new Redis({
          host: this.configService.get<string>('REDIS_HOST'),
          port: this.configService.get<number>('REDIS_PORT'),
-         tls: {},
+         // tls: {},
       })
       this.REDIS_GEO_TTL_SECONDS = this.configService.get<number>(
          'REDIS_GEO_TTL_SECONDS',
@@ -82,6 +82,14 @@ export class RedisService implements OnModuleInit {
    async mget(keys: string[]) {
       return await this.client.mget(keys)
    }
+
+   // async mget(keys: string[]): Promise<(string | null)[]> {
+   //    const pipeline = this.client.pipeline()
+   //    keys.forEach((key) => pipeline.get(key))
+   //    const results = await pipeline.exec()
+
+   //    return results.map((res) => (typeof res[1] === 'string' ? res[1] : null))
+   // }
 
    async addDriverLocationToRedis(
       updateDriverLocation: UpdateDriverLocationInterface,

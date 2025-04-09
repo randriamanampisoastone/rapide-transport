@@ -11,6 +11,7 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { UserRole } from 'enums/profile.enum'
 import { ConfirmDto } from './dto/confirm.dto'
 import { ConfigService } from '@nestjs/config'
+import { SignInDataOnRedisInterface } from 'interfaces/sign.in.data.on.redis.interface'
 
 @Injectable()
 export class ConfirmSignInService {
@@ -42,7 +43,8 @@ export class ConfirmSignInService {
             throw new NotFoundException('Timeout expired')
          }
 
-         const signInDto = JSON.parse(signInDtoString)
+         const signInDto: SignInDataOnRedisInterface =
+            JSON.parse(signInDtoString)
 
          if (signInDto.attempt >= 5) {
             await this.redisService.remove(
@@ -102,6 +104,7 @@ export class ConfirmSignInService {
                status: clientProfile.clientProfile.status,
                rapideWalletStatus:
                   clientProfile.clientProfile.rapideWallet.status,
+               locale: signInDto.locale
             }
             const token = jwt.sign(
                updateClientProfile,
@@ -135,6 +138,7 @@ export class ConfirmSignInService {
                status: driverProfile.driverProfile.status,
                rapideWalletStatus:
                   driverProfile.driverProfile.rapideWallet.status,
+               locale: signInDto.locale,
             }
             const token = jwt.sign(
                updateDriverProfile,
@@ -167,10 +171,11 @@ export class ConfirmSignInService {
             })
             const updateAdminProfile = {
                sub: adminProfile.sub,
-               role: adminProfile.role,
+               role: signInDto.role,
                status: adminProfile.adminProfile.status,
                isTransactionPasswordDefined:
                   adminProfile.adminProfile.isTransactionPasswordDefined,
+               locale: signInDto.locale,
             }
             const token = jwt.sign(updateAdminProfile, this.JWT_SECRET_ADMIN, {
                expiresIn: this.JWT_EXPIRES_IN,

@@ -31,6 +31,7 @@ import { NotificationModule } from 'src/notification/notification.module'
 import { NotificationService } from 'src/notification/notification.service'
 import { RidePaymentService } from 'src/payment/ride-payment/ride-payment.service'
 import { SmsService } from 'src/sms/sms.service'
+import { PromotionCodeService } from 'src/promotion-code/promotion-code.service'
 
 @Module({
    imports: [GatewayModule, NotificationModule],
@@ -72,6 +73,8 @@ import { SmsService } from 'src/sms/sms.service'
       //For payment
       RidePaymentService,
       SmsService,
+
+      PromotionCodeService,
    ],
 })
 export class RideModule {}
