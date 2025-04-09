@@ -26,7 +26,7 @@ export class IngredientsController {
 
     @SetMetadata('allowedRole', [UserRole.SELLER])
     @UseGuards(RolesGuard)
-    @ApiOperation({summary: 'Create ingredients for food product'})
+    @ApiOperation({summary: 'Get all ingredients for food product'})
     @Get('/ingredients/list')
     async getIngredients(
     ) {
