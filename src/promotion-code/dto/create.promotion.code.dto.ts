@@ -9,6 +9,8 @@ import {
    IsOptional,
    IsString,
    IsUppercase,
+   Max,
+   Min,
    ValidateNested,
 } from 'class-validator'
 
@@ -23,6 +25,8 @@ export class PromotionServicesDto {
 
    @IsNotEmpty()
    @IsNumber()
+   @Min(0)
+   @Max(1)
    value: number
 }
 
