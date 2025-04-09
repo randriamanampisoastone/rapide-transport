@@ -9,7 +9,8 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { ConfirmSignInService } from './confirm.sign.in.service'
 import { ResendConfirmSignUpService } from './resend.confirm.sign.up.service'
 import { ResendConfirmSignInService } from './resend.confirm.sign.in.service'
-import { GoogleAuthService } from './google.auth.service'
+import { GoogleAuthService } from './sso/google.auth.service'
+import { AppleAuthService } from './sso/apple.auth.service'
 
 @Module({
    imports: [],
@@ -25,6 +26,7 @@ import { GoogleAuthService } from './google.auth.service'
       ConfirmSignInService,
       ResendConfirmSignInService,
       GoogleAuthService,
+      AppleAuthService,
    ],
    exports: [],
 })

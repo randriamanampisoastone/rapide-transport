@@ -76,7 +76,8 @@ export class UpdateProfileService {
       }
    }
 
-   async updateAdminProfile(adminProfileId: string, updateProfileDto: UpdateProfileDto) {
-      
-   }
+   // async updateAdminProfile(
+   //    adminProfileId: string,
+   //    updateProfileDto: UpdateProfileDto,
+   // ) {}
 }

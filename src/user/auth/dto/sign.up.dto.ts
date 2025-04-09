@@ -5,22 +5,20 @@ import {
    IsDate,
    IsString,
    Matches,
-   IsEmail,
    IsIn,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 import { GenderType, UserRole } from 'enums/profile.enum'
 
 export class SignUpDto {
+   @IsOptional()
+   sub?: string
+
    @IsNotEmpty()
    @Matches(/^(?:\+261)(32|33|34|37|38)\d{7}$/, {
       message: 'Phone number must be in the format: +261 XX XX XXX XX',
    })
    phoneNumber: string
-
-   @IsOptional()
-   @IsEmail()
-   email?: string
 
    @IsNotEmpty()
    @IsString()
