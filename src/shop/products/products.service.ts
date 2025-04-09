@@ -81,6 +81,11 @@ export class ProductsService {
                     include: {
                         ingredient: true,
                     }
+                },
+                sauces: {
+                    include: {
+                        sauce: true,
+                    }
                 }
             }
         });
@@ -90,7 +95,8 @@ export class ProductsService {
             ...productWithRelations,
             price: Number(productWithRelations.price.toString()),
             categories: productWithRelations.categories.map(c => c.category),
-            ingredients: productWithRelations.ingredients.map(c => c.ingredient)
+            ingredients: productWithRelations.ingredients.map(c => c.ingredient),
+            sauces: productWithRelations.sauces.map(c => c.sauce),
         };
     }
 

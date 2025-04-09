@@ -13,11 +13,14 @@ import {DiscountUtils} from "../Common/utils/discount";
 import {Utils} from "../Common/utils/utils";
 import {IngredientsController} from "./ingredients.controller";
 import {IngredientsService} from "./service/ingredients/ingredients.service";
+import {SaucesService} from "./service/sauces/sauces.service";
+import {SaucesController} from "./sauces.controller";
 
 @Module({
     controllers: [
         ProductsController,
-        IngredientsController
+        IngredientsController,
+        SaucesController
     ],
     providers: [
         AddProductService,
@@ -31,7 +34,8 @@ import {IngredientsService} from "./service/ingredients/ingredients.service";
         DiscountService,
         DiscountUtils,
         Utils,
-        IngredientsService
+        IngredientsService,
+        SaucesService
     ],
     exports: [SearchProductService, ProductsService]
 })

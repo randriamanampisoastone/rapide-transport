@@ -119,6 +119,13 @@ export class ProductsController {
                 : [rawData.ingredients];
         }
 
+        // Handle ingredients if present
+        if (rawData.sauces) {
+            data.sauces = Array.isArray(rawData.sauces)
+                ? rawData.sauces
+                : [rawData.sauces];
+        }
+
         // Process only the files that were actually sent
         const images = [];
 
