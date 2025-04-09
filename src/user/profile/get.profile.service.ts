@@ -19,7 +19,6 @@ export class GetProfileService {
             select: {
                sub: true,
                phoneNumber: true,
-               email: true,
                firstName: true,
                lastName: true,
                birthday: true,
@@ -41,7 +40,6 @@ export class GetProfileService {
          return {
             clientProfileId: clientProfile.sub,
             phoneNumber: clientProfile.phoneNumber,
-            email: clientProfile.email,
             firstName: clientProfile.firstName,
             lastName: clientProfile.lastName,
             birthday: clientProfile.birthday,
@@ -62,7 +60,6 @@ export class GetProfileService {
             select: {
                sub: true,
                phoneNumber: true,
-               email: true,
                firstName: true,
                lastName: true,
                birthday: true,
@@ -85,7 +82,6 @@ export class GetProfileService {
          return {
             driverProfileId: driverProfile.sub,
             phoneNumber: driverProfile.phoneNumber,
-            email: driverProfile.email,
             firstName: driverProfile.firstName,
             lastName: driverProfile.lastName,
             birthday: driverProfile.birthday,
@@ -107,7 +103,6 @@ export class GetProfileService {
             select: {
                sub: true,
                phoneNumber: true,
-               email: true,
                firstName: true,
                lastName: true,
                birthday: true,
@@ -125,7 +120,6 @@ export class GetProfileService {
          return {
             adminProfileId: adminProfile.sub,
             phoneNumber: adminProfile.phoneNumber,
-            email: adminProfile.email,
             firstName: adminProfile.firstName,
             lastName: adminProfile.lastName,
             birthday: adminProfile.birthday,
@@ -230,11 +224,6 @@ export class GetProfileService {
                      },
                      {
                         profile: {
-                           email: { contains: term, mode: 'insensitive' },
-                        },
-                     },
-                     {
-                        profile: {
                            phoneNumber: { contains: term, mode: 'insensitive' },
                         },
                      },
@@ -255,11 +244,6 @@ export class GetProfileService {
                      {
                         profile: {
                            lastName: { contains: term, mode: 'insensitive' },
-                        },
-                     },
-                     {
-                        profile: {
-                           email: { contains: term, mode: 'insensitive' },
                         },
                      },
                      {
@@ -397,11 +381,6 @@ export class GetProfileService {
                      },
                      {
                         profile: {
-                           email: { contains: term, mode: 'insensitive' },
-                        },
-                     },
-                     {
-                        profile: {
                            phoneNumber: { contains: term, mode: 'insensitive' },
                         },
                      },
@@ -422,11 +401,6 @@ export class GetProfileService {
                      {
                         profile: {
                            lastName: { contains: term, mode: 'insensitive' },
-                        },
-                     },
-                     {
-                        profile: {
-                           email: { contains: term, mode: 'insensitive' },
                         },
                      },
                      {

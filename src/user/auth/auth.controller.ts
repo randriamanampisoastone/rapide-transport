@@ -9,10 +9,10 @@ import { ConfirmSignInService } from './confirm.sign.in.service'
 import { ResendConfirmSignInService } from './resend.confirm.sign.in.service'
 import { ResendConfirmSignUpService } from './resend.confirm.sign.up.service'
 import { ResendConfirmDto } from './dto/resend.confirm.dto'
-import { GoogleAuthService } from './google.auth.service'
-import { UserRole } from 'enums/profile.enum'
+import { GoogleAuthService } from './sso/google.auth.service'
 import { ROUTE_AUTH } from 'routes/main-routes'
 import {
+   ROUTE_APPLE_AUTH,
    ROUTE_CONFIRM_SIGN_IN,
    ROUTE_CONFIRM_SIGN_UP,
    ROUTE_GOOGLE_AUTH,
@@ -22,6 +22,8 @@ import {
    ROUTE_SIGN_UP,
 } from 'routes/secondary-routes'
 import { GoogleAuthDto } from './dto/google.auth.dto'
+import { AppleAuthDto } from './dto/apple.auth.dto'
+import { AppleAuthService } from './sso/apple.auth.service'
 
 @Controller(ROUTE_AUTH)
 export class AuthController {
@@ -33,6 +35,7 @@ export class AuthController {
       private readonly confirmSignInService: ConfirmSignInService,
       private readonly resendConfirmSignInService: ResendConfirmSignInService,
       private readonly googleAuthService: GoogleAuthService,
+      private readonly appleAuthService: AppleAuthService,
    ) {}
 
    @Post(ROUTE_SIGN_UP)
@@ -85,10 +88,17 @@ export class AuthController {
    }
    @Post(ROUTE_GOOGLE_AUTH)
    async googleAuth(@Body() data: GoogleAuthDto) {
-      return await this.googleAuthService.googleAuth(
+      return await this.googleAuthService.googleAuth(data.idToken, data.locale)
+   }
+   @Post(ROUTE_APPLE_AUTH)
+   async appleAuth(@Body() data: AppleAuthDto) {
+      console.log('data : ', data)
+
+      return await this.appleAuthService.appleAuth(
          data.idToken,
-         data.userRole,
          data.locale,
+         data.firstName,
+         data.lastName,
       )
    }
 }

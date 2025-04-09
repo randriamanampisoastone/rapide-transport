@@ -45,7 +45,9 @@ export class ConfirmSignUpService {
             throw new NotFoundException('Timeout expired')
          }
 
-         const signUpDto: SignUpDataOnRedisInterface = JSON.parse(signUpDtoString)
+         const signUpDto: SignUpDataOnRedisInterface =
+            JSON.parse(signUpDtoString)
+
          if (signUpDto.attempt >= 5) {
             await this.redisService.remove(
                `${AUTH_SIGN_UP_PREFIX + confirmSignUpDto.phoneNumber}`,
@@ -54,6 +56,7 @@ export class ConfirmSignUpService {
                'You have reached the maximum number of attempts',
             )
          }
+
          if (signUpDto.confirmationCode !== confirmSignUpDto.confirmationCode) {
             const ttl = await this.redisService.ttl(
                `${AUTH_SIGN_UP_PREFIX + confirmSignUpDto.phoneNumber}`,
@@ -149,8 +152,8 @@ export class ConfirmSignUpService {
       return await this.prismaService.$transaction(async (prisma) => {
          const authProfile = await this.prismaService.profile.create({
             data: {
+               sub: signUpDto.sub,
                phoneNumber: signUpDto.phoneNumber,
-               email: signUpDto.email,
                firstName: signUpDto.firstName,
                lastName: signUpDto.lastName,
                gender: signUpDto.gender,
@@ -183,7 +186,6 @@ export class ConfirmSignUpService {
          const authProfile = await this.prismaService.profile.create({
             data: {
                phoneNumber: signUpDto.phoneNumber,
-               email: signUpDto.email,
                firstName: signUpDto.firstName,
                lastName: signUpDto.lastName,
                gender: signUpDto.gender,
@@ -216,7 +218,6 @@ export class ConfirmSignUpService {
          const authProfile = await this.prismaService.profile.create({
             data: {
                phoneNumber: signUpDto.phoneNumber,
-               email: signUpDto.email,
                firstName: signUpDto.firstName,
                lastName: signUpDto.lastName,
                gender: signUpDto.gender,

@@ -1,8 +1,8 @@
-import { GenderType, UserRole } from "enums/profile.enum"
+import { GenderType, UserRole } from 'enums/profile.enum'
 
 export interface SignUpDataOnRedisInterface {
+   sub?: string
    phoneNumber: string
-   email?: string
    firstName: string
    lastName?: string
    gender: GenderType
