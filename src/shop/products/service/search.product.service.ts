@@ -199,6 +199,11 @@ export class SearchProductService extends ProductsService {
                                 }
                             }
                         }
+                    },
+                    sauces: {
+                        select: {
+                            sauce: true
+                        }
                     }
                 }
             });
@@ -217,6 +222,7 @@ export class SearchProductService extends ProductsService {
                     })),
                     reviewsCount: await this.reviewService.getProductReviewCount(product.id),
                     ingredients: product.ingredients.map(c => c.ingredient),
+                    sauces: product.sauces.map(c => c.sauce)
                 }
 
                 if (connectedUser !== null && connectedUser.role === UserRole.CLIENT) {
