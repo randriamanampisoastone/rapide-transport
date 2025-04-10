@@ -16,6 +16,7 @@ import {IngredientsService} from "./service/ingredients/ingredients.service";
 import {SaucesService} from "./service/sauces/sauces.service";
 import {SaucesController} from "./sauces.controller";
 import {AddOnsController} from './add.ons.controller';
+import {AddOnsService} from "./service/addOns/add.ons.service";
 
 @Module({
     controllers: [
@@ -37,7 +38,8 @@ import {AddOnsController} from './add.ons.controller';
         DiscountUtils,
         Utils,
         IngredientsService,
-        SaucesService
+        SaucesService,
+        AddOnsService
     ],
     exports: [SearchProductService, ProductsService]
 })
