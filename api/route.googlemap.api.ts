@@ -1,5 +1,7 @@
+import { BadRequestException } from '@nestjs/common'
 import axios from 'axios'
 import { GOOGLE_DIRECTION_COMPUTE_ROUTE } from 'constants/api.constant'
+import { ERROR_ROUTE_NOT_FOUND } from 'constants/error.constant'
 import { LatLng } from 'interfaces/location.interface'
 
 export const getRouteGoogleMap = async (pickUp: LatLng, dropOff: LatLng) => {
@@ -41,13 +43,13 @@ export const getRouteGoogleMap = async (pickUp: LatLng, dropOff: LatLng) => {
          },
       )
 
-      return response.data.routes[0]
+      const routes = response.data.routes
+      if (!routes || routes.length === 0) {
+         throw new BadRequestException(ERROR_ROUTE_NOT_FOUND)
+      }
+
+      return routes[0]
    } catch (error) {
       throw error
    }
 }
-
-// units: 'METRIC',
-// trafficModel: 'BEST_GUESS',
-// avoid: 'TOLLS',
-// alternatives: true,
