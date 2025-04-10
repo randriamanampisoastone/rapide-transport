@@ -1,5 +1,5 @@
 import {ApiProperty} from "@nestjs/swagger";
-import {IsNotEmpty, IsNumber, IsOptional, IsString} from "class-validator";
+import {IsArray, IsNotEmpty, IsNumber, IsOptional, IsString} from "class-validator";
 
 export class CartDecoratorDto {
     @ApiProperty({example: 'uuid', description: 'Product ID'})
@@ -26,4 +26,40 @@ export class CartDecoratorDto {
     @IsOptional()
     @IsString()
     color?: string;
+
+    @ApiProperty({
+        type: [String],
+        description: 'Array of ingredients of product',
+        required: false
+    })
+    @IsArray()
+    @IsString({each: true})
+    ingredients?: string[];
+
+    @ApiProperty({
+        type: [String],
+        description: 'Array of sauces of product',
+        required: false
+    })
+    @IsArray()
+    @IsString({each: true})
+    sauces?: string[];
+
+    @ApiProperty({
+        type: [String],
+        description: 'Array of addons of product',
+        required: false
+    })
+    @IsArray()
+    @IsString({each: true})
+    extras?: string[];
+
+    @ApiProperty({
+        type: [String],
+        description: 'Array of drinks of product',
+        required: false
+    })
+    @IsArray()
+    @IsString({each: true})
+    drinks?: string[];
 }
