@@ -8,6 +8,7 @@ import { parseDuration } from 'utils/time.util'
 import { ITINERARY_PREFIX } from 'constants/redis.constant'
 import { LatLng } from 'interfaces/location.interface'
 import { ERROR_INTERNAL_SERVER_ERROR } from 'constants/error.constant'
+import { throwError } from 'rxjs'
 
 export interface CreateItineraryDto {
    clientProfileId: string
@@ -47,15 +48,19 @@ export class CreateItineraryService {
             prices,
          }
 
-         await this.redisService.set(
-            `${ITINERARY_PREFIX + clientProfileId}`,
-            JSON.stringify(itineraryData),
-            900, // 15 minutes
-         )
+         try {
+            await this.redisService.set(
+               `${ITINERARY_PREFIX + clientProfileId}`,
+               JSON.stringify(itineraryData),
+               900, // 15 minutes
+            )
+         } catch (error) {
+            throw new InternalServerErrorException(ERROR_INTERNAL_SERVER_ERROR)
+         }
 
          return itineraryData
       } catch (error) {
-         throw new InternalServerErrorException(ERROR_INTERNAL_SERVER_ERROR)
+         throw error
       }
    }
 }
