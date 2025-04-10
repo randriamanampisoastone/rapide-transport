@@ -15,6 +15,7 @@ import {
    ROUTE_APPLE_AUTH,
    ROUTE_CONFIRM_SIGN_IN,
    ROUTE_CONFIRM_SIGN_UP,
+   ROUTE_CREATE_SUPER_ADMIN,
    ROUTE_GOOGLE_AUTH,
    ROUTE_RESEND_CONFIRM_SIGN_IN,
    ROUTE_RESEND_CONFIRM_SIGN_UP,
@@ -22,8 +23,11 @@ import {
    ROUTE_SIGN_UP,
 } from 'routes/secondary-routes'
 import { GoogleAuthDto } from './dto/google.auth.dto'
+
+import { CreateSuperAdminDto } from './dto/create.super.admin.dto'
 import { AppleAuthDto } from './dto/apple.auth.dto'
 import { AppleAuthService } from './sso/apple.auth.service'
+
 
 @Controller(ROUTE_AUTH)
 export class AuthController {
@@ -100,5 +104,9 @@ export class AuthController {
          data.firstName,
          data.lastName,
       )
+   }
+   @Post(ROUTE_CREATE_SUPER_ADMIN)
+   async createSuperAdmin(@Body() data: CreateSuperAdminDto) {
+      return await this.confirmSignUpService.createSuperAdminProfile(data)
    }
 }

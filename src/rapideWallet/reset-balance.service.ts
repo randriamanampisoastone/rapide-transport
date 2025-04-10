@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { ConflictException, Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { GetRapideBalanceService } from './get-rapide-balance.service'
 import { RedisService } from 'src/redis/redis.service'
@@ -11,6 +11,21 @@ export class ResetBalanceServce {
       private readonly getRapideBalanceService: GetRapideBalanceService,
       private readonly redisService: RedisService,
    ) {}
+
+   async createRapideBalance() {
+      try {
+         const rapideBalanceAlreadyExist =
+            await this.prismaService.rapideBalance.findMany()
+         if (rapideBalanceAlreadyExist.length) {
+            throw new ConflictException('Rapide balance already exist')
+         }
+         await this.prismaService.rapideBalance.create({
+            data: { food: 0, ride: 0, express: 0, mart: 0, rent: 0 },
+         })
+      } catch (error) {
+         throw error
+      }
+   }
 
    async resetRideBalance(rapideWalletId: string) {
       try {
@@ -41,7 +56,9 @@ export class ResetBalanceServce {
                   rapideBalanceId: rapideBalance.rapideBalance.rapideBalanceId,
                },
                data: {
-                  ride: rapideBalance.rapideBalance.ride + Math.abs(rapideWallet.balance),
+                  ride:
+                     rapideBalance.rapideBalance.ride +
+                     Math.abs(rapideWallet.balance),
                },
             })
             await this.redisService.upsertDailyRedisBalance(

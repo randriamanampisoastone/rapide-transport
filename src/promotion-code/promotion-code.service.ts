@@ -112,6 +112,11 @@ export class PromotionCodeService {
                data: { ...promotionCode, isAvailable: false },
                include: { promotionServices: true },
             })
+         if (!updatePromotionCodeDto) {
+            throw new BadRequestException(
+               'input error please check the information',
+            )
+         }
          await this.gateway.sendNotificationToAdmin(
             [UserRole.SUPER_ADMIN],
             EVENT_PROMOTION_CODE_UPDATED,
@@ -120,7 +125,6 @@ export class PromotionCodeService {
                code: updatedPromotionCode.code,
             },
          )
-         return updatedPromotionCode
       } catch (error) {
          throw error
       }
@@ -177,11 +181,11 @@ export class PromotionCodeService {
                'Promotional code does not exist or not available',
             )
          }
-         let promotoinsServices = promotionCodeExist.promotionServices
+         let promotionsServices = promotionCodeExist.promotionServices
 
-         for (const promotionService of promotoinsServices) {
+         for (const promotionService of promotionsServices) {
             if (promotionService.phoneNumbers.includes(phoneNumber)) {
-               promotoinsServices = promotoinsServices.filter(
+               promotionsServices = promotionsServices.filter(
                   (service) =>
                      service.promotionServiceId !==
                      promotionService.promotionServiceId,
@@ -195,17 +199,17 @@ export class PromotionCodeService {
                promotionCodeExist.customMessage,
             )
          } else {
-            if (promotoinsServices.length) {
+            if (promotionsServices.length) {
                let message = ''
 
                if (locale === 'fr') {
-                  message = `Cher client, votre code promotionnel "${promotionCode}" est valide. Vous avez ${promotoinsServices.length} service(s) de réduction.`
+                  message = `Cher client, votre code promotionnel "${promotionCode}" est valide. Vous avez ${promotionsServices.length} service(s) de réduction.`
                } else if (locale === 'mg') {
-                  message = `Ry mpanjifa hajaina, manan-kery ny kaody fampiroboroboana "${promotionCode}". Manana tolotra fihenam-bidy ${promotoinsServices.length} ianao.`
+                  message = `Ry mpanjifa hajaina, manan-kery ny kaody fampiroboroboana "${promotionCode}". Manana tolotra fihenam-bidy ${promotionsServices.length} ianao.`
                } else if (locale === 'en') {
-                  message = `Dear customer, your promotional code "${promotionCode}" is valid. You have ${promotoinsServices.length} discount service(s).`
+                  message = `Dear customer, your promotional code "${promotionCode}" is valid. You have ${promotionsServices.length} discount service(s).`
                } else if (locale === 'zh') {
-                  message = `尊敬的客户，您的优惠码 "${promotionCode}" 有效。您有 ${promotoinsServices.length} 项优惠服务。`
+                  message = `尊敬的客户，您的优惠码 "${promotionCode}" 有效。您有 ${promotionsServices.length} 项优惠服务。`
                }
 
                await this.smsService.sendSMS([phoneNumber], message)
@@ -226,7 +230,7 @@ export class PromotionCodeService {
             }
          }
 
-         return promotoinsServices
+         return promotionsServices
       } catch (error) {
          throw error
       }
