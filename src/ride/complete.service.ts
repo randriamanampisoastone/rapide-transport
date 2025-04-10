@@ -62,30 +62,30 @@ export class CompleteService {
          }
 
          // Applay promotionCode
-         const usedPromotoinCode =
+         const usedPromotionCode =
             await this.promotionCodeService.getUsedClientPromotionServiceInRedis(
                rideData.clientProfileId,
             )
-         console.log(usedPromotoinCode)
+         console.log(usedPromotionCode)
          if (
-            usedPromotoinCode !== null &&
-            usedPromotoinCode.promotionService.serviceFor === Services.RIDE &&
-            usedPromotoinCode.promotionService.vehicleType ===
+            usedPromotionCode !== null &&
+            usedPromotionCode.promotionService.serviceFor === Services.RIDE &&
+            usedPromotionCode.promotionService.vehicleType ===
                rideData.vehicleType
          ) {
             rideData.estimatedPrice.upper = roundToNearestThousand(
                rideData.estimatedPrice.upper *
-                  usedPromotoinCode.promotionService.value,
+                  usedPromotionCode.promotionService.value,
             )
             rideData.realPrice = roundToNearestThousand(
-               rideData.realPrice * usedPromotoinCode.promotionService.value,
+               rideData.realPrice * usedPromotionCode.promotionService.value,
             )
             await this.redisService.remove(
                `${CLIENT_PROMOTION_CODE_PREFIX}-${rideData.clientProfileId}`,
             )
             await this.promotionCodeService.addClientPhoneNumberOnPromotionService(
-               usedPromotoinCode.phoneNumber,
-               usedPromotoinCode.promotionService.promotionServiceId,
+               usedPromotionCode.phoneNumber,
+               usedPromotionCode.promotionService.promotionServiceId,
             )
          }
 
@@ -147,8 +147,8 @@ export class CompleteService {
                dropOffLongitude: rideData.dropOffLocation.longitude,
                status: RideStatus.COMPLETED,
                endTime: updatedRideData.endTime,
-               promotionServiceId: usedPromotoinCode
-                  ? usedPromotoinCode.promotionService.promotionServiceId
+               promotionServiceId: usedPromotionCode
+                  ? usedPromotionCode.promotionService.promotionServiceId
                   : null,
             },
          })
