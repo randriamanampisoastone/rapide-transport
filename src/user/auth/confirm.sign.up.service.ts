@@ -12,8 +12,9 @@ import { SignUpDto } from './dto/sign.up.dto'
 import { UserRole } from 'enums/profile.enum'
 import { ConfirmDto } from './dto/confirm.dto'
 import { ConfigService } from '@nestjs/config'
-import { RapideWalletStatus } from '@prisma/client'
+import { ProfileStatus, RapideWalletStatus } from '@prisma/client'
 import { SignUpDataOnRedisInterface } from 'interfaces/sign.up.data.on.redis.interface'
+import { CreateSuperAdminDto } from './dto/create.super.admin.dto'
 
 @Injectable()
 export class ConfirmSignUpService {
@@ -45,7 +46,8 @@ export class ConfirmSignUpService {
             throw new NotFoundException('Timeout expired')
          }
 
-         const signUpDto: SignUpDataOnRedisInterface = JSON.parse(signUpDtoString)
+         const signUpDto: SignUpDataOnRedisInterface =
+            JSON.parse(signUpDtoString)
          if (signUpDto.attempt >= 5) {
             await this.redisService.remove(
                `${AUTH_SIGN_UP_PREFIX + confirmSignUpDto.phoneNumber}`,
@@ -229,6 +231,35 @@ export class ConfirmSignUpService {
          const adminProfile = await prisma.adminProfile.create({
             data: {
                adminProfileId: authProfile.sub,
+            },
+         })
+
+         return {
+            sub: adminProfile.adminProfileId,
+            role: authProfile.role,
+            status: adminProfile.status,
+         }
+      })
+   }
+
+   async createSuperAdminProfile(createSuperAdminDto: CreateSuperAdminDto) {
+      return await this.prismaService.$transaction(async (prisma) => {
+         const authProfile = await this.prismaService.profile.create({
+            data: {
+               phoneNumber: createSuperAdminDto.phoneNumber,
+               firstName: createSuperAdminDto.firstName,
+               lastName: createSuperAdminDto.lastName,
+               gender: createSuperAdminDto.gender,
+               birthday: createSuperAdminDto.birthday,
+               role: UserRole.SUPER_ADMIN,
+               profilePhoto: createSuperAdminDto.profilePhoto,
+            },
+         })
+
+         const adminProfile = await prisma.adminProfile.create({
+            data: {
+               adminProfileId: authProfile.sub,
+               status: ProfileStatus.ACTIVE,
             },
          })
 

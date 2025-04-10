@@ -22,6 +22,7 @@ import { ResendConfirmationCodeRapideWalletInformationDto } from './dto/resend-c
 import { ROUTE_RAPIDE_WALLET } from 'routes/main-routes'
 import {
    ROUTE_CONFIRM_RAPIDE_WALLET_INFORMATION,
+   ROUTE_CREATE_RAPIDE_WALLET,
    ROUTE_GET_RAPIDE_BALANCE,
    ROUTE_GET_RAPIDE_WALLET,
    ROUTE_GET_SOLDE,
@@ -51,6 +52,11 @@ export class RapideWalletController {
          throw new ForbiddenException('UserNotActive')
       }
       await this.resetBalanceService.resetRideBalance(rapideWalletId)
+   }
+
+   @Post(ROUTE_CREATE_RAPIDE_WALLET)
+   async createRapideBalance() {
+      await this.resetBalanceService.createRapideBalance()
    }
 
    @Get(ROUTE_GET_RAPIDE_BALANCE)
@@ -111,7 +117,7 @@ export class RapideWalletController {
          data.phoneNumber,
          data.confirmationCode,
          userRole,
-         locale
+         locale,
       )
    }
 
@@ -147,7 +153,7 @@ export class RapideWalletController {
       return await this.rapideWalletService.updateStatus(
          updateRapideWalletStatusDto.rapideWalletId,
          updateRapideWalletStatusDto.status,
-         locale
+         locale,
       )
    }
 
@@ -165,6 +171,10 @@ export class RapideWalletController {
       if (status !== ProfileStatus.ACTIVE) {
          throw new ForbiddenException('UserNotActive')
       }
-      return await this.rapideWalletService.getRapideWallet(profileId, userRole, locale)
+      return await this.rapideWalletService.getRapideWallet(
+         profileId,
+         userRole,
+         locale,
+      )
    }
 }
