@@ -15,12 +15,14 @@ import {IngredientsController} from "./ingredients.controller";
 import {IngredientsService} from "./service/ingredients/ingredients.service";
 import {SaucesService} from "./service/sauces/sauces.service";
 import {SaucesController} from "./sauces.controller";
+import {AddOnsController} from './add.ons.controller';
 
 @Module({
     controllers: [
         ProductsController,
         IngredientsController,
-        SaucesController
+        SaucesController,
+        AddOnsController
     ],
     providers: [
         AddProductService,

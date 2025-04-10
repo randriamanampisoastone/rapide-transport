@@ -77,4 +77,40 @@ export class CreateProductDto {
     @IsArray()
     @IsString({each: true})
     categories?: string[];
+
+    @ApiProperty({
+        type: [String],
+        description: 'Array of ingredients of product',
+        required: false
+    })
+    @IsArray()
+    @IsString({each: true})
+    ingredients?: string[];
+
+    @ApiProperty({
+        type: [String],
+        description: 'Array of sauces of product',
+        required: false
+    })
+    @IsArray()
+    @IsString({each: true})
+    sauces?: string[];
+
+    @ApiProperty({
+        type: [String],
+        description: 'Array of addons of product',
+        required: false
+    })
+    @IsArray()
+    @IsString({each: true})
+    extras?: string[];
+
+    @ApiProperty({
+        type: [String],
+        description: 'Array of drinks of product',
+        required: false
+    })
+    @IsArray()
+    @IsString({each: true})
+    drinks?: string[];
 }
