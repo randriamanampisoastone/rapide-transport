@@ -1,20 +1,8 @@
-import {
-   IsEnum,
-   IsNotEmpty,
-   IsOptional,
-   IsDate,
-   IsString,
-   Matches,
-   IsEmail,
-} from 'class-validator'
+import { IsEnum, IsOptional, IsDate, IsString } from 'class-validator'
 import { Type } from 'class-transformer'
-import { GenderType, UserRole } from 'enums/profile.enum'
+import { GenderType } from 'enums/profile.enum'
 
 export class UpdateProfileDto {
-   @IsOptional()
-   @IsEmail()
-   email?: string
-
    @IsOptional()
    @IsString()
    firstName?: string

@@ -95,6 +95,8 @@ export const ROUTE_CONFIRM_SIGN_IN = 'confirmSignIn'
 export const ROUTE_RESEND_CONFIRM_SIGN_IN = 'resendConfirmSignIn'
 export const ROUTE_GOOGLE_AUTH = 'googleAuth'
 export const ROUTE_CREATE_SUPER_ADMIN = 'create-super-admin'
+export const ROUTE_APPLE_AUTH = 'appleAuth'
+
 
 // delete-profile
 export const ROUTE_BY_ADMIN = 'by-admin'
