@@ -39,6 +39,9 @@ export class DepositeService {
          if (!adminProfile) {
             throw new NotFoundException('Admin profile note found')
          }
+         if (!adminProfile.transactionPassword) {
+            throw new BadRequestException('Transaction password not defined')
+         }
          const isMatch = await bcrypt.compare(
             depositeDto.transactionPassword,
             adminProfile.transactionPassword,

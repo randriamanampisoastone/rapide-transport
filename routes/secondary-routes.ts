@@ -46,6 +46,7 @@ export const ROUTE_RESET_CLIENT_PASSWORD = 'reset-client-password'
 
 // rapide-wallet
 export const ROUTE_RESET_DRIVER_BALANCE = 'reset-driver-balance'
+export const ROUTE_CREATE_RAPIDE_WALLET = 'create-rapide-wallet'
 export const ROUTE_GET_RAPIDE_BALANCE = 'get-rapide-balance'
 export const ROUTE_GET_SOLDE = 'get-solde'
 export const ROUTE_SET_RAPIDE_WALLET_INFORMATION =
@@ -93,7 +94,9 @@ export const ROUTE_SIGN_IN = 'signIn'
 export const ROUTE_CONFIRM_SIGN_IN = 'confirmSignIn'
 export const ROUTE_RESEND_CONFIRM_SIGN_IN = 'resendConfirmSignIn'
 export const ROUTE_GOOGLE_AUTH = 'googleAuth'
+export const ROUTE_CREATE_SUPER_ADMIN = 'create-super-admin'
 export const ROUTE_APPLE_AUTH = 'appleAuth'
+
 
 // delete-profile
 export const ROUTE_BY_ADMIN = 'by-admin'
