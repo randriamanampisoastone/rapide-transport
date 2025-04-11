@@ -1,5 +1,5 @@
 import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
-import {ERROR_CREATING_PRODUCT, PRODUCT_NOT_FOUND} from "../../../../constants/response.constant";
+import {ERROR_UPDATING_PRODUCT, PRODUCT_NOT_FOUND} from "../../../../constants/response.constant";
 import {UploadAwsService} from "../../Common/upload-aws/upload-aws.service";
 import {PrismaService} from "../../../prisma/prisma.service";
 import {ProductsService} from "../products.service";
@@ -21,14 +21,18 @@ export class EditProductService extends ProductsService {
             await Promise.all([
                 this.handleImageUpdates(product, productDto.images),
                 this.handleCategoryUpdates(updatedProduct.id, productDto.categories),
+                this.handleVariantUpdates(product.id, productDto.variants),
                 this.handleIngredientUpdates(updatedProduct.id, productDto.ingredients),
                 this.handleSauceUpdates(updatedProduct.id, productDto.sauces),
-                this.handleVariantUpdates(product.id, productDto.variants)
+                this.handleExtrasUpdates(updatedProduct.id, productDto.extras),
+                this.handleDrinksUpdates(updatedProduct.id, productDto.drinks)
             ]);
 
             return this.returnDataOnFlush(updatedProduct);
         } catch (error) {
-            this.handleError(error);
+            throw new HttpException({
+                error: ERROR_UPDATING_PRODUCT,
+            }, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -54,7 +58,7 @@ export class EditProductService extends ProductsService {
     }
 
     private async updateProductBase(id: string, productDto: any) {
-        const {images, categories, variants, ingredients, sauces, ...productData} = productDto;
+        const {images, categories, variants, ingredients, sauces, extras, drinks, ...productData} = productDto;
         return this.prismaService.product.update({
             where: {id},
             data: productData
@@ -126,6 +130,40 @@ export class EditProductService extends ProductsService {
         });
     }
 
+    private async handleExtrasUpdates(productId: string, extras: string[]) {
+        try {
+            if (!extras?.length) return;
+
+            await this.prismaService.productAddOn.deleteMany({
+                where: {productId}
+            });
+
+            await this.prismaService.productAddOn.createMany({
+                data: extras.map(addOnId => ({
+                    productId,
+                    addOnId
+                }))
+            });
+        }catch(error){
+            console.log("error ", error);
+        }
+    }
+
+    private async handleDrinksUpdates(productId: string, drinks: string[]) {
+        if (!drinks?.length) return;
+
+        await this.prismaService.productDrink.deleteMany({
+            where: {productId}
+        });
+
+        await this.prismaService.productDrink.createMany({
+            data: drinks.map(drinkId => ({
+                productId,
+                drinkId
+            }))
+        });
+    }
+
     private async handleVariantUpdates(productId: string, variants: any[]) {
         if (!variants?.length) return;
 
@@ -141,12 +179,5 @@ export class EditProductService extends ProductsService {
                 stock: variant.stock
             }))
         });
-    }
-
-    private handleError(error: any) {
-        if (error instanceof HttpException) throw error;
-        throw new HttpException({
-            error: ERROR_CREATING_PRODUCT,
-        }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

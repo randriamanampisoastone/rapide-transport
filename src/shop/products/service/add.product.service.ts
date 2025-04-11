@@ -5,6 +5,8 @@ import {PrismaService} from "../../../prisma/prisma.service";
 import {ProductsService} from "../products.service";
 import {IngredientsService} from "./ingredients/ingredients.service";
 import {SaucesService} from "./sauces/sauces.service";
+import {AddOnsService} from "./addOns/add.ons.service";
+import {DrinksService} from "./drinks/drinks.service";
 
 @Injectable()
 export class AddProductService extends ProductsService {
@@ -14,6 +16,8 @@ export class AddProductService extends ProductsService {
         prismaService: PrismaService,
         private readonly ingredientsService: IngredientsService,
         private readonly saucesService: SaucesService,
+        private readonly addOnsService: AddOnsService,
+        private readonly drinksService: DrinksService,
     ) {
         super(uploadAwsService, prismaService);
     }
@@ -41,7 +45,7 @@ export class AddProductService extends ProductsService {
             // Process variants if they exist
             const variantPromises = variants?.map(async variant => {
                 await this.createVariantProduct(product.id, variant);
-                }) ?? [];
+            }) ?? [];
 
             /// Process categories if they exist
             const categoryPromises = categories?.map(async categoryId => {
@@ -52,8 +56,16 @@ export class AddProductService extends ProductsService {
                 await this.ingredientsService.attachIngredientsToProduct(product.id, ingredientId);
             }) ?? [];
 
-            const  saucePromises = sauces?.map(async sauceId => {
+            const saucePromises = sauces?.map(async sauceId => {
                 await this.saucesService.attachSaucesToProduct(product.id, sauceId);
+            }) ?? [];
+
+            const addOnPromises = createProductDto.addOns?.map(async addOnId => {
+                await this.addOnsService.attachAddOnsToProduct(product.id, addOnId);
+            }) ?? [];
+
+            const drinkPromises = createProductDto.drinks?.map(async drinkId => {
+                await this.drinksService.attachDrinksToProduct(product.id, drinkId);
             }) ?? [];
 
             // Wait for all async operations to complete
@@ -62,11 +74,13 @@ export class AddProductService extends ProductsService {
                 ...categoryPromises,
                 ...variantPromises,
                 ...ingredientPromises,
-                ...saucePromises
+                ...saucePromises,
+                ...addOnPromises,
+                ...drinkPromises
             ]);
 
             // Return the complete product with relations
-           return this.returnDataOnFlush(product);
+            return this.returnDataOnFlush(product);
         } catch (error) {
             console.error('Error creating product:', error);
             throw new HttpException({
