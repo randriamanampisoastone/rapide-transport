@@ -1,6 +1,8 @@
 import {PrismaService} from "../../../../prisma/prisma.service";
 import {Utils} from "../../../Common/utils/utils";
+import {Injectable} from "@nestjs/common";
 
+@Injectable()
 export class AddOnsService {
     constructor(
         private readonly prismaService: PrismaService,
@@ -39,11 +41,6 @@ export class AddOnsService {
     }
 
     async attachAddOnsToProduct(productId: string, addOnIds: string[]) {
-        // Validate maximum of 2 add-ons
-        if (addOnIds.length > 2) {
-            throw new Error('Maximum 2 add-ons allowed per product');
-        }
-
         // Remove existing add-ons
         await this.prismaService.productAddOn.deleteMany({
             where: { productId }

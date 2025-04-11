@@ -1,6 +1,8 @@
 import {PrismaService} from "../../../../prisma/prisma.service";
 import {Utils} from "../../../Common/utils/utils";
+import {Injectable} from "@nestjs/common";
 
+@Injectable()
 export class DrinksService {
     constructor(
         private readonly prismaService: PrismaService,
@@ -41,11 +43,6 @@ export class DrinksService {
     }
 
     async attachDrinksToProduct(productId: string, drinkIds: string[]) {
-        // Validate maximum of 2 drinks
-        if (drinkIds.length > 2) {
-            throw new Error('Maximum 2 drinks allowed per product');
-        }
-
         // Remove existing drinks
         await this.prismaService.productDrink.deleteMany({
             where: {productId}
