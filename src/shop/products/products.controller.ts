@@ -195,9 +195,10 @@ export class ProductsController {
         @Param('id') id: string,
         @Body() rawData: any,
         @UploadedFiles() files: any,
+        @GetUser('sub') user: string
     ) {
         const transformedData = this.transformData(rawData, files);
-        return await this.editProductService.editProduct(id, transformedData);
+        return await this.editProductService.editProduct(id, transformedData, user);
     }
 
     @SetMetadata('allowedRole', [UserRole.SELLER])

@@ -3,17 +3,22 @@ import {ERROR_UPDATING_PRODUCT, PRODUCT_NOT_FOUND} from "../../../../constants/r
 import {UploadAwsService} from "../../Common/upload-aws/upload-aws.service";
 import {PrismaService} from "../../../prisma/prisma.service";
 import {ProductsService} from "../products.service";
+import {Utils} from "../../Common/utils/utils";
 
 @Injectable()
 export class EditProductService extends ProductsService {
     constructor(
         uploadAwsService: UploadAwsService,
-        prismaService: PrismaService
+        prismaService: PrismaService,
+        private readonly utils: Utils
     ) {
         super(uploadAwsService, prismaService);
     }
 
-    async editProduct(id: string, productDto: any) {
+    async editProduct(id: string, productDto: any, user:string) {
+        // Check if the user is the owner of the product
+        await this.utils.checkProductOwner(id, user);
+
         try {
             const product = await this.getProductById(id);
             const updatedProduct = await this.updateProductBase(product.id, productDto);
@@ -30,6 +35,9 @@ export class EditProductService extends ProductsService {
 
             return this.returnDataOnFlush(updatedProduct);
         } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
             throw new HttpException({
                 error: ERROR_UPDATING_PRODUCT,
             }, HttpStatus.INTERNAL_SERVER_ERROR);
