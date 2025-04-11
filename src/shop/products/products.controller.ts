@@ -126,6 +126,20 @@ export class ProductsController {
                 : [rawData.sauces];
         }
 
+        // Handle ingredients if present
+        if (rawData.extras) {
+            data.extras = Array.isArray(rawData.extras)
+                ? rawData.extras
+                : [rawData.extras];
+        }
+
+        // Handle ingredients if present
+        if (rawData.drinks) {
+            data.drinks = Array.isArray(rawData.drinks)
+                ? rawData.drinks
+                : [rawData.drinks];
+        }
+
         // Process only the files that were actually sent
         const images = [];
 
