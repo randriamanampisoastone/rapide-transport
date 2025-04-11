@@ -86,6 +86,16 @@ export class ProductsService {
                     include: {
                         sauce: true,
                     }
+                },
+                addOns: {
+                    include: {
+                        addOn: true,
+                    }
+                },
+                drinks: {
+                    include: {
+                        drink: true,
+                    }
                 }
             }
         });
@@ -97,6 +107,8 @@ export class ProductsService {
             categories: productWithRelations.categories.map(c => c.category),
             ingredients: productWithRelations.ingredients.map(c => c.ingredient),
             sauces: productWithRelations.sauces.map(c => c.sauce),
+            addOns: productWithRelations.addOns.map(c => c.addOn),
+            drinks: productWithRelations.drinks.map(c => c.drink),
         };
     }
 
